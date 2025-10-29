@@ -114,6 +114,10 @@ class _KYCCompletionScreenState extends State<KYCCompletionScreen> {
     }
 
     try {
+      // Clear cache to force fresh data from Firebase
+      KycService.clearKycCache(user.uid);
+      print('🗑️ Cleared KYC cache before status check');
+
       final status = await _kycService.getKycStatus(user.uid);
       setState(() {
         _existingKycStatus = status;
@@ -1178,23 +1182,36 @@ class _KYCCompletionScreenState extends State<KYCCompletionScreen> {
       final fileSize = await file.length();
       final fileSizeKB = (fileSize / 1024).toStringAsFixed(2);
 
+      // Get the proper display name for the document
+      String displayName = '';
+      if (documentType == 'doc_front') {
+        displayName = 'kyc.upload_doc_front'.tr();
+      } else if (documentType == 'doc_back') {
+        displayName = 'kyc.upload_doc_back'.tr();
+      } else if (documentType == 'selfie') {
+        displayName = 'kyc.upload_selfie'.tr();
+      }
+
       setState(() {
-        if (documentType.contains('Front')) {
+        if (documentType == 'doc_front') {
           _docFrontFile = file;
           _docFrontUrl = null; // reset cached URL if re-picked
-        } else if (documentType.contains('Back')) {
+        } else if (documentType == 'doc_back') {
           _docBackFile = file;
           _docBackUrl = null;
-        } else if (documentType.contains('Selfie')) {
+        } else if (documentType == 'selfie') {
           _selfieFile = file;
           _selfieUrl = null;
         }
       });
 
+      // Build the success message with manual string replacement
+      String successMessage =
+          '$displayName captured ($fileSizeKB KB)\n✓ Image will be compressed for upload';
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'kyc.doc_captured_success'.tr(args: [documentType, fileSizeKB])),
+          content: Text(successMessage),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
         ),

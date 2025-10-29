@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>351442774180-raq4fup332cbcehf6bot46esjhl46qc8.apps.googleusercontent.com</string>
+	<string>351442774180-cdh9s1ub3qs8odla1boql79l4s20oq7t.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.351442774180-raq4fup332cbcehf6bot46esjhl46qc8</string>
+	<string>com.googleusercontent.apps.351442774180-cdh9s1ub3qs8odla1boql79l4s20oq7t</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>351442774180-1ts49gd0k69h5jc8ip9j2s9s3g7j2mi4.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBjTQRuf09ontEdiaEVYkN2uLMPIQO6qbA</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.loginRegister</string>
+	<string>com.crowdwave.app.testProject</string>
 	<key>PROJECT_ID</key>
 	<string>crowdwave-93d4d</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:351442774180:ios:458a93fdce711c515f9e31</string>
+	<string>1:351442774180:ios:83ae7870780997cd5f9e31</string>
 </dict>
 </plist>

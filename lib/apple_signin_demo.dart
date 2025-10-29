@@ -14,7 +14,7 @@ class AppleSignInDemo extends StatelessWidget {
         AppleIDAuthorizationScopes.fullName,
       ],
       webAuthenticationOptions: WebAuthenticationOptions(
-        clientId: "com.crowdwave.service", // ✅ Your Apple Service ID
+        clientId: "com.crowdwave.courier.service", // ✅ Your Apple Service ID
         redirectUri: Uri.parse(
           "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler", // ✅ Firebase redirect URI
         ),
@@ -64,7 +64,7 @@ class AppleSignInDemo extends StatelessWidget {
                   Text('Configuration Details:',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
-                  Text('🔑 Service ID: com.crowdwave.service'),
+                  Text('🔑 Service ID: com.crowdwave.courier.service'),
                   Text(
                       '🔄 Redirect URI: https://crowdwave-93d4d.firebaseapp.com/__/auth/handler'),
                   Text('📱 Platform: Android APK (Web Flow)'),

@@ -376,7 +376,7 @@ class EnhancedFirebaseAuthService {
           AppleIDAuthorizationScopes.fullName,
         ],
         webAuthenticationOptions: WebAuthenticationOptions(
-          clientId: 'com.crowdwave.service',
+          clientId: 'com.crowdwave.courier.service',
           redirectUri: Uri.parse(
             'https://crowdwave-93d4d.firebaseapp.com/__/auth/handler',
           ),

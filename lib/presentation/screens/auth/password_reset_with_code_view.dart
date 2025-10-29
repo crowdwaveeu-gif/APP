@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/error_handler.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -21,8 +21,8 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  // Use Firebase Auth directly for password reset
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Use Firebase Functions for password reset OTP
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   bool _isLoading = false;
   bool _isCodeSent = false;
@@ -46,8 +46,12 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
     setState(() => _isLoading = true);
 
     try {
-      // Send password reset email using Firebase Auth
-      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      // Call the new Cloud Function to send OTP
+      final HttpsCallable callable =
+          _functions.httpsCallable('sendPasswordResetOTP');
+      final result = await callable.call<Map<String, dynamic>>({
+        'email': _emailController.text.trim(),
+      });
 
       setState(() {
         _isCodeSent = true;
@@ -56,8 +60,10 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
 
       _startResendCountdown();
 
-      _showSnackbar('Code Sent!',
-          'Password reset code has been sent to ${_emailController.text}',
+      _showSnackbar(
+          'Code Sent!',
+          result.data['message'] ??
+              'Password reset code has been sent to ${_emailController.text}',
           isSuccess: true);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -72,16 +78,25 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
     setState(() => _isLoading = true);
 
     try {
-      // Confirm password reset with code using Firebase Auth
-      await _auth.confirmPasswordReset(
-        code: _codeController.text.trim(),
-        newPassword: _newPasswordController.text.trim(),
-      );
+      final email = _emailController.text.trim();
+      final code = _codeController.text.trim();
+      final newPassword = _newPasswordController.text.trim();
+
+      // Call Cloud Function to verify OTP and update password
+      final HttpsCallable callable =
+          _functions.httpsCallable('verifyPasswordResetOTP');
+      final result = await callable.call<Map<String, dynamic>>({
+        'email': email,
+        'otp': code,
+        'newPassword': newPassword,
+      });
 
       setState(() => _isLoading = false);
 
-      _showSnackbar('Success!',
-          'Your password has been reset successfully. You can now sign in with your new password.',
+      _showSnackbar(
+          'Success!',
+          result.data['message'] ??
+              'Your password has been reset successfully. You can now sign in with your new password.',
           isSuccess: true);
 
       // Navigate to login after 2 seconds
@@ -101,10 +116,18 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
     setState(() => _isLoading = true);
 
     try {
-      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      // Call the Cloud Function to resend OTP
+      final HttpsCallable callable =
+          _functions.httpsCallable('sendPasswordResetOTP');
+      final result = await callable.call<Map<String, dynamic>>({
+        'email': _emailController.text.trim(),
+      });
+
       _startResendCountdown();
       _showSnackbar(
-          'Code Resent!', 'A new reset code has been sent to your email.',
+          'Code Resent!',
+          result.data['message'] ??
+              'A new reset code has been sent to your email.',
           isSuccess: true);
     } catch (e) {
       _showSnackbar('Error', ErrorHandler.getReadableError(e), isError: true);
@@ -138,7 +161,8 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Get.back(),
         ),
-        title: Text('auth.reset_password'.tr(),
+        title: Text(
+          'auth.reset_password'.tr(),
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -218,7 +242,8 @@ class _PasswordResetWithCodeViewState extends State<PasswordResetWithCodeView> {
                   Center(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: Text('auth.back_to_sign_in'.tr(),
+                      child: Text(
+                        'auth.back_to_sign_in'.tr(),
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 16,

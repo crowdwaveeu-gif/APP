@@ -60,6 +60,20 @@
                 <string>fb779082754705132</string>
             </array>
         </dict>
+        <!-- Google Sign-In URL Scheme -->
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.351442774180-raq4fup332cbcehf6bot46esjhl46qc8</string>
+            </array>
+        </dict>
+        <!-- Apple Sign-In URL Scheme -->
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.crowdwave.app.testProject</string>
+            </array>
+        </dict>
     </array>
     
     <key>FacebookAppID</key>

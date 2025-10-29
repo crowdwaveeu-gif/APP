@@ -1140,10 +1140,335 @@ Questions? Email us at support@crowdwave.eu
   }
 });
 
+/**
+ * Verify Password Reset OTP and Update Password
+ * Verifies the OTP code and updates the user's password
+ */
+exports.verifyPasswordResetOTP = functions.https.onCall(async (data, context) => {
+  const { email, otp, newPassword } = data;
+
+  if (!email || !otp || !newPassword) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email, OTP, and new password are required');
+  }
+
+  try {
+    // Get OTP document from Firestore
+    const otpDoc = await admin.firestore().collection('otp_codes').doc(email).get();
+    
+    if (!otpDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'No verification code found. Please request a new one.');
+    }
+
+    const otpData = otpDoc.data();
+    const storedOTP = otpData.otp;
+    const expiresAt = otpData.expiresAt.toDate();
+    const used = otpData.used;
+    const type = otpData.type;
+
+    // Validate OTP
+    if (type !== 'password_reset') {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid code type');
+    }
+
+    if (used) {
+      throw new functions.https.HttpsError('failed-precondition', 'This code has already been used. Please request a new one.');
+    }
+
+    if (new Date() > expiresAt) {
+      throw new functions.https.HttpsError('deadline-exceeded', 'Verification code has expired. Please request a new one.');
+    }
+
+    if (storedOTP !== otp) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid verification code. Please check and try again.');
+    }
+
+    // Get user by email
+    const userRecord = await admin.auth().getUserByEmail(email);
+
+    // Update password using Admin SDK
+    await admin.auth().updateUser(userRecord.uid, {
+      password: newPassword,
+    });
+
+    // Mark OTP as used
+    await admin.firestore().collection('otp_codes').doc(email).update({
+      used: true,
+    });
+
+    functions.logger.info('Password reset successfully', {
+      email: email,
+      uid: userRecord.uid,
+    });
+
+    return { 
+      success: true, 
+      message: 'Your password has been reset successfully.',
+    };
+
+  } catch (error) {
+    functions.logger.error('Failed to reset password', {
+      error: error.message,
+      email,
+    });
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+
+    if (error.code === 'auth/user-not-found') {
+      throw new functions.https.HttpsError('not-found', 'No account found with this email');
+    }
+    
+    throw new functions.https.HttpsError('internal', `Failed to reset password: ${error.message}`);
+  }
+});
+
+/**
+ * Send Password Reset OTP Email (No Authentication Required)
+ * Generates and sends a 6-digit OTP code for password reset
+ * This function does NOT require authentication since users need to reset password when logged out
+ */
+exports.sendPasswordResetOTP = functions.https.onCall(async (data, context) => {
+  const { email } = data;
+
+  if (!email) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+  }
+
+  try {
+    // Check if user exists
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUserByEmail(email);
+    } catch (error) {
+      // Don't reveal if user exists or not for security
+      functions.logger.info('Password reset OTP requested for non-existent email', { email });
+      return { 
+        success: true,
+        message: 'If an account exists with this email, a password reset code has been sent.',
+      };
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store OTP in Firestore
+    await admin.firestore().collection('otp_codes').doc(email).set({
+      otp: otp,
+      email: email,
+      type: 'password_reset',
+      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      used: false,
+    });
+
+    const transporter = getEmailTransporter();
+
+    const subject = 'Reset your CrowdWave password';
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset your password</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo-img {
+            max-width: 180px;
+            height: auto;
+          }
+          .email-tagline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin-top: 8px;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 30px 0;
+          }
+          .otp-container {
+            background-color: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            letter-spacing: 8px;
+            margin: 0;
+          }
+          .otp-label {
+            font-size: 14px;
+            color: #999999;
+            margin-top: 10px;
+          }
+          .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+          }
+          .warning-text {
+            font-size: 14px;
+            color: #856404;
+            margin: 0;
+            line-height: 1.6;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <img src="https://crowdwave-website-live.vercel.app/assets/images/CrowdWaveLogo.png" alt="CrowdWave Logo" class="email-logo-img">
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">Password Reset Request</h2>
+            
+            <p class="email-text">
+              Hi ${userRecord.displayName || 'there'},
+            </p>
+            
+            <p class="email-text">
+              We received a request to reset your password. Use this code to reset your password:
+            </p>
+            
+            <div class="otp-container">
+              <p class="otp-code">${otp}</p>
+              <p class="otp-label">Your 6-digit reset code</p>
+            </div>
+            
+            <p class="email-text" style="text-align: center; font-weight: 600;">
+              Enter this code in the app to reset your password.
+            </p>
+            
+            <div class="warning-box">
+              <p class="warning-text">
+                ⚠️ <strong>Security Notice:</strong><br>
+                • This code expires in 10 minutes<br>
+                • If you didn't request a password reset, please ignore this email<br>
+                • Never share this code with anyone
+              </p>
+            </div>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              Questions? Contact us at 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Password Reset Request
+
+Hi ${userRecord.displayName || 'there'},
+
+We received a request to reset your password. Your password reset code is: ${otp}
+
+Enter this code in the app to reset your password.
+
+Security Notice:
+- This code expires in 10 minutes
+- If you didn't request a password reset, please ignore this email
+- Never share this code with anyone
+
+Questions? Email us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+    `.trim();
+
+    const mailOptions = {
+      from: '"CrowdWave Security" <nauman@crowdwave.eu>',
+      to: email,
+      replyTo: 'security@crowdwave.eu',
+      subject: subject,
+      text: text,
+      html: html,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    functions.logger.info('Password reset OTP email sent successfully', {
+      email,
+    });
+
+    return { 
+      success: true, 
+      message: 'If an account exists with this email, a password reset code has been sent.',
+    };
+
+  } catch (error) {
+    functions.logger.error('Failed to send password reset OTP email', {
+      error: error.message,
+      email,
+    });
+    
+    throw new functions.https.HttpsError('internal', `Failed to send password reset email: ${error.message}`);
+  }
+});
+
 module.exports = {
   // sendEmailVerification: exports.sendEmailVerification, // DISABLED - using OTP system instead
   sendPasswordResetEmail: exports.sendPasswordResetEmail,
   sendDeliveryUpdateEmail: exports.sendDeliveryUpdateEmail,
   testEmailConfig: exports.testEmailConfig,
   sendOTPEmail: exports.sendOTPEmail,
+  sendPasswordResetOTP: exports.sendPasswordResetOTP,
+  verifyPasswordResetOTP: exports.verifyPasswordResetOTP,
 };

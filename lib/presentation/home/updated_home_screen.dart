@@ -46,7 +46,9 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   // KYC related
   final KycService _kycService = KycService();
   bool _hasSubmittedKyc = false;
-  bool _isKycCheckLoading = true;
+  bool _isKycCheckLoading =
+      false; // Start with false, only set to true if needed
+  bool _isCheckingKyc = false; // Prevent concurrent KYC checks
 
   // Real data streams
   Stream<List<PackageRequest>>? _packagesStream;
@@ -55,6 +57,39 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   @override
   void initState() {
     super.initState();
+
+    print('🏠 ====== HOME SCREEN INIT START ======');
+
+    // CRITICAL: Initialize KYC state FIRST before anything else
+    // This must be synchronous to prevent flicker
+    final currentUser = _authService.currentUser;
+    print('👤 Current user: ${currentUser?.uid ?? "null"}');
+
+    if (currentUser != null) {
+      final cachedStatus = _kycService.getCachedKycStatus(currentUser.uid);
+      print('💾 Cache check result: $cachedStatus');
+
+      if (cachedStatus != null) {
+        // We have a cached status - use it immediately
+        _hasSubmittedKyc = cachedStatus;
+        _isKycCheckLoading = false;
+        print('✅ Pre-initialized KYC state with cached value: $cachedStatus');
+        print('   _hasSubmittedKyc = $_hasSubmittedKyc');
+        print('   _isKycCheckLoading = $_isKycCheckLoading');
+      } else {
+        // No cache - we'll need to load, so show nothing while loading
+        _isKycCheckLoading = true;
+        print('⏳ No KYC cache - will load from Firestore');
+        print('   _hasSubmittedKyc = $_hasSubmittedKyc');
+        print('   _isKycCheckLoading = $_isKycCheckLoading');
+      }
+    } else {
+      print('⚠️ No current user - skipping KYC check');
+    }
+
+    print(
+        '🏠 KYC State after init: hasSubmitted=$_hasSubmittedKyc, isLoading=$_isKycCheckLoading');
+    print('🏠 ====== HOME SCREEN INIT END ======\n');
 
     // Initialize airplane animation controller
     _airplaneController = AnimationController(
@@ -77,18 +112,7 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
     // Initialize data streams
     _initializeDataStreams();
 
-    // Initialize KYC state with cached value if available (synchronous)
-    final currentUser = _authService.currentUser;
-    if (currentUser != null) {
-      final cachedStatus = _kycService.getCachedKycStatus(currentUser.uid);
-      if (cachedStatus != null) {
-        _hasSubmittedKyc = cachedStatus;
-        _isKycCheckLoading = false;
-        print('✅ Initialized KYC state with cached value: $cachedStatus');
-      }
-    }
-
-    // Check KYC status on initialization (will use cache if available)
+    // Check KYC status (will use cache if available, or load from Firestore)
     _checkKycStatus();
   }
 
@@ -128,64 +152,117 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   void _onAuthStateChanged() {
     // Rebuild the widget when auth state changes and refresh streams
     if (mounted) {
-      _initializeDataStreams(); // Refresh streams when user changes
-      _checkKycStatus(); // Check KYC status when auth state changes
+      // Only refresh if user actually changed (prevents unnecessary updates on listener re-registration)
+      final currentUser = _authService.currentUser;
+      if (currentUser != null) {
+        _initializeDataStreams(); // Refresh streams when user changes
+        _checkKycStatus(); // Check KYC status when auth state changes (will use cache if available)
+      }
       setState(() {});
     }
   }
 
   Future<void> _checkKycStatus() async {
+    print('\n🔍 ====== _checkKycStatus CALLED ======');
+
+    // Prevent concurrent checks
+    if (_isCheckingKyc) {
+      print('⏸️ KYC check already in progress, skipping...');
+      return;
+    }
+
     final currentUser = _authService.currentUser;
+    print('👤 Current user in check: ${currentUser?.uid ?? "null"}');
+
     if (currentUser == null) {
-      if (mounted) {
+      print('⚠️ No user - resetting KYC state');
+      if (mounted &&
+          (_hasSubmittedKyc != false || _isKycCheckLoading != false)) {
         setState(() {
           _hasSubmittedKyc = false;
           _isKycCheckLoading = false;
         });
+        print('   Updated: hasSubmitted=false, isLoading=false');
       }
       return;
     }
 
+    _isCheckingKyc = true;
+    print('🔒 Set _isCheckingKyc = true');
+
     try {
       // First check if we have a valid cached status
       final cachedStatus = _kycService.getCachedKycStatus(currentUser.uid);
+      print('💾 Cache result: $cachedStatus');
 
       if (cachedStatus != null) {
-        // We have a valid cache, use it immediately without showing loading
-        if (mounted) {
+        print('✨ Cache HIT - using cached value');
+        print(
+            '   Current state: hasSubmitted=$_hasSubmittedKyc, isLoading=$_isKycCheckLoading');
+        print('   Cached value: $cachedStatus');
+
+        // We have a valid cache, only update if value changed AND ensure loading is false
+        if (mounted &&
+            (_hasSubmittedKyc != cachedStatus || _isKycCheckLoading != false)) {
+          print('   🔄 State update needed - calling setState');
           setState(() {
             _hasSubmittedKyc = cachedStatus;
             _isKycCheckLoading = false;
           });
+          print('   ✅ Updated: hasSubmitted=$cachedStatus, isLoading=false');
+        } else {
+          // Even if values are the same, ensure loading is false without setState if possible
+          if (_isKycCheckLoading) {
+            print('   🔄 Only loading state needs update');
+            setState(() {
+              _isKycCheckLoading = false;
+            });
+          } else {
+            print('   ✅ No update needed - state already correct');
+          }
         }
-        print('✨ Using cached KYC status: $cachedStatus (no loading shown)');
+        print('🔍 ====== _checkKycStatus END (cached) ======\n');
         return;
       }
 
+      print('❌ Cache MISS - need to fetch from Firestore');
+
       // No cache available, fetch from Firestore
-      // Only show loading state for genuine first-time checks
-      if (mounted) {
+      // Only show loading state if not already loading
+      if (mounted && !_isKycCheckLoading) {
+        print('🔄 Setting loading state to true');
         setState(() {
           _isKycCheckLoading = true;
         });
       }
 
+      print('📡 Calling hasSubmittedKyc from Firestore...');
       final hasSubmitted = await _kycService.hasSubmittedKyc(currentUser.uid);
+      print('📡 Firestore result: $hasSubmitted');
 
       if (mounted) {
+        print('🔄 Updating state with Firestore result');
         setState(() {
           _hasSubmittedKyc = hasSubmitted;
           _isKycCheckLoading = false;
         });
+        print('✅ Updated: hasSubmitted=$hasSubmitted, isLoading=false');
       }
     } catch (e) {
-      print('Error checking KYC status: $e');
+      print('❌ Error checking KYC status: $e');
       if (mounted) {
         setState(() {
           _hasSubmittedKyc = false;
           _isKycCheckLoading = false;
         });
+        print('   Reset to: hasSubmitted=false, isLoading=false');
       }
+    } finally {
+      _isCheckingKyc = false;
+      print('🔓 Set _isCheckingKyc = false');
+      print(
+          '🔍 Final state: hasSubmitted=$_hasSubmittedKyc, isLoading=$_isKycCheckLoading');
+      print('🔍 ====== _checkKycStatus END ======\n');
     }
   }
 
@@ -215,6 +292,11 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    print('🏗️ ====== BUILD CALLED ======');
+    print('   _hasSubmittedKyc = $_hasSubmittedKyc');
+    print('   _isKycCheckLoading = $_isKycCheckLoading');
+    print('🏗️ ====== BUILD START ======\n');
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -808,57 +890,79 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   }
 
   Widget _buildKYCBanner() {
-    // Don't show banner if user has already submitted KYC or if we're still loading
-    if (_hasSubmittedKyc || _isKycCheckLoading) {
+    print('🎨 ====== _buildKYCBanner CALLED ======');
+    print('   _hasSubmittedKyc = $_hasSubmittedKyc');
+    print('   _isKycCheckLoading = $_isKycCheckLoading');
+
+    // CRITICAL: Don't show banner if no user is logged in
+    final currentUser = _authService.currentUser;
+    if (currentUser == null) {
+      print('   ✅ Banner hidden (no user logged in)');
+      print('🎨 ====== _buildKYCBanner END (hidden - no user) ======\n');
       return const SizedBox.shrink();
     }
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 2, 20, 2),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D6A5F), // Teal/green
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_rounded,
-            color: Colors.white,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'common.complete_your_kyc_to_start_earning'.tr(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+    // Don't show banner if user has already submitted KYC or if we're still loading
+    if (_hasSubmittedKyc || _isKycCheckLoading) {
+      print(
+          '   ✅ Banner hidden (hasSubmitted=$_hasSubmittedKyc, isLoading=$_isKycCheckLoading)');
+      print('🎨 ====== _buildKYCBanner END (hidden) ======\n');
+      return const SizedBox.shrink();
+    }
+
+    print('   ⚠️ BANNER WILL BE SHOWN!');
+    print('🎨 ====== _buildKYCBanner END (visible) ======\n');
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        key: const ValueKey('kyc_banner'), // Add key for AnimatedSwitcher
+        margin: const EdgeInsets.fromLTRB(20, 2, 20, 2),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D6A5F), // Teal/green
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.warning_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'common.complete_your_kyc_to_start_earning'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final result =
-                  await Navigator.pushNamed(context, AppRoutes.kycCompletion);
-              // Check KYC status again when returning from KYC screen
-              if (result == true) {
-                _checkKycStatus();
-              }
-            },
-            child: Text(
-              'booking.complete_step'.tr(),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.white,
+            TextButton(
+              onPressed: () async {
+                final result =
+                    await Navigator.pushNamed(context, AppRoutes.kycCompletion);
+                // Check KYC status again when returning from KYC screen
+                if (result == true) {
+                  _checkKycStatus();
+                }
+              },
+              child: Text(
+                'booking.complete_step'.tr(),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.white,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

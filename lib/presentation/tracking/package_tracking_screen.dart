@@ -9,6 +9,7 @@ import '../../services/auth_state_service.dart';
 import '../tracking/tracking_timeline_widget.dart';
 import '../tracking/tracking_status_card.dart';
 import '../tracking/tracking_location_widget_simple.dart';
+import '../tracking/tracking_status_update_screen.dart';
 import '../../widgets/liquid_loading_indicator.dart';
 import '../../widgets/liquid_refresh_indicator.dart';
 
@@ -29,7 +30,7 @@ class PackageTrackingScreen extends StatefulWidget {
 class _PackageTrackingScreenState extends State<PackageTrackingScreen>
     with TickerProviderStateMixin {
   final TrackingService _trackingService = Get.find<TrackingService>();
-  final AuthStateService _authService = Get.find<AuthStateService>();
+  final AuthStateService _authService = AuthStateService();
 
   late AnimationController _statusAnimationController;
   late AnimationController _mapAnimationController;
@@ -91,6 +92,16 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
         });
         return;
       }
+
+      // Debug logging
+      final currentUserId = _authService.currentUser?.uid;
+      print('🔍 TRACKING DEBUG:');
+      print('   Current User ID: $currentUserId');
+      print('   Traveler ID: ${tracking.travelerId}');
+      print('   Sender ID: ${tracking.senderId}');
+      print('   Is User Traveler: ${currentUserId == tracking.travelerId}');
+      print('   Tracking Status: ${tracking.status.name}');
+      print('   Is In Progress: ${tracking.isInProgress}');
 
       setState(() {
         _currentTracking = tracking;
@@ -201,8 +212,10 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
               ),
             ),
 
-            // Traveler Actions (if user is the traveler)
-            if (_isUserTraveler && _currentTracking!.isInProgress) ...[
+            // Traveler Actions (if user is the traveler and delivery is not completed/cancelled)
+            if (_isUserTraveler &&
+                !_currentTracking!.isCompleted &&
+                !_currentTracking!.isCancelled) ...[
               SizedBox(height: 3.h),
               _buildTravelerActions(),
             ],
@@ -329,7 +342,8 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
               color: Colors.grey[400],
             ),
             SizedBox(height: 2.h),
-            Text('tracking.tracking_not_found'.tr(),
+            Text(
+              'tracking.tracking_not_found'.tr(),
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
@@ -337,7 +351,9 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
               ),
             ),
             SizedBox(height: 1.h),
-            Text('post_package.the_tracking_information_for_this_package_could_no'.tr(),
+            Text(
+              'post_package.the_tracking_information_for_this_package_could_no'
+                  .tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
@@ -378,7 +394,8 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('travel.traveler_actions'.tr(),
+          Text(
+            'travel.traveler_actions'.tr(),
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
@@ -436,7 +453,8 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('common.need_help'.tr(),
+          Text(
+            'common.need_help'.tr(),
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
@@ -476,74 +494,18 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
     );
   }
 
-  void _showUpdateStatusDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('tracking.update_delivery_status'.tr()),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_currentTracking!.status == DeliveryStatus.pending)
-              _buildStatusButton('Mark as Picked Up', DeliveryStatus.picked_up),
-            if (_currentTracking!.status == DeliveryStatus.picked_up)
-              _buildStatusButton(
-                  'Mark as In Transit', DeliveryStatus.in_transit),
-            if (_currentTracking!.status == DeliveryStatus.in_transit)
-              _buildStatusButton('Mark as Delivered', DeliveryStatus.delivered),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('common.cancel'.tr()),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusButton(String title, DeliveryStatus status) {
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: 1.h),
-      child: ElevatedButton(
-        onPressed: () => _updateStatus(status),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: TrackingService.getStatusColor(status),
-          foregroundColor: Colors.white,
-        ),
-        child: Text(title),
-      ),
-    );
-  }
-
-  void _updateStatus(DeliveryStatus status) async {
-    try {
-      Get.back(); // Close dialog
-
-      await _trackingService.updateDeliveryStatus(
+  void _showUpdateStatusDialog() async {
+    // Navigate to the full status update screen with photo upload
+    final result = await Get.to(
+      () => TrackingStatusUpdateScreen(
         trackingId: widget.trackingId,
-        status: status,
-      );
+        tracking: _currentTracking!,
+      ),
+    );
 
-      Get.snackbar(
-        'Status Updated',
-        'Delivery status has been updated successfully',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-
+    // Refresh tracking data if status was updated
+    if (result == true) {
       _refreshTracking();
-    } catch (e) {
-      Get.snackbar(
-        'Update Failed',
-        'Failed to update status: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
     }
   }
 

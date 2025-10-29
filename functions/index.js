@@ -24,6 +24,8 @@ admin.initializeApp();
 const emailFunctions = require('./email_functions');
 // exports.sendEmailVerification = emailFunctions.sendEmailVerification; // DISABLED - using OTP system
 exports.sendPasswordResetEmail = emailFunctions.sendPasswordResetEmail;
+exports.sendPasswordResetOTP = emailFunctions.sendPasswordResetOTP;
+exports.verifyPasswordResetOTP = emailFunctions.verifyPasswordResetOTP;
 exports.sendDeliveryUpdateEmail = emailFunctions.sendDeliveryUpdateEmail;
 exports.testEmailConfig = emailFunctions.testEmailConfig;
 exports.sendOTPEmail = emailFunctions.sendOTPEmail;

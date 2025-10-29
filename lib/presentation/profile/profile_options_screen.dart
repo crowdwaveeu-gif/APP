@@ -11,6 +11,7 @@ import 'dart:convert';
 import '../../services/auth_state_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../services/image_service.dart';
+import '../../services/kyc_service.dart';
 import '../../core/models/user_profile.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -333,6 +334,22 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                               color: Colors.white,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _showEditNameDialog(),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -375,27 +392,50 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
 
                           const SizedBox(height: 20),
 
-                          // Identity Verification Section
-                          _buildProfileOption(
-                            icon: Icons.badge_outlined,
-                            title: 'profile.identity'.tr(),
-                            subtitle: _getIdentityVerificationStatus(),
-                            actionText: _getIdentityVerificationActionText(),
-                            onTap: _userProfile
-                                        ?.verificationStatus.identityVerified ==
-                                    true
-                                ? null
-                                : () async {
-                                    await Navigator.pushNamed(
-                                        context, AppRoutes.kycCompletion);
-                                    // Reload profile after KYC submission
-                                    await _loadUserProfile();
-                                  },
-                            isVerified: _userProfile
-                                    ?.verificationStatus.identityVerified ==
-                                true,
-                            statusColor: _getIdentityVerificationColor(),
-                          ),
+                          // Identity Verification Section - only show if verified or rejected
+                          if (_shouldShowIdentitySection())
+                            _buildProfileOption(
+                              icon: Icons.badge_outlined,
+                              title: 'profile.identity'.tr(),
+                              subtitle: _getIdentityVerificationStatus(),
+                              actionText: _getIdentityVerificationActionText(),
+                              onTap: _userProfile?.verificationStatus
+                                          .identityVerified ==
+                                      true
+                                  ? null
+                                  : () async {
+                                      // Clear KYC cache before navigating
+                                      final authService =
+                                          Provider.of<AuthStateService>(
+                                        context,
+                                        listen: false,
+                                      );
+                                      final currentUser =
+                                          authService.currentUser;
+                                      if (currentUser != null) {
+                                        KycService.clearKycCache(
+                                            currentUser.uid);
+                                        print(
+                                            '🗑️ Cleared KYC cache before navigation');
+                                      }
+
+                                      await Navigator.pushNamed(
+                                          context, AppRoutes.kycCompletion);
+
+                                      // Clear cache again after returning and reload profile
+                                      if (currentUser != null) {
+                                        KycService.clearKycCache(
+                                            currentUser.uid);
+                                        print(
+                                            '🗑️ Cleared KYC cache after return');
+                                      }
+                                      await _loadUserProfile();
+                                    },
+                              isVerified: _userProfile
+                                      ?.verificationStatus.identityVerified ==
+                                  true,
+                              statusColor: _getIdentityVerificationColor(),
+                            ),
 
                           const SizedBox(height: 40),
                         ],
@@ -610,13 +650,34 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       return 'Rejected: ${verification.rejectionReason}';
     }
 
-    // Check if submitted (waiting for review)
-    if (verification.identitySubmittedAt != null) {
-      return 'Submitted - Under Review';
+    // Not submitted yet (don't show "under review" state)
+    return 'profile.unverified'.tr();
+  }
+
+  // Determine if identity section should be shown
+  bool _shouldShowIdentitySection() {
+    if (_userProfile == null) return false;
+
+    final verification = _userProfile!.verificationStatus;
+
+    // Show if verified
+    if (verification.identityVerified) {
+      return true;
     }
 
-    // Not submitted yet
-    return 'profile.unverified'.tr();
+    // Show if rejected (so user can resubmit)
+    if (verification.rejectionReason != null &&
+        verification.rejectionReason!.isNotEmpty) {
+      return true;
+    }
+
+    // Hide if submitted/pending (identitySubmittedAt is not null but not verified)
+    if (verification.identitySubmittedAt != null) {
+      return false;
+    }
+
+    // Hide for all other cases (not submitted yet)
+    return false;
   }
 
   // Get identity verification action text
@@ -636,12 +697,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       return 'Resubmit';
     }
 
-    // If submitted, show view option
-    if (verification.identitySubmittedAt != null) {
-      return 'View Status';
-    }
-
-    // Not submitted yet
+    // Default action is to verify
     return 'profile.verify_identity'.tr();
   }
 
@@ -662,13 +718,144 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       return Colors.red;
     }
 
-    // Submitted - orange/amber
-    if (verification.identitySubmittedAt != null) {
-      return Colors.orange;
-    }
-
-    // Not submitted - grey
+    // Not verified - grey
     return Colors.grey.shade600;
+  }
+
+  // Show dialog to edit user's name
+  void _showEditNameDialog() {
+    final nameController = TextEditingController(
+      text: _userProfile?.fullName ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.person_outline, color: AppTheme.primaryVariantLight),
+            const SizedBox(width: 8),
+            Text('Edit Name'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: 'Full Name',
+                hintText: 'Enter your full name',
+                prefixIcon: Icon(Icons.person),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppTheme.primaryVariantLight,
+                    width: 2,
+                  ),
+                ),
+              ),
+              textCapitalization: TextCapitalization.words,
+              maxLength: 50,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              nameController.dispose();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = nameController.text.trim();
+              if (newName.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Name cannot be empty'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              if (newName.length < 2) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Name must be at least 2 characters'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.pop(context);
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              try {
+                // Update name
+                await _userProfileService.updateUserProfile(
+                  fullName: newName,
+                );
+
+                // Close loading
+                Navigator.pop(context);
+
+                // Reload profile
+                await _loadUserProfile();
+
+                // Show success
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Name updated successfully ✓'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                // Close loading
+                Navigator.pop(context);
+
+                // Show error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to update name: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+
+              nameController.dispose();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryVariantLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Update',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddressUpdateDialog() {
@@ -702,9 +889,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                 ),
               ),
               // Title
-              Padding (
+              Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('common.update_address'.tr(),
+                child: Text(
+                  'common.update_address'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -951,7 +1139,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                                     addressController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('common.please_fill_in_all_address_fields'.tr()),
+                                      content: Text(
+                                          'common.please_fill_in_all_address_fields'
+                                              .tr()),
                                       backgroundColor: Colors.red,
                                     ),
                                   );
@@ -1110,7 +1300,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Text('profile.update_profile_photo'.tr(),
+            Text(
+              'profile.update_profile_photo'.tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1394,7 +1585,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('profile.photo_remove_failed'.tr(args: [e.toString()])),
+                      content: Text('profile.photo_remove_failed'
+                          .tr(args: [e.toString()])),
                       backgroundColor: Colors.red,
                     ),
                   );

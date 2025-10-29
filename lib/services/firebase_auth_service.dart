@@ -140,7 +140,8 @@ class FirebaseAuthService {
         ],
         // Web authentication options are REQUIRED for Android and Web
         webAuthenticationOptions: WebAuthenticationOptions(
-          clientId: "com.crowdwave.service", // ✅ Your Apple Service ID
+          clientId:
+              "com.crowdwave.courier.service", // ✅ Updated Apple Service ID to match app
           redirectUri: Uri.parse(
             "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler", // ✅ Firebase redirect URI
           ),
