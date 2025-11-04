@@ -1,0 +1,155 @@
+/* :: Button */
+
+.btn {
+  transition-duration: 400ms;
+  font-size: 14px;
+  border: 0;
+  border-radius: 0;
+  height: 40px;
+  padding: 0 1rem;
+  line-height: 40px;
+
+  @include xxs {
+    font-size: 13px;
+    padding: 0 14px;
+  }
+
+  &.btn-sm {
+    font-size: 12px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    height: 31px;
+    line-height: 31px;
+  }
+
+  &.btn-lg {
+    font-size: 1rem;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 2rem;
+  }
+}
+
+.btn-outline-primary {
+  color: $primary;
+  border: 1px solid $primary;
+}
+
+.btn-outline-secondary {
+  color: $text;
+  border: 1px solid $text;
+}
+
+.btn-outline-success {
+  color: $bg-lime;
+  border: 1px solid $bg-lime;
+}
+
+.btn-outline-danger {
+  color: $bg-red;
+  border: 1px solid $bg-red;
+}
+
+.btn-outline-info {
+  color: $bg-blue-two;
+  border: 1px solid $bg-blue-two;
+}
+
+.btn-outline-dark {
+  color: $heading;
+  border: 1px solid $heading;
+}
+
+.btn-outline-secondary:not(:hover, :focus-visible, :active) {
+  color: $heading;
+}
+
+.btn-flush {
+  color: $text;
+  transition: 0.3s;
+  font-size: 14px;
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+
+  &:hover,
+  &:focus {
+    color: $heading;
+  }
+}
+
+.btn-icon {
+  padding: 0 !important;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+
+  &.btn-sm {
+    width: 31px;
+    height: 31px;
+    line-height: 31px;
+  }
+}
+
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active {
+  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.3);
+}
+
+.btn-success:focus,
+.btn-success:active,
+.btn-outline-success:focus,
+.btn-outline-success:active {
+  box-shadow: 0 0 0 0.25rem rgba(45, 137, 58, 0.3);
+}
+
+.btn-danger:focus,
+.btn-danger:active,
+.btn-outline-danger:focus,
+.btn-outline-danger:active {
+  box-shadow: 0 0 0 0.25rem rgba(240, 0, 0, 0.3);
+}
+
+.btn-warning:focus,
+.btn-warning:active,
+.btn-outline-warning:focus,
+.btn-outline-warning:active {
+  box-shadow: 0 0 0 0.25rem rgba(216, 162, 0, 0.3);
+}
+
+.btn-info:focus,
+.btn-info:active,
+.btn-outline-info:focus,
+.btn-outline-info:active {
+  box-shadow: 0 0 0 0.25rem rgba(95, 203, 250, 0.3);
+}
+
+.btn-dark:focus,
+.btn-dark:active,
+.btn-outline-dark:focus,
+.btn-outline-dark:active {
+  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+.btn-star {
+  background-color: transparent;
+  padding: 0;
+  border: 0;
+  color: $text;
+  margin-right: 15px;
+  font-size: 14px;
+  transition: 0.3s;
+
+  &.starred {
+    color: #F0C434;
+  }
+}
+
+.btn .badge {
+  padding: 0 4px;
+  min-width: 17px;
+  height: 17px;
+  line-height: 19px;
+}

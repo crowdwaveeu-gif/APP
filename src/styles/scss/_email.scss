@@ -1,0 +1,248 @@
+.email-panel {
+  border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 848px;
+}
+
+.email-panel>* {
+  height: 100%;
+}
+
+.email-panel>.panel {
+  height: 100%;
+}
+
+.email-panel>.panel:first-child {
+  width: 230px;
+}
+
+.email-panel>.panel:nth-child(2) {
+  width: calc(100% - 230px);
+}
+
+.email-panel>.panel .panel-body:not(.email-menu) {
+  height: calc(100% - 60px);
+}
+
+.email-panel .tab-content {
+  height: 100%;
+}
+
+.email-panel .tab-pane {
+  height: 100%;
+}
+
+.email-panel .tab-pane .tab-content {
+  height: calc(100% - 145px);
+}
+
+.email-panel .tab-pane .tab-content .table-wrapper {
+  height: 100%;
+}
+
+.email-panel .email-menu {
+  height: 100%;
+}
+
+.email-panel .emial-menu-list {
+  margin-bottom: 15px;
+
+  @include md {
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition-duration: 400ms;
+    margin-bottom: 0;
+  }
+
+  &.show {
+    @include md {
+      opacity: 1;
+      visibility: visible;
+      margin-top: 20px;
+      max-height: 600px;
+    }
+  }
+}
+
+.email-panel .emial-menu-list ul {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  flex-wrap: wrap;
+  border-collapse: collapse;
+}
+
+.email-panel .emial-menu-list ul li {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 0;
+  overflow: hidden;
+}
+
+.email-panel .emial-menu-list ul li:first-child {
+  border-top-left-radius: 3px;
+}
+
+.email-panel .emial-menu-list ul li:nth-child(2) {
+  border-top-right-radius: 3px;
+}
+
+.email-panel .emial-menu-list ul li:nth-last-child(2) {
+  border-bottom-left-radius: 3px;
+}
+
+.email-panel .emial-menu-list ul li:nth-last-child(1) {
+  border-bottom-right-radius: 3px;
+}
+
+.email-panel .emial-menu-list ul li:nth-last-child(2),
+.email-panel .emial-menu-list ul li:nth-last-child(1) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.email-panel .emial-menu-list ul li:nth-child(even) {
+  border-left-width: 0;
+}
+
+.email-panel .emial-menu-list ul li button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  transition: 0.3s;
+  position: relative;
+}
+
+.email-panel .emial-menu-list ul li button .badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 0 4px;
+  min-width: 17px;
+  height: 17px;
+  line-height: 17px;
+}
+
+.email-panel .emial-menu-list ul li button .part-icon {
+  display: block;
+  font-size: 18px;
+  line-height: 100%;
+  margin-bottom: 13px;
+  color: $text;
+}
+
+.email-panel .emial-menu-list ul li button .part-txt {
+  font-size: 14px;
+  line-height: 100%;
+  color: $text;
+  margin-bottom: -1px;
+}
+
+.email-panel .new-label-list button {
+  font-size: 14px;
+  margin-top: 10px;
+  display: flex !important;
+}
+
+.email-panel .new-label-list button .part-icon {
+  margin-right: 7px;
+}
+
+.email-panel .new-label-list button .part-txt {
+  display: -webkit-box;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.email-panel .table-wrapper {
+  height: calc(100% - 143px);
+  display: flex;
+}
+
+
+
+.email-panel .table-wrapper .mail-list {
+  height: 100%;
+  width: 100%;
+}
+
+.email-panel .table-wrapper.mail-opened .mail-list {
+  width: 55%;
+
+  @include xxl {
+    width: 0;
+  }
+}
+
+.email-panel .table-wrapper .dataTables_wrapper {
+  height: 100%;
+}
+
+.email-panel .table-wrapper .dataTables_scroll {
+  height: 100%;
+}
+
+.email-panel .table-wrapper .dataTables_scrollBody {
+  min-height: calc(100% - 48px);
+}
+
+.email-panel .email-table {
+  min-width: auto;
+}
+
+.email-panel .email-table td,
+.email-panel .email-table th {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.email-panel .email-table td .table-txt,
+.email-panel .email-table th .table-txt {
+  display: -webkit-box;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.email-panel .email-table td {
+  padding-right: 10px;
+}
+
+.email-panel .email-table .unread .table-txt {
+  font-weight: 600;
+  color: $white;
+}
+
+.email-panel .email-table .btn-star {
+  margin-right: 0;
+}
+
+.email-panel .emial-menu-list ul li {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.email-panel .email-table .unread .table-txt {
+  color: $text;
+}
+
+.email-panel .table-bottom-control {
+  background-color: #ebebeb;
+}
+
+.email-panel .emial-menu-list ul li button.active .part-icon,
+.email-panel .emial-menu-list ul li button.active .part-txt,
+.email-panel .emial-menu-list ul li button:hover .part-icon,
+.email-panel .emial-menu-list ul li button:hover .part-txt {
+  color: $primary;
+}

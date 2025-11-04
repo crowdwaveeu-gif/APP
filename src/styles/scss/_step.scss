@@ -1,0 +1,382 @@
+.all-steps {
+  position: relative;
+  width: 100%;
+  height: auto;
+  backdrop-filter: blur(5px);
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 0, 0, 0.1);
+
+  @include sm {
+    z-index: 9;
+  }
+}
+
+.all-steps .single-step {
+  width: 100%;
+  display: none;
+  height: auto;
+}
+
+.all-steps .single-step.show {
+  display: block;
+  animation: slideIn 0.4s ease-in-out;
+}
+
+.all-steps .step-content-wrap {
+  max-width: 500px;
+  width: -webkit-max-content;
+  width: -moz-max-content;
+  width: max-content;
+  margin: auto;
+
+  @include xs {
+    max-width: 100%;
+  }
+}
+
+.all-steps .step-content-wrap .step-content {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.all-steps .step-heading {
+  text-align: center;
+  margin-bottom: 33px;
+}
+
+.all-steps .account-types {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.all-steps .account-types.account-plan .form-check label {
+  padding: 10px;
+}
+
+.all-steps .account-types.account-plan .form-check label .title {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.all-steps .account-types.account-plan .form-check label .dscr {
+  font-size: 12px;
+}
+
+.all-steps .account-types .form-check {
+  width: 100%;
+  max-width: 350px;
+
+  @include sm {
+    padding-left: 0;
+  }
+
+  @include xxs {
+    max-width: 300px;
+  }
+}
+
+.all-steps .account-types .form-check label {
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: 0.3s;
+}
+
+.all-steps .account-types .form-check label .part-icon {
+  width: 30px;
+  display: block;
+  font-size: 30px;
+  color: $heading;
+}
+
+.all-steps .account-types .form-check label .part-txt {
+  width: calc(100% - 45px);
+}
+
+.all-steps .account-types .form-check label .title {
+  display: block;
+  font-size: 1rem;
+  color: $heading;
+  margin-bottom: .5rem;
+  font-weight: 600;
+}
+
+.all-steps .account-types .form-check label .dscr {
+  display: block;
+  font-size: 14px;
+  color: #bdbdbd;
+  line-height: 1.4;
+}
+
+.all-steps .account-types .form-check input {
+  display: none;
+}
+
+.all-steps .account-types .form-check input:checked+label {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: inherit;
+}
+
+.all-steps .account-info-title {
+  display: block;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1;
+  color: $white;
+  margin-bottom: 13px;
+}
+
+.all-steps .team-size {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 30px;
+
+  @include xs {
+    gap: 15px;
+    justify-content: center;
+  }
+}
+
+.all-steps .team-size .form-check {
+  width: 25%;
+
+  @include xs {
+    padding-left: 0;
+    width: 20%;
+  }
+}
+
+.all-steps .team-size .form-check:first-child label {
+  border-radius: 5px 0 0 5px;
+}
+
+.all-steps .team-size .form-check:last-child label {
+  border-radius: 0 5px 5px 0;
+}
+
+.all-steps .team-size .form-check label {
+  text-align: center;
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
+  font-size: 20px;
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: $white;
+  transition: 0.3s;
+}
+
+.all-steps .team-size .form-check input {
+  display: none;
+}
+
+.all-steps .team-size .form-check input:checked+label {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.all-steps .team-title {
+  margin-bottom: 30px;
+}
+
+.all-steps .billing-details-wrap {
+  width: 500px;
+
+  @include xs {
+    width: 100%;
+  }
+}
+
+.all-steps .input-group-text {
+  align-items: center;
+}
+
+.all-steps .input-group-text img {
+  height: 25px;
+}
+
+.all-steps .account-types .form-check label {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.all-steps .account-types .form-check label .dscr {
+  color: $text;
+}
+
+.all-steps .account-types .form-check input:checked+label {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.all-steps .account-info-title {
+  color: #313131;
+
+  @include xs {
+    text-align: center;
+  }
+}
+
+.all-steps .team-size .form-check label {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #313131;
+}
+
+.all-steps .team-size .form-check input:checked+label {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
+.all-steps .form-control {
+  color: #313131;
+}
+
+.steps-sidebar {
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+  width: 100%;
+}
+
+.steps-sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: inherit;
+  z-index: -1;
+}
+
+.steps-sidebar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url(/img/bg-img/vector.png) bottom center no-repeat;
+  background-size: contain;
+  opacity: 0.17;
+  z-index: -1;
+}
+
+.steps-sidebar .sidebar-logo {
+  -webkit-filter: brightness(10);
+  filter: brightness(10);
+  height: 25px;
+  margin-bottom: 50px;
+}
+
+.steps-sidebar .sidebar-content .step-list {
+  padding-right: 10px;
+  margin-right: -10px;
+}
+
+.steps-sidebar .sidebar-content .step-list:hover .os-scrollbar-vertical .os-scrollbar-handle {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.steps-sidebar .sidebar-content .step-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.steps-sidebar .sidebar-content .step-list li::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 24px;
+  height: 40px;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+}
+
+.steps-sidebar .sidebar-content .step-list li:last-child {
+  margin-bottom: 0;
+}
+
+.steps-sidebar .sidebar-content .step-list li:last-child::after {
+  display: none;
+}
+
+.steps-sidebar .sidebar-content .step-list li.completed .step-number::after {
+  content: "\f00c";
+  color: $bg-lime;
+  background-color: #d1e7dd;
+  border-color: rgba(45, 137, 58, 0.5);
+  border-style: solid;
+  opacity: 1;
+}
+
+.steps-sidebar .sidebar-content .step-list li.active .step-number {
+  color: $bg-lime;
+  z-index: 2;
+}
+
+.steps-sidebar .sidebar-content .step-list li.active .step-number::after {
+  background-color: #d1e7dd;
+  border-color: rgba(45, 137, 58, 0.5);
+  opacity: 1;
+  z-index: -1;
+}
+
+.steps-sidebar .sidebar-content .step-list span {
+  display: block;
+}
+
+.steps-sidebar .sidebar-content .step-list .step-txt {
+  width: calc(100% - 60px);
+}
+
+.steps-sidebar .sidebar-content .step-list .step-txt .step-name {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 500;
+  color: $white;
+  margin-bottom: 10px;
+}
+
+.steps-sidebar .sidebar-content .step-list .step-txt .step-info {
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 400;
+  color: $white;
+  opacity: 0.9;
+}
+
+.steps-sidebar .sidebar-content .step-list .step-number {
+  text-align: center;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  background-color: $white;
+  border-radius: 5px;
+  color: $text;
+  font-size: 20px;
+  position: relative;
+}
+
+.steps-sidebar .sidebar-content .step-list .step-number::after {
+  content: "";
+  font-family: "Font Awesome 6 Pro";
+  font-weight: 700;
+  line-height: 38px;
+  color: transparent;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  bottom: 3px;
+  left: 3px;
+  border: 2px dotted inherit;
+  border-radius: 6px;
+  opacity: 0.5;
+  transition: 0.3s;
+}

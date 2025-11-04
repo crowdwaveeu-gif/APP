@@ -1,0 +1,2618 @@
+/* Dark CSS */
+
+.dark-theme {
+   color: #919191;
+   background-color: #141718;
+
+   &.home-call-center,
+   &.home-crm,
+   &.hr-management-system,
+   &.home-ota {
+      background-color: #141718 !important;
+   }
+
+   .light-mode-logo {
+      display: none;
+   }
+
+   .dark-mode-logo {
+      display: block;
+   }
+
+   h1,
+   h2,
+   h3,
+   h4,
+   h5,
+   h6 {
+      color: $dark-header;
+   }
+
+   p {
+      color: #919191;
+   }
+
+   .mail-img-2 img {
+      filter: invert(100%);
+   }
+
+   .email-template-main .email-container .mail-img img.invert {
+      filter: invert(50%);
+   }
+
+   .email-panel .email-table .unread .table-txt {
+      color: #919191;
+   }
+
+   .map-bottom-list ul li {
+      color: $dark-desc-1;
+   }
+
+   .sales-analytics-table tbody tr td {
+      color: $dark-desc-1;
+   }
+
+   .bg-white {
+      background-color: #232627 !important;
+   }
+
+   .border-top {
+      border-top-color: rgba(255, 255, 255, 0.12) !important;
+   }
+
+   .card-six {
+      background-color: #232627;
+   }
+
+   .card-six .card-title {
+      color: $white;
+   }
+
+   .single-analytics span {
+      color: $white;
+   }
+
+   .single-analytics h6 {
+      color: $white;
+   }
+
+   .call-analytics-card .total-call-time h6 {
+      color: $white;
+   }
+
+   .call-analytics-card .total-call-time p {
+      color: $white;
+   }
+
+   .home-call-center .sidebar-menu li>a i {
+      color: #dcd9d8;
+   }
+
+   .performance-card h5 {
+      color: $white;
+   }
+
+   .apexcharts-datalabel-value,
+   .apexcharts-legend-text,
+   .apexcharts-text,
+   .apexcharts-xaxis-texts-g>*,
+   .apexcharts-yaxis-texts-g>* {
+      fill: #efefef;
+      color: #b4b4b4 !important;
+   }
+
+   .apexcharts-gridline {
+      stroke: rgba(255, 255, 255, 0.12);
+   }
+
+   .form-control[type=file]::-webkit-file-upload-button {
+      color: #919191;
+      background-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .form-control[type=file]::file-selector-button {
+      color: #919191;
+      background-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .form-control[type=file]:hover::-webkit-file-upload-button {
+      background-color: #3A3B3C !important;
+   }
+
+   .form-control[type=file]:hover::file-selector-button {
+      background-color: #3A3B3C !important;
+   }
+
+   input[type=checkbox] {
+      background-color: #fff;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   input[type=radio] {
+      background-color: transparent;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .form-check-input:checked[type="checkbox"] {
+      background-color: $primary;
+   }
+
+   .dataTables_scrollBody::-webkit-scrollbar-track {
+      background: #3A3B3C;
+   }
+
+   .dataTables_scrollBody::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+   }
+
+   .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+   }
+
+   .dataTables_wrapper .dataTables_info,
+   .dataTables_wrapper .dataTables_length label {
+      color: #919191;
+   }
+
+   .dataTables_wrapper .dataTables_filter input {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .fc-unthemed .fc-content,
+   .fc-unthemed .fc-divider,
+   .fc-unthemed .fc-list-heading td,
+   .fc-unthemed .fc-list-view,
+   .fc-unthemed .fc-popover,
+   .fc-unthemed .fc-row,
+   .fc-unthemed tbody,
+   .fc-unthemed td,
+   .fc-unthemed th,
+   .fc-unthemed thead {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   table.dataTable thead .sorting {
+      background-image: url(/img/sort_both_white.png);
+   }
+
+   table.dataTable thead .sorting_asc {
+      background-image: url(/img/sort_asc_white.png) !important;
+   }
+
+   table.dataTable tbody tr {
+      background-color: transparent;
+   }
+
+   .ui-datepicker {
+      background: #232627;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .ui-datepicker .ui-datepicker-header {
+      background: #3A3B3C;
+      color: #dfdfdf;
+   }
+
+   .ui-datepicker th {
+      color: #dfdfdf;
+   }
+
+   .ui-datepicker td {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .ui-datepicker .ui-datepicker-prev span::after,
+   .ui-datepicker .ui-datepicker-next span::after {
+      border-color: #dfdfdf;
+   }
+
+   .ui-datepicker td a.ui-state-default:not(.ui-state-highlight) {
+      background: #3A3B3C;
+      color: #919191;
+   }
+
+   .ui-datepicker td a.ui-priority-secondary {
+      opacity: 0.4;
+   }
+
+   .ui-datepicker td a.ui-state-active {
+      background: rgba(255, 255, 255, 0.25) !important;
+   }
+
+   .select2-dropdown {
+      background: #232627;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .select2-results__options {
+      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+   }
+
+   .select2-results__options::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.3);
+   }
+
+   .select2-container--default .select2-results__option[aria-selected=true] {
+      background: #3A3B3C;
+      color: #e4e4e4;
+   }
+
+   .select2-container--default .select2-results__option[aria-selected=true]:hover {
+      color: #e4e4e4;
+   }
+
+   .select2-container--default .select2-selection--single .select2-selection__placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #c4c4c4;
+   }
+
+   .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background: rgba(255, 255, 255, 0.12);
+      color: #e4e4e4;
+   }
+
+   .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+      color: $white;
+   }
+
+   .select2-container .select2-search--inline .select2-search__field {
+      color: #e4e4e4 !important;
+   }
+
+   .select2-container--default .select2-search--dropdown .select2-search__field {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #919191 !important;
+   }
+
+   .dtp>.dtp-content {
+      background: #232627;
+   }
+
+   .dtp div.dtp-date,
+   .dtp div.dtp-time {
+      background: #3A3B3C;
+   }
+
+   .dtp .p10>a {
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .dtp div.dtp-date,
+   .dtp div.dtp-time {
+      color: #e4e4e4;
+   }
+
+   .dtp div.dtp-actual-year,
+   .dtp div.dtp-actual-month {
+      color: #c4c4c4;
+   }
+
+   .dtp div.dtp-picker-month,
+   .dtp div.dtp-actual-time {
+      color: #e4e4e4;
+   }
+
+   .year-picker-item {
+      color: #919191;
+   }
+
+   .dtp table.dtp-picker-days {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .dtp table.dtp-picker-days tr>th {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #e4e4e4;
+   }
+
+   .dtp table.dtp-picker-days tr>td span,
+   .dtp table.dtp-picker-days tr>td a {
+      color: #919191;
+   }
+
+   .dtp table.dtp-picker-days tr>td span.dtp-select-day {
+      color: #919191 !important;
+      opacity: 0.45;
+   }
+
+   .dtp table.dtp-picker-days tr>td>a.selected {
+      color: $white;
+   }
+
+   #dtp-svg-clock circle:first-child {
+      fill: rgba(255, 255, 255, 0.03);
+      stroke: rgba(255, 255, 255, 0.12);
+   }
+
+   #dtp-svg-clock text {
+      fill: #919191;
+   }
+
+   .dtp-select-minute[r="3"],
+   .dtp-select-hour[r="3"] {
+      fill: transparent;
+   }
+
+   .fc-other-month {
+      background: rgba(249, 249, 249, 0.03);
+   }
+
+   .swal2-popup {
+      background: #232627;
+   }
+
+   .swal2-popup .swal2-title {
+      color: #e4e4e4;
+   }
+
+   .swal2-popup .swal2-html-container {
+      color: #919191;
+   }
+
+   .swal2-popup a {
+      color: #919191;
+   }
+
+   .dropzone .dz-message {
+      color: #919191;
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .form-label {
+      color: #919191;
+   }
+
+   .col-form-label {
+      color: #919191;
+   }
+
+   .form-select,
+   .form-control {
+      color: #919191;
+      background-color: transparent;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .form-select::-webkit-input-placeholder,
+   .form-control::-webkit-input-placeholder,
+   .form-select::-moz-placeholder,
+   .form-control::-moz-placeholder,
+   .form-select:-ms-input-placeholder,
+   .form-control:-ms-input-placeholder,
+   .form-select::-ms-input-placeholder,
+   .form-control::-ms-input-placeholder,
+   .form-select::placeholder,
+   .form-control::placeholder {
+      color: #919191;
+      opacity: 1;
+   }
+
+   .form-control::placeholder {
+      color: #919191;
+      opacity: 1;
+   }
+
+   .form-floating label {
+      color: transparent;
+   }
+
+   .form-floating .form-control::-webkit-input-placeholder,
+   .form-floating .form-control::-moz-placeholder,
+   .form-floating .form-control:-ms-input-placeholder,
+   .form-floating .form-control::-ms-input-placeholder,
+   .form-floating .form-control::placeholder {
+      opacity: 0;
+   }
+
+   .table {
+      color: #919191;
+   }
+
+   .table thead {
+      background: rgba(255, 255, 255, 0.05);
+   }
+
+   .table.table-hover tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+   }
+
+   .table.table-hover tbody tr:hover th,
+   .table.table-hover tbody tr:hover td {
+      color: #e4e4e4;
+   }
+
+   .table tr:hover td {
+      color: #919191;
+   }
+
+   .table.table-striped-columns> :not(caption)>tr> :nth-child(2n),
+   .table.table-striped>tbody>tr:nth-of-type(odd)>* {
+      color: #919191;
+   }
+
+   .table-responsive::-webkit-scrollbar-track {
+      background: #3A3B3C;
+   }
+
+   .table-responsive::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+   }
+
+   .table-responsive::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+   }
+
+   table.dataTable>thead>tr>th,
+   table.dataTable>thead>tr>td {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+      background-color: #141718;
+   }
+
+   .contact-table thead tr th,
+   .contact-table thead tr td {
+      background: transparent;
+      color: $dark-header;
+   }
+
+   .table> :not(caption)>*>* {
+      background-color: transparent;
+   }
+
+   .contact-table tbody tr td {
+      color: $white;
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .form-check label {
+      color: #919191;
+   }
+
+   .modal .modal-header .modal-title {
+      color: #e4e4e4;
+   }
+
+   .modal .modal-content {
+      background: #232627;
+   }
+
+   .badge.bg-primary-subtle {
+      background-color: #3A3B3C !important;
+      color: #e4e4e4;
+   }
+
+   .text-muted {
+      color: #919191 !important;
+      opacity: 0.8;
+      font-size: 13px;
+   }
+
+   .input-group-text {
+      color: #919191;
+   }
+
+   .list-group-item {
+      color: #919191;
+   }
+
+   .scrollable:hover .os-scrollbar-vertical .os-scrollbar-handle {
+      background: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .scrollable:hover .os-scrollbar-vertical .os-scrollbar-handle:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+   }
+
+   .panel-bg {
+      background: #232627;
+   }
+
+   .panel {
+      background: #232627;
+   }
+
+   .panel .panel-header {
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .panel .panel-header h5 {
+      color: #e4e4e4;
+   }
+
+   .panel .panel-header form {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .panel .panel-header form:focus-within {
+      border-color: rgba(255, 255, 255, 0.2);
+   }
+
+   .progress-box p {
+      color: #919191;
+   }
+
+   .btn-flush {
+      color: #919191;
+   }
+
+   .btn-flush:hover,
+   .btn-flush:focus {
+      color: $white;
+   }
+
+   .date-box {
+      background: rgba(255, 255, 255, 0.05);
+   }
+
+   .digi-dropdown .dropdown-menu li .dropdown-item {
+      color: #919191;
+   }
+
+   .digi-dropdown .dropdown-menu li .dropdown-item:hover {
+      color: $white;
+   }
+
+   .input-group-with-icon .input-icon {
+      color: #919191;
+   }
+
+   .input-group-with-icon input {
+      color: #919191;
+   }
+
+   .input-group-with-icon input::-webkit-input-placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   .input-group-with-icon input::-moz-placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   .input-group-with-icon input:-ms-input-placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   .input-group-with-icon input::-ms-input-placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   .input-group-with-icon input::placeholder {
+      color: #919191;
+      opacity: 0.6;
+   }
+
+   /* dark theme responsive design */
+   .email-panel>.panel:first-child {
+      background: #232627;
+   }
+
+   .email-panel .mail-details {
+      background: #232627;
+   }
+
+   .email-panel .mail-details .mail-reply-option {
+      background: #232627;
+   }
+
+   .file-manager-sidebar-col {
+      background: #232627;
+   }
+
+   .nav-close-btn button {
+      color: #ebebeb;
+   }
+
+   .dropdown-divider,
+   .dropdown-menu {
+      background: #232627;
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .dropdown-divider .dropdown-item,
+   .dropdown-menu .dropdown-item {
+      color: #F9F9F9;
+   }
+
+   .dropdown-divider .dropdown-item:hover,
+   .dropdown-divider .dropdown-item:focus,
+   .dropdown-menu .dropdown-item:hover,
+   .dropdown-menu .dropdown-item:focus {
+      color: $white;
+   }
+
+   .dropdown-menu .dropdown-txt {
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .dropdown-menu .form-check-label {
+      color: #F7F7F7;
+   }
+
+   .dropdown-menu .dropdown-txt span {
+      color: #F9F9F9;
+   }
+
+   .right-sidebar {
+      background-color: #000;
+
+      .right-bar-close {
+         background-color: #000;
+      }
+
+      .right-bar-close::before {
+         background-color: #000;
+         border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .sidebar-subtitle {
+         color: #e4e4e4;
+      }
+
+      .sidebar-subtitle span {
+         border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .main-content-bg-btn-box button,
+      .sidebar-bg-btn-box button {
+         border-color: #464646;
+      }
+   }
+
+   .site-view-btn.btn {
+      color: #e4e4e4;
+   }
+
+   /* dark theme responsive design */
+   .email-panel .mail-details {
+      background: #232627;
+   }
+
+   .email-panel .mail-details .mail-reply-option {
+      background: #232627;
+   }
+
+   .file-manager-sidebar-col {
+      background: #232627;
+   }
+
+   .sidebar-link-group-title {
+      color: #f5f5f5;
+   }
+
+   .collapsed .sidebar-dropdown-menu {
+      background: #232627;
+   }
+
+   .login-panel::after {
+      background: transparent;
+   }
+
+   .dashboard-breadcrumb {
+      background: #232627;
+   }
+
+   .dashboard-filter {
+      background: #232627;
+   }
+
+   .digi-dataTable tr th {
+      background: #141718;
+   }
+
+   .digi-dataTable tbody tr:nth-child(odd) td {
+      color: #919191;
+   }
+
+   .react-calendar .react-calendar__viewContainer button.react-calendar__tile.react-calendar__month-view__days__day {
+      color: #737B8B;
+   }
+
+   .react-calendar .react-calendar__navigation {
+      background: transparent;
+   }
+
+   .hr-management-system .card {
+      border: 1px solid #5a5a5a;
+   }
+
+   .dashboard-filter .form-control {
+      color: #919191;
+   }
+
+   .dashboard-top-box {
+      color: #e4e4e4 !important;
+   }
+
+   .dashboard-top-box .left a {
+      color: #919191;
+   }
+
+   .digi-dataTable tr {
+      background-color: transparent;
+   }
+
+   .dashboard-top-box .right .part-icon {
+      background: rgba(255, 255, 255, 0.05);
+   }
+
+   .dashboard-top-box:hover .right .part-icon.text-light {
+      color: #fff !important;
+   }
+
+   .visitor-table {
+      color: #919191;
+   }
+
+   .visitor-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+   }
+
+   .visitor-table tbody tr:hover td {
+      color: #e4e4e4;
+   }
+
+   .new-customer-table {
+      color: #c4c4c4;
+   }
+
+   .new-customer-table tr:hover td {
+      color: #e4e4e4;
+   }
+
+   .recent-order-table {
+      color: #919191;
+   }
+
+   .recent-order-table thead {
+      background: #3A3B3C;
+      color: #e4e4e4;
+   }
+
+   .recent-order-table tr.selected {
+      background: rgba(255, 255, 255, 0.03);
+   }
+
+   .recent-order-table .btn-box button {
+      color: #919191;
+   }
+
+   .recent-order-table .btn-box button:hover,
+   .recent-order-table .btn-box button:focus {
+      color: $white;
+   }
+
+   .table-bottom-control {
+      color: #919191;
+   }
+
+   .table-bottom-control .btn {
+      background: rgba(255, 255, 255, 0.07);
+      color: #919191;
+
+      &.current {
+         color: #fff;
+         background-color: $primary;
+      }
+   }
+
+   .table-bottom-control .previous,
+   .table-bottom-control .next {
+      background: transparent;
+      color: #fff;
+   }
+
+   .table-filter-option .dataTables_length label {
+      color: #919191;
+   }
+
+   .digi-dataTable {
+      color: #919191;
+   }
+
+   .digi-dataTable thead {
+      background: #3A3B3C;
+      color: #e4e4e4;
+   }
+
+   .digi-dataTable tbody tr.selected {
+      background: #141718;
+   }
+
+   .digi-dataTable tr.odd>* {
+      color: #919191;
+   }
+
+   .digi-dataTable .btn-box button:not(.btn) {
+      color: #e4e4e4;
+   }
+
+   .digi-dataTable .btn-box button:not(.btn):hover {
+      color: $white;
+   }
+
+   .table a {
+      color: #919191;
+   }
+
+   .recent-project-table {
+      color: #e4e4e4;
+   }
+
+   .recent-project-table td {
+      color: #919191 !important;
+   }
+
+   .activity-box {
+      color: #919191;
+   }
+
+   .invoice-table thead {
+      background: #3A3B3C;
+   }
+
+   .task-table .form-check label {
+      color: #919191;
+   }
+
+   .notice-board-table thead,
+   .deadline-table thead {
+      background: #3A3B3C;
+   }
+
+   .hr-recent-activity {
+      color: #919191;
+   }
+
+   .hr-recent-activity li .activity-name {
+      color: #c4c4c4;
+   }
+
+   .upcoming-interview li .part-txt span {
+      color: #c4c4c4;
+   }
+
+   .product-table-quantity ul {
+      color: #919191;
+   }
+
+   .product-table-quantity ul .text-white {
+      color: #e4e4e4 !important;
+   }
+
+   .perma-txt {
+      color: #919191;
+   }
+
+   .perma-txt .btn-flush {
+      color: $white;
+   }
+
+   .product-image-upload .part-txt h5 span {
+      color: #919191;
+   }
+
+   .jquery-uploader-preview-container .jquery-uploader-select-card .upload-button,
+   .jquery-uploader-preview-container .jquery-uploader-card .upload-button {
+      color: #919191;
+   }
+
+   .product-data-tab .input-additional-txt,
+   .product-data-tab label {
+      color: #919191;
+   }
+
+   .publish-date {
+      color: #e4e4e4;
+   }
+
+   .publish-date input {
+      color: #919191;
+      background-color: transparent;
+   }
+
+   .dtp-btn-clear {
+      color: #919191;
+   }
+
+   .product-tag-area .input-txt {
+      color: #919191;
+   }
+
+   .product-tag-area .all-tags .item {
+      color: #e4e4e4;
+   }
+
+   .table-product-card .part-txt span {
+      color: #919191;
+   }
+
+   .table-product-card .part-txt span.product-name {
+      color: #e4e4e4;
+   }
+
+   .chatting-panel .active-members .owl-nav {
+      color: #919191;
+   }
+
+   .chatting-panel .active-members .owl-nav button {
+      background: -webkit-gradient(linear, left top, right top, color-stop(30%, #232627), to(transparent));
+      background: linear-gradient(90deg, #232627 30%, transparent);
+   }
+
+   .chatting-panel .active-members .owl-nav button.owl-next {
+      background: -webkit-gradient(linear, right top, left top, color-stop(30%, #232627), to(transparent));
+      background: linear-gradient(-90deg, #232627 30%, transparent);
+   }
+
+   .chatting-panel .active-members .owl-nav button:hover {
+      color: $white;
+   }
+
+   .chatting-panel .message-list .single-message {
+      color: #919191;
+   }
+
+   .chatting-panel .chatting-area .chat-top-bar .user .part-txt {
+      color: #e4e4e4;
+   }
+
+   .chatting-panel .chatting-area .chat-top-bar .search-in-chat {
+      background: #232627;
+   }
+
+   .chatting-panel .msg-area {
+      background: #141718;
+   }
+
+   .chatting-panel .msg-area .single-message.outgoing .msg-box .msg-box-inner {
+      background: #232627;
+   }
+
+   .chatting-panel .msg-area .single-message.outgoing .msg-box .msg-box-inner:last-child::after {
+      border-bottom-color: #232627;
+   }
+
+   .chatting-panel .msg-area .single-message.outgoing .msg-box .msg-box-inner p {
+      color: #919191;
+   }
+
+   .chatting-panel .msg-area .single-message.outgoing .msg-box .msg-box-inner .sent-status {
+      color: #e4e4e4;
+   }
+
+   .chatting-panel .msg-area .single-message .msg-box .msg-box-inner .msg-option button {
+      color: $white;
+      opacity: 1;
+   }
+
+   .chatting-panel .msg-area .single-message .msg-box .msg-box-inner .msg-option .msg-time {
+      color: $white;
+      opacity: 1;
+   }
+
+   .chatting-panel .msg-area .day-divider span {
+      color: #e4e4e4;
+   }
+
+   .chatting-panel .msg-area .day-divider span::before,
+   .chatting-panel .msg-area .day-divider span::after {
+      border-color: rgba(255, 255, 255, 0.3);
+   }
+
+   .chatting-panel .user-short .part-txt {
+      color: #e4e4e4;
+   }
+
+   .chatting-panel .chatting-option ul li a {
+      color: #919191;
+   }
+
+   .chatting-panel .chatting-option ul li a:hover {
+      color: $white;
+   }
+
+   .email-panel .emial-menu-list ul li button:not(.active) .part-txt {
+      color: $dark-header;
+   }
+
+   .email-panel .emial-menu-list ul li button:hover .part-txt {
+      color: $white;
+   }
+
+   .email-panel .table-bottom-control {
+      background: #141718;
+   }
+
+   .invoice {
+      color: #919191;
+   }
+
+   .invoice .table {
+      color: #c4c4c4;
+   }
+
+   .invoice .total-payment-area ul li:last-child {
+      color: $white;
+   }
+
+   .login-body.login-body-2 .top {
+      background: #3A3B3C;
+   }
+
+   .login-body .bottom .panel-title {
+      color: #e4e4e4;
+   }
+
+   .login-body .bottom .form-control {
+      background: #313131;
+      color: #e4e4e4;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .login-body .bottom .other-option p {
+      color: #919191;
+   }
+
+   .login-body .bottom .password-show {
+      color: #e4e4e4;
+   }
+
+   .login-body .text-white {
+      color: #c4c4c4 !important;
+   }
+
+   .profile-sidebar-title {
+      color: #e4e4e4;
+   }
+
+   .profile-sidebar-subtitle {
+      color: #c4c4c4;
+   }
+
+   .profile-sidebar .top .part-txt h4 {
+      color: #c4c4c4;
+   }
+
+   .profile-sidebar .top .part-txt span {
+      color: #919191;
+   }
+
+   .profile-sidebar .top .part-txt .admin-social a {
+      color: #e4e4e4;
+   }
+
+   .profile-sidebar .bottom ul li {
+      color: #919191;
+   }
+
+   .profile-sidebar .bottom ul li span {
+      color: #c4c4c4;
+   }
+
+   .profile-sidebar .bottom p {
+      color: #c4c4c4;
+   }
+
+   .user-activity ul li {
+      color: #c4c4c4;
+   }
+
+   .user-activity ul li::after {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .user-activity ul li .left,
+   .user-activity ul li .right {
+      background: #232627;
+   }
+
+   .user-activity-details,
+   .user-activity-date {
+      color: #919191;
+   }
+
+   .profile-edit-tab-title h6 {
+      color: #e4e4e4;
+      background: #232627;
+   }
+
+   .profile-edit-tab .admin-profile .admin-name {
+      color: #c4c4c4;
+   }
+
+   .profile-edit-tab .admin-profile .admin-role {
+      color: #919191;
+   }
+
+   .file-manager-sidebar {
+      color: #919191;
+   }
+
+   .file-manager-sidebar nav button {
+      color: #c4c4c4;
+   }
+
+   .file-manager-sidebar nav button.active {
+      color: $white;
+   }
+
+   .file-manager-sidebar .connected-app .file-manager-sidebar-title {
+      color: #e4e4e4;
+   }
+
+   .file-manager-sidebar .connected-app li a {
+      color: #919191;
+   }
+
+   .file-manager-card {
+      background: #3A3B3C;
+      color: #919191;
+   }
+
+   .file-manager-card .top .action {
+      color: #c4c4c4;
+   }
+
+   .file-manager-card .bottom .left .folder-name {
+      color: #e4e4e4;
+   }
+
+   .file-card {
+      background: #3A3B3C;
+   }
+
+   .file-card .part-txt {
+      color: #919191;
+   }
+
+   .file-card .part-txt .file-name {
+      color: #e4e4e4;
+   }
+
+   .file-manager-row .file-manager-col-head {
+      background: #595959;
+   }
+
+   .file-manager-row .file-manager-col-head span {
+      color: #e4e4e4;
+   }
+
+   .file-manager-row.list-view .file-manager-col .file-card .file-type {
+      color: #919191;
+   }
+
+   .part-btn p {
+      color: #919191;
+   }
+
+   .file-manager-settings-subtitle {
+      color: #e4e4e4;
+   }
+
+   .plan-name {
+      color: #c4c4c4;
+   }
+
+   .used-storage {
+      color: #919191;
+   }
+
+   .file-manager-settings-table {
+      color: #919191;
+   }
+
+   .footer {
+      background: #232627;
+   }
+
+   .footer p {
+      color: #919191;
+   }
+
+   .modal .ck.ck-editor__main>.ck-editor__editable,
+   .ck.ck-editor__main>.ck-editor__editable,
+   .compose-mail .ck.ck-editor__main>.ck-editor__editable,
+   .mail-details .ck.ck-editor__main>.ck-editor__editable {
+      background: #141718;
+      color: #c4c4c4;
+   }
+
+   .modal .ck.ck-editor__main>.ck-editor__editable .ck-table-bogus-paragraph,
+   .ck.ck-editor__main>.ck-editor__editable .ck-table-bogus-paragraph,
+   .compose-mail .ck.ck-editor__main>.ck-editor__editable .ck-table-bogus-paragraph,
+   .mail-details .ck.ck-editor__main>.ck-editor__editable .ck-table-bogus-paragraph {
+      color: #c4c4c4;
+   }
+
+   .modal .ck.ck-labeled-field-view>.ck.ck-labeled-field-view__input-wrapper>.ck.ck-label,
+   .ck.ck-labeled-field-view>.ck.ck-labeled-field-view__input-wrapper>.ck.ck-label,
+   .compose-mail .ck.ck-labeled-field-view>.ck.ck-labeled-field-view__input-wrapper>.ck.ck-label,
+   .mail-details .ck.ck-labeled-field-view>.ck.ck-labeled-field-view__input-wrapper>.ck.ck-label {
+      background: #232627;
+      color: #919191;
+   }
+
+   .modal .ck.ck-dropdown__panel,
+   .ck.ck-dropdown__panel,
+   .compose-mail .ck.ck-dropdown__panel,
+   .mail-details .ck.ck-dropdown__panel {
+      background: #232627;
+   }
+
+   .modal .ck.ck-dropdown__panel .ck.ck-list button,
+   .ck.ck-dropdown__panel .ck.ck-list button,
+   .compose-mail .ck.ck-dropdown__panel .ck.ck-list button,
+   .mail-details .ck.ck-dropdown__panel .ck.ck-list button {
+      color: #919191 !important;
+   }
+
+   .modal .ck.ck-dropdown__panel .ck.ck-list button.ck-on,
+   .ck.ck-dropdown__panel .ck.ck-list button.ck-on,
+   .compose-mail .ck.ck-dropdown__panel .ck.ck-list button.ck-on,
+   .mail-details .ck.ck-dropdown__panel .ck.ck-list button.ck-on {
+      background: #141718;
+   }
+
+   .modal .ck.ck-dropdown__panel .ck.ck-list button span,
+   .ck.ck-dropdown__panel .ck.ck-list button span,
+   .compose-mail .ck.ck-dropdown__panel .ck.ck-list button span,
+   .mail-details .ck.ck-dropdown__panel .ck.ck-list button span {
+      color: #919191 !important;
+   }
+
+   .modal .ck-labeled-field-view__status,
+   .ck-labeled-field-view__status,
+   .compose-mail .ck-labeled-field-view__status,
+   .mail-details .ck-labeled-field-view__status {
+      color: #919191 !important;
+   }
+
+   .ck.ck-balloon-panel {
+      background: #232627 !important;
+      z-index: 9999 !important;
+   }
+
+   .ck.ck-balloon-panel[class*=arrow_n]::before,
+   .ck.ck-balloon-panel[class*=arrow_n]::after {
+      border-color: transparent transparent #232627 transparent !important;
+   }
+
+   .ck.ck-balloon-panel[class*=arrow_s]::before,
+   .ck.ck-balloon-panel[class*=arrow_s]::after {
+      border-color: #232627 transparent transparent transparent !important;
+   }
+
+   .ck.ck-balloon-panel input {
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #919191;
+   }
+
+   .ck.ck-balloon-panel label {
+      background: #232627 !important;
+      color: #919191;
+   }
+
+   .ck.ck-balloon-panel button {
+      border-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .ck.ck-balloon-panel button:hover:not(.ck-disabled) {
+      background: rgba(255, 255, 255, 0.12);
+   }
+
+   .ck.ck-balloon-panel .ck.ck-toolbar {
+      background: #232627;
+   }
+
+   .ck.ck-balloon-panel .ck.ck-toolbar .ck-button:focus,
+   .ck.ck-balloon-panel .ck.ck-toolbar .ck-button:active,
+   .ck.ck-balloon-panel .ck.ck-toolbar .ck-button.active,
+   .ck.ck-balloon-panel .ck.ck-toolbar .ck-button.ck-on {
+      background: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .voice-call .user .user-name {
+      color: #e4e4e4;
+   }
+
+   .voice-call .user .call-status {
+      color: #919191;
+   }
+
+   .voice-call .call-option {
+      background: #3A3B3C;
+   }
+
+   .video-call .bottom .call-option {
+      background: #3A3B3C;
+   }
+
+   .mail-details-expanded {
+      background: #141718;
+   }
+
+   .mail-details {
+      background: #141718;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #919191;
+   }
+
+   .mail-details .single-mail {
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .mail-details .single-mail .mail-top .mail-profile .part-txt span.name {
+      color: #c4c4c4;
+   }
+
+   .mail-details .single-mail .mail-top .mail-profile .part-txt span.mail {
+      color: #919191;
+   }
+
+   .mail-details .mail-reply-option {
+      background: #141718;
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .file-details li {
+      color: #919191;
+   }
+
+   .file-details li span {
+      color: $dark-header;
+   }
+
+   .email-panel .mail-details {
+      background: #232627;
+   }
+
+   .email-panel .mail-details .mail-reply-option {
+      background: #232627;
+   }
+
+   .file-manager-sidebar-col {
+      background: #232627;
+   }
+
+   .dropdown-divider .dropdown-item:hover,
+   .dropdown-divider .dropdown-item:focus,
+   .dropdown-menu .dropdown-item:hover,
+   .dropdown-menu .dropdown-item:focus {
+      background-color: rgba(255, 255, 255, 0.06);
+   }
+
+   .calling-history-header {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .see-details-btn {
+      color: $white;
+      border-top-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .see-details-btn:hover,
+   .see-details-btn:focus {
+      color: #105eb9;
+   }
+
+   .contact-card .contact-desc h6 {
+      color: $white;
+   }
+
+   .contact-card .contact-desc p {
+      color: $dark-desc-1;
+   }
+
+   &.home-call-center p {
+      color: $dark-desc-1;
+   }
+
+   .call-center-table-search-bar .dropdown-toggle svg {
+
+      circle,
+      line {
+         stroke: $dark-desc-1;
+      }
+   }
+
+   .contact-card .contact-meta h5 {
+      color: $white;
+   }
+
+   .contact-card .social-info a {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: $white;
+   }
+
+   .call-center-table-search-bar {
+      border-right-color: rgba(255, 255, 255, 0.2);
+
+      .dropdown-toggle {
+         color: $white;
+      }
+   }
+
+   .card-six .chart-icon svg path {
+      fill: $white;
+   }
+
+   .nice-select {
+      background-color: transparent;
+      color: $white;
+      border-color: rgba(255, 255, 255, 0.12);
+
+      &::after {
+         border-bottom-color: $white;
+         border-right-color: $white;
+      }
+
+      .list {
+         background-color: #232627;
+      }
+
+      .option:hover,
+      .option.focus,
+      .option.selected.focus {
+         background-color: rgba(255, 255, 255, 0.1);
+      }
+   }
+
+   &.home-call-center .footer-area {
+      background: #232627;
+   }
+
+   &.home-call-center .top-header-area {
+      background-color: #232627;
+   }
+
+   &.home-call-center .help-line-info .btn.btn-light .btn-text {
+      color: $white;
+   }
+
+   .top-search-bar form input {
+      color: $white;
+      background-color: #141718;
+   }
+
+   .notifications-box .dropdown-item,
+   .notifications-box .nav-link {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .webdesh-sidemenu-area {
+      background-color: #232627;
+
+      .slimScrollDiv,
+      .sidenav-logout {
+         background-color: #232627;
+      }
+   }
+
+   &.home-call-center .webdesh-sidemenu-area {
+      background-color: #232627;
+   }
+
+   &.home-call-center .webdesh-sidemenu-area .slimScrollDiv {
+      background-color: transparent;
+   }
+
+   &.home-call-center .sidebar-menu li>a {
+      color: $dark-desc;
+   }
+
+   &.home-call-center .sidebar-menu li>a i {
+      color: $dark-header;
+   }
+
+   &.home-call-center .sidebar-menu>li.active>a,
+   &.home-call-center .sidebar-menu>li>a:hover,
+   &.home-call-center .sidebar-menu>li.menu-open>a {
+      color: #1A83FE;
+   }
+
+   &.home-crm .top-header-area {
+      background-color: #141718;
+   }
+
+   #preloader {
+      background-color: #141718;
+   }
+
+   .footer-area {
+      background-color: #232627;
+   }
+
+   .top-navbar>ul>li>a {
+      color: #919191;
+   }
+
+   .top-navbar>ul>li>a:hover,
+   .top-navbar>ul>li>a:focus {
+      color: $white;
+   }
+
+   button.dz-button {
+      color: #ddd;
+   }
+
+   .breakpoint-off .classynav ul li .dropdown {
+      background-color: #232627;
+   }
+
+   .top-navbar>ul>li>a {
+      color: #919191;
+   }
+
+   .top-navbar ul ul li a:hover,
+   .top-navbar ul ul li a:focus {
+      color: $white;
+   }
+
+   .classynav ul li .dropdown li a {
+      border-bottom-color: rgba(242, 244, 248, 0.06);
+   }
+
+   .classynav ul li .megamenu {
+      background-color: #232627;
+   }
+
+   .classynav ul li .megamenu .single-mega.cn-col-3 {
+      border-right-color: rgba(255, 255, 255, 0.06);
+   }
+
+   .right-side-navbar .nav-item.dropdown .btn {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #737B8B;
+   }
+
+   .jvectormap-container {
+      background-color: transparent !important;
+   }
+
+   .sales-analytics-table .table thead tr th,
+   .sales-analytics-table .table thead tr td {
+      background: #141718;
+      color: $dark-header;
+   }
+
+   .sales-analytics-table tbody tr td .success-badge {
+      background: rgba(209, 250, 229, 0.5);
+      color: $white;
+   }
+
+   .sales-analytics-table tbody tr td .danger-badge {
+      color: #E07706;
+      background: rgba(254, 243, 199, 1);
+   }
+
+   .sales-analytics-select {
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 2px 4px 10px 0px rgb(32 32 32 / 20%);
+   }
+
+   .crm-search-bar .top-search-bar form input {
+      background-color: transparent;
+   }
+
+   &.hr-management-system .top-header-area {
+      background-color: #232627;
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   &.hr-management-system .webdesh-sidemenu-area {
+      background-color: #232627;
+   }
+
+   &.hr-management-system .webdesh-sidemenu-area .slimScrollDiv {
+      background-color: transparent;
+   }
+
+   .sidebar-menu li a::before {
+      background-color: rgba(255, 255, 255, 0.1);
+   }
+
+   &.home-call-center .sidebar-menu li>a::before {
+      background-color: transparent !important;
+   }
+
+   .card-2 {
+      background-color: rgb(35, 38, 39);
+   }
+
+   .single-compare-card .compare-content-card .compare-text-info h3 {
+      color: $white;
+   }
+
+   .single-compare-card .compare-content-card .compare-icon {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .single-compare-card {
+      border-top-color: rgba(255, 255, 255, 0.14) !important;
+      border-right-color: rgba(255, 255, 255, 0.14) !important;
+   }
+
+   .announcement-card {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: #232627;
+   }
+
+   .announcement-card .card-title h3 {
+      color: $white;
+   }
+
+   .announcement-select {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .announcement-select .list {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .single-announcement {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: #141718;
+   }
+
+   .announcement-card .view-all-announcement {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: #141718;
+   }
+
+   &.hr-management-system .webdesh-logo a {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+   }
+
+   &.hr-management-system .webdesh-sidemenu-area {
+      border-right-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .top-header-area {
+      background-color: #232627;
+   }
+
+   &.home-hrm .right-side-navbar .nav-item.dropdown .btn {
+      background-color: #141718;
+   }
+
+   .card {
+      background-color: #232627;
+   }
+
+   .country-list-area .title {
+      color: $white;
+   }
+
+   .font-bold {
+      color: $white;
+   }
+
+   .customer-chart-area .chart-header svg path {
+      fill: $white;
+   }
+
+   .event-btn a {
+      color: #737B8B;
+      border-color: rgba(255, 255, 255, 0.12);
+      background: #141718;
+   }
+
+   .event-btn a:hover {
+      color: rgb(52, 106, 255);
+      border-color: rgb(52, 106, 255);
+   }
+
+   .mini-cal {
+      background: transparent;
+   }
+
+   #calTitle button:hover {
+      background: transparent;
+   }
+
+   #calTitle button svg {
+      fill: $white;
+   }
+
+   #calTbody .a-date span {
+      color: #737B8B;
+   }
+
+   #calTbody .a-date span.focused {
+      color: $white;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   &.home-call-center .right-side-navbar .nav-item.dropdown .btn,
+   &.hr-management-system .right-side-navbar .nav-item.dropdown .btn {
+      background-color: transparent !important;
+   }
+
+   .dataTables_length .form-control {
+      background-color: #232627 !important;
+   }
+
+   .calendar-catagory-select {
+      background-color: #232627;
+   }
+
+   .btn-light {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: $white;
+   }
+
+   .ck.ck-toolbar {
+      background: #141718 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .fc-unthemed th {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .chatting-panel .message-list .single-message {
+      background-color: rgba(255, 255, 255, 0.03);
+   }
+
+   .chatting-panel .message-list .single-message:hover {
+      background-color: rgba(255, 255, 255, 0.07);
+   }
+
+   .chatting-panel .msg-area .single-message .msg-box .msg-box-inner {
+      background-color: rgba(255, 255, 255, 0.07);
+   }
+
+   .chatting-panel .msg-type-area {
+      background-color: #232627;
+   }
+
+   .email-template-main .email-container .page-title {
+      color: $white;
+   }
+
+   .email-template-main .email-container table {
+      background: #232627;
+   }
+
+   .email-template-main .email-container .mail-title {
+      color: #ffffff;
+   }
+
+   .email-template-main .mail-header {
+      background: #141718;
+   }
+
+   .email-template-main .email-container .mail-body p {
+      color: #919191;
+   }
+
+   .email-template-main .email-container .mail-footer {
+      border-top-color: rgba(255, 255, 255, 0.3);
+   }
+
+   .mail-body .product-card {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .mail-body .product-card .part-img {
+      background: transparent;
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .email-template-main .email-container .mail-body .product-card .product-title a {
+      color: #919191;
+   }
+
+   .email-template-main .email-container .mail-body .product-card .product-price {
+      color: #fff;
+   }
+
+   .input-group-text {
+      color: #919191;
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .login-body {
+      background-color: rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+   }
+
+   .login-body .top {
+      border-color: rgba(255, 255, 255, 0.07);
+   }
+
+   .login-body .bottom .other-option .social-box a {
+      background: #232627;
+      color: #fff;
+   }
+
+   .login-body .bottom .other-option .social-box a:hover {
+      color: $primary;
+   }
+
+   .login-body .bottom .input-group-text {
+      background: #313131;
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .static-body {
+      background-color: rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+   }
+
+   .static-body .part-txt h2 {
+      color: #fff;
+   }
+
+   .all-steps {
+      background-color: #141718;
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .all-steps .account-types .form-check label .title {
+      color: #fff;
+   }
+
+   .all-steps .team-size .form-check label {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: #fff;
+   }
+
+   .all-steps .account-info-title {
+      color: #fff;
+   }
+
+   .pricing-panel .pricing .table thead th:first-child {
+      background-color: transparent;
+   }
+
+   .card .card-header {
+      background-color: #141718;
+      color: $white;
+   }
+
+   .bg-primary-subtle {
+      background-color: #141718 !important;
+   }
+
+   .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .icon-box {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .file-manager-sidebar .connected-app li a:hover {
+      color: $primary;
+   }
+
+   &.home-call-center .help-line-info .btn.btn-light svg path {
+      fill: $primary;
+   }
+
+   .topbar-user-meta-data {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+   }
+
+   &.home-call-center .webdesh-sidemenu-area.sidebar-bg-detected::after,
+   &.hr-management-system .webdesh-sidemenu-area.sidebar-bg-detected::after {
+      background-color: rgba(35, 38, 39, 0.92);
+   }
+
+   &.hr-management-system .sidebar-bg-detected.webdesh-sidemenu-area .webdesh-logo a {
+      background-color: rgba(35, 38, 39, 0.92);
+   }
+
+   &.home-hrm.bg-detected .top-header-area.header-sticky {
+      background-color: rgba(35, 38, 39, 0.92);
+   }
+
+   &.home-ota.bg-detected .top-header-area {
+      background-color: rgba(35, 38, 39, 0.92);
+   }
+
+   &.bg-detected.hr-management-system .top-header-area {
+      background-color: rgba(35, 38, 39, 0.92);
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   &.bg-detected::after {
+      background-color: rgba(14, 9, 52, 0.92);
+   }
+
+   .home-call-center .help-line-info {
+      background-color: rgba(26, 131, 254, 0.15);
+   }
+
+   .contact-card .contact-meta p {
+      color: #fff;
+   }
+
+   &.bg-detected.home-crm .top-header-area {
+      background-color: transparent;
+   }
+
+   &.bg-detected.home-crm .top-header-area.header-sticky {
+      background-color: #141718;
+   }
+
+   &.bg-detected .error-panel {
+      background-color: rgba(35, 38, 39, 0.92) !important;
+   }
+
+   .pricing-panel .pricing .table {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .pricing-panel .pricing .table .table-secondary {
+      border-color: rgba(255, 255, 255, 0.12);
+
+      span {
+         color: $white;
+      }
+   }
+
+   .pricing-panel .pricing .table tbody tr:not(.table-secondary) td:first-child {
+      background-color: rgba(255, 255, 255, 0.12);
+      color: #919191;
+   }
+
+   .pricing-panel .pricing .table thead th:nth-child(4) {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: $bg-lime;
+   }
+
+   .pricing-panel .pricing .table tbody tr.table-secondary td:nth-child(2),
+   .pricing-panel .pricing .table tbody tr td:nth-child(4) {
+      background-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .single-preview {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   &.home-ota .webdesh-sidemenu-area.sidebar-bg-detected::after,
+   &.home-hrm .webdesh-sidemenu-area.sidebar-bg-detected::after {
+      background-color: rgba(35, 38, 39, 0.92);
+   }
+
+   .table>:not(caption)>*>* {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+   }
+
+   .border-top {
+      border-top-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .border-bottom {
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .border-start {
+      border-left-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .border-end {
+      border-right-color: rgba(255, 255, 255, 0.1) !important;
+   }
+
+   .email-panel .emial-menu-list ul li {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .table-bordered>:not(caption)>* {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .profile-sidebar-subtitle::after {
+      background-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .list-group-item {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .ck.ck-toolbar .ck.ck-toolbar__separator {
+      background: rgba(255, 255, 255, 0.1);
+   }
+
+   .text-dark {
+      color: $dark-header !important;
+   }
+
+   .icon-row .icon-col .icon-box {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .classy-navbar-toggler {
+      border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   &.hr-management-system .sidebar-menu .treeview.active li.active a::after {
+      background-color: #fff;
+   }
+
+   &.hr-management-system .sidebar-menu .treeview.active li.active a {
+      color: #fff !important;
+   }
+
+   &.home-hrm .sidebar-menu li.treeview.active .treeview-menu li.active a {
+      color: #fff;
+   }
+
+   .announcement-card .view-all-announcement {
+      color: #fff;
+   }
+
+   .sidebar-menu>li.active>a,
+   .sidebar-menu>li>a:hover,
+   .sidebar-menu>li.menu-open>a,
+   .sidebar-menu>li.active>a i,
+   .sidebar-menu>li>a:hover i,
+   .sidebar-menu>li.menu-open>a i {
+      color: #fff;
+   }
+
+   .breakpoint-on .classy-navbar .classy-menu.menu-on {
+      background-color: #141718;
+   }
+
+   .breakpoint-on .classynav ul li .megamenu .single-mega.cn-col-3,
+   .breakpoint-on .classynav ul li .megamenu .single-mega.cn-col-4,
+   .breakpoint-on .classynav ul li .megamenu .single-mega.cn-col-5 {
+      border-bottom-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .classycloseIcon .cross-wrap span {
+      background: $white;
+   }
+
+   &.home-ota .mobile-menu-icon {
+      background-color: transparent;
+      color: $white;
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .classy-navbar-toggler {
+      background-color: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #737B8B;
+   }
+
+   .mobile-menu-icon {
+      background-color: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #737B8B;
+   }
+
+   #lightTheme.dashboard-icon::after {
+      opacity: 0;
+   }
+
+   #darkTheme.dashboard-icon::after {
+      opacity: 1;
+   }
+
+   .fc {
+
+      a.fc-col-header-cell-cushion,
+      a.fc-daygrid-day-number {
+         color: #737B8B;
+      }
+
+   }
+
+   .landing-page .classy-menu ul#corenav li a {
+      color: $dark-landing-desc;
+   }
+
+   .landing-page {
+
+      h2,
+      h5,
+      h6 {
+         color: $dark-landing-header;
+      }
+
+      ul#corenav li.cn-dropdown-item ul.dropdown a,
+      .classynav ul#corenav li.megamenu-item .megamenu a {
+         color: $dark-landing-desc;
+      }
+   }
+
+
+   .landing-page p {
+      color: $dark-landing-desc;
+   }
+
+   .sales-analytics-select,
+   .announcement-select,
+   .occupancy-statistics-select,
+   .job-statistics-select,
+   .transaction-statistics-select {
+      background: #222f3d;
+      color: $dark-desc-1;
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .home-call-center .top-header-area .dropdown-menu {
+      border: 1px solid rgb(255 255 255 / 10%);
+   }
+
+   .top-header-area .nav-item.dropdown .dropdown-menu .dropdown-item {
+      color: $dark-desc-1;
+   }
+
+   .table td,
+   .table th {
+      color: $dark-desc-1;
+   }
+
+   .card-progress-five p {
+      color: $white;
+   }
+
+   .react-calendar .react-calendar__navigation button.react-calendar__navigation__label,
+   .react-calendar .react-calendar__viewContainer .react-calendar__month-view__weekdays__weekday abbr {
+      color: $dark-header;
+   }
+
+   .dark-theme .react-calendar .react-calendar__viewContainer button.react-calendar__tile.react-calendar__month-view__days__day,
+   .chart-county-list>div span {
+      color: $dark-desc;
+   }
+
+   .digi-dropdown .dropdown-menu {
+      box-shadow: 0px 5px 20px 0px rgb(122 122 122 / 10%);
+   }
+
+   .voice-call-modal,
+   .video-call-modal {
+      background: #3a3b3c;
+   }
+
+   .chatting-panel .chat-user-more-offcanvas {
+      color: #fff;
+      filter: contrast(0);
+   }
+
+   .chatting-panel .message-list .single-message .part-txt .user-name {
+      color: $dark-header;
+   }
+
+   .chat-slider-nav button {
+      color: #c4c4c4;
+   }
+
+   .compose-mail.open .panel {
+      border-color: #ffffff38 !important;
+   }
+
+   .expand-mail-modal-container,
+   .add-new-task-modal,
+   .view-task-modal,
+   .edit-task-modal-container,
+   .event-modal-container,
+   .delete-event-modal-container,
+   .upload-modal-container,
+   .create-folder-modal-container,
+   .file-details-modal-container {
+      background: #141718;
+      border: 1px solid #ffffff38;
+
+   }
+
+   .add-new-task-modal .add-new-task-modal-header,
+   .view-task-modal .view-task-modal-header,
+   .edit-task-modal-container .edit-task-modal-header,
+   .event-modal-container .event-modal-header,
+   .delete-event-modal-container .delete-event-modal-header {
+      border-bottom: 1px solid rgb(255 255 255 / 15%);
+
+      h2,
+      h3,
+      h4 {
+         color: $dark-header;
+      }
+   }
+
+   .upload-modal-container .upload-modal-header h3 {
+      color: $dark-header;
+   }
+
+   .create-folder-modal-container .create-folder-modal-header,
+   .file-details-modal-container .file-details-modal-header {
+      border-bottom: 1px solid rgb(255 255 255 / 15%);
+
+      h3 {
+         color: $dark-header;
+      }
+   }
+
+   .form-label {
+      color: $dark-header;
+   }
+
+   .view-task h6 {
+      color: $dark-header;
+   }
+
+   .ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content {
+      border-color: rgb(255 255 255 / 12%);
+   }
+
+   .view-task .task-info-box {
+      border-color: rgb(255 255 255 / 10%);
+   }
+
+   .view-task .comments .single-comment .part-txt {
+      border-color: rgb(255 255 255 / 10%);
+   }
+
+   .invoice .info-card h3 {
+      color: $dark-header;
+   }
+
+   .fc-theme-standard .fc-popover {
+      background: #141718;
+      border: 1px solid #ffffff38;
+   }
+
+   .fc .fc-popover-close,
+   .fc .fc-popover-title {
+      color: $dark-header;
+   }
+
+   .all-steps .account-types .form-check label {
+      background-color: rgb(255 255 255 / 3%);
+   }
+
+   .all-steps .account-types .form-check label .part-icon {
+      color: $dark-desc-1;
+   }
+
+   .all-steps .team-size {
+      border: 1px solid rgb(0 0 0 / 5%);
+   }
+
+   .dark-theme.home-call-center .two-factor-panel p {
+      color: #707070;
+   }
+
+   .dark-theme.home-call-center .two-factor-panel .static-body p {
+      color: $dark-desc-1;
+   }
+
+   .profile-edit-tab-title::after {
+      background-color: rgb(255 255 255 / 25%);
+   }
+
+   pre .punctuation {
+      color: $dark-header;
+   }
+
+   .swiper-pagination-bullet {
+      background: #fff;
+      color: #000;
+
+      &.swiper-pagination-bullet-active {
+         background: #066ee3;
+         color: #fff;
+      }
+   }
+
+   .product-image-upload .part-txt {
+      border-color: rgb(255 255 255 / 15%);
+   }
+
+   .jquery-uploader-preview-container .jquery-uploader-select-card,
+   .jquery-uploader-preview-container .jquery-uploader-card {
+      border-color: rgb(255 255 255 / 15%);
+   }
+
+   .product-image-upload .part-txt h5 {
+      color: $dark-desc-1;
+   }
+
+   .file-manager-user .part-txt span {
+      color: $dark-header;
+   }
+
+   &.home-delivery .webdesh-logo {
+      background-color: #232627;
+   }
+
+   // Extra
+   .sidebar-menu li .treeview-menu li.active a {
+      color: #3490fe;
+   }
+
+   ul.custom-nav button.custom-nav-link.active {
+      border-bottom: 4px solid #3490fe;
+   }
+
+   .home-courier .top-header-area {
+      background-color: #444392;
+   }
+
+   .pricing-panel .pricing .table {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .pricing-panel .pricing .table .table-secondary {
+      border-color: rgba(255, 255, 255, 0.12);
+
+      span {
+         color: $white;
+      }
+   }
+
+   .pricing-panel .pricing .table tbody tr:not(.table-secondary) td:first-child {
+      background-color: rgba(255, 255, 255, 0.12);
+      color: #A9B4CC;
+   }
+
+   .pricing-panel .pricing .table thead th:nth-child(4) {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: #444392;
+   }
+
+   .pricing-panel .pricing .table tbody tr.table-secondary td:nth-child(2) {
+      background-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .pricing-panel .pricing .table tbody tr td:nth-child(4) {
+      background-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .logistics-tab .tab-content {
+      background-color: rgba(255, 255, 255, 0.08);
+   }
+
+   .webdesh-sidemenu-area {
+      &.sidebar-bg-detected {
+         background-color: #0E0934;
+
+         &::after {
+            background-color: rgba(23, 34, 35, 0.9);
+         }
+      }
+   }
+
+   &.home-delivery .webdesh-logo {
+      background-color: #232627;
+   }
+
+   .sidebar-menu>li>a:hover,
+   .sidebar-menu>li.menu-open>a {
+      color: #1A83FE;
+   }
+
+   .sidebar-menu li a::after {
+      background: rgba(255, 255, 255, 0.1);
+   }
+
+   .sidebar-menu>li>a:hover i,
+   .sidebar-menu>li.menu-open>a i {
+      color: #1A83FE;
+   }
+
+   .sidebar-menu li .treeview-menu li a:hover {
+      color: #1A83FE;
+   }
+
+   &.home-courier .top-header-area,
+   &.home-courier.bg-detected .top-header-area.header-sticky {
+      background-color: #444392;
+   }
+
+   .card .top-content .icon-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      svg path {
+         fill: #fff;
+      }
+   }
+
+   .card .increase-decrease-result {
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+   }
+
+   .shipment-data-chart .nav-tabs .nav-item .nav-link {
+      border-color: rgba(255, 255, 255, 0.12);
+   }
+
+   .shipment-data-chart .nav-tabs .nav-item .nav-link.active {
+      border-bottom-color: #1A83FE;
+   }
+
+   .btn-lean {
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #fff;
+
+      &:hover,
+      &:focus {
+         border-color: #1A83FE;
+         color: #1A83FE;
+      }
+   }
+
+   .fleet-tonnage-card .icon {
+      background: rgba(255, 255, 255, 0.05);
+   }
+
+   .fleet-tonnage-card .content div p:first-child {
+      color: #fff;
+   }
+
+   .single-visitor-by-country .country-name p {
+      color: #fff;
+   }
+
+   .single-visitor-by-country .visitor-numbers {
+      color: #fff;
+   }
+
+   .single-visitor-by-country {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .overview-performance-tab .nav-tabs .nav-item .nav-link.active::after {
+      background-color: #1A83FE;
+   }
+
+   .overview-performance-tab .nav-tabs .nav-item .nav-link.active {
+      color: #fff;
+   }
+
+   .overview-performance-tab .nav-tabs {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .single-overview-data {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .single-overview-data .content p {
+      color: #fff;
+   }
+
+   .single-overview-data .status h4>span {
+      color: #fff;
+   }
+
+   .footer-area .copywrite-text p a {
+      color: #1A83FE;
+   }
+
+   .shipping-history-tab .nav-tabs .nav-item .nav-link.active::after {
+      background-color: #1A83FE;
+   }
+
+   .shipping-history-tab .nav-tabs .nav-item .nav-link.active {
+      color: #fff;
+   }
+
+   .shipping-history-tab .nav-tabs {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .shipment-header .title-invoice h6 {
+      color: #fff;
+   }
+
+   .single-timeline .timeline-icon::after {
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .single-shipment-history {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .card .card-title {
+      color: #fff;
+   }
+
+   .totalExpensechart span {
+      color: #1A83FE;
+   }
+
+   .cta-card>p {
+      color: #fff;
+   }
+
+   .cta-card span {
+      color: #1A83FE;
+   }
+
+   .card.order-list-table-card .table-bottom-control .btn {
+      border: 1px solid rgb(255 255 255 / 10%);
+   }
+
+   .shipment-statistic-card .btn-group .btn {
+      border-color: rgba(255, 255, 255, 0.1);
+      color: $text;
+
+      &.active {
+         color: #1A83FE;
+      }
+   }
+
+   .lastest-order-table thead tr th,
+   .lastest-order-table thead tr td {
+      color: $white;
+   }
+
+   .lastest-order-table div.dt-container .dt-paging .dt-paging-button {
+      color: #fff !important;
+      border-color: rgba(255, 255, 255, 0.1);
+   }
+
+   .home-delivery {
+      background-color: #141718;
+   }
+
+   .logistics-tab .card {
+      border: 1px solid rgb(255 255 255 / 10%);
+   }
+
+   .home-delivery .classy-menu.menu-on,
+   .home-logistics .classy-menu.menu-on {
+      background-color: #232627;
+   }
+
+   .latest-order-card .table-bottom-control .btn {
+      border: 1px solid rgb(255 255 255 / 10%);
+   }
+
+   .home-logistics .cta-card>p {
+      color: #e6e6e6;
+   }
+
+   .home-logistics .cta-card span {
+      color: #1A83FE;
+   }
+
+   .home-delivery .top-navbar>ul>li>a {
+      @include sm {
+         color: #d5d5d5;
+      }
+
+      &:hover,
+      &:focus {
+         color: #efefef;
+      }
+   }
+
+   .home-delivery .classy-menu .classycloseIcon .cross-wrap span,
+   .home-logistics .classy-menu .classycloseIcon .cross-wrap span {
+      background: #ffffff;
+   }
+
+   .home-delivery .classy-menu ul#corenav li a,
+   .home-logistics .classy-menu ul#corenav li a {
+      @include md {
+         border-bottom: 1px solid rgb(255 255 255 / 10%);
+      }
+   }
+
+   .home-logistics {
+      background: #141718;
+   }
+
+   .shipment-statistics-select {
+      border: 1px solid rgb(255 255 255 / 10%);
+   }
+
+}

@@ -1,0 +1,146 @@
+// Classy Menu
+
+.top-navbar>ul>li>a {
+  position: relative;
+  color: $bg-gray;
+  font-size: 14px;
+  padding: 1rem;
+  height: auto;
+  line-height: 1;
+
+  @include lg {
+    padding: 14px;
+    font-size: 13px;
+  }
+
+  @include md {
+    font-size: 16px;
+    padding: 15px;
+  }
+
+  &::after {
+    display: none;
+  }
+
+  &::before {
+    content: '';
+    width: 0;
+    height: 3px;
+    background-color: $bg-blue-two;
+    position: absolute;
+    bottom: 8px;
+    left: 1rem;
+    opacity: 0;
+    transition-duration: 300ms;
+    border-radius: 6px;
+    visibility: hidden;
+
+    @media #{$breakpoint-lg} {
+      visibility: visible;
+    }
+  }
+
+  &:hover,
+  &:focus {
+    color: $heading;
+
+    &::before {
+      opacity: 1;
+      width: calc(100% - 2rem);
+    }
+  }
+}
+
+.top-navbar ul ul {
+  border-right: 1px solid rgba(27, 42, 82, 0.14);
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  li {
+    a {
+      color: $bg-gray;
+      font-size: 13px;
+
+      &:hover,
+      &:focus {
+        color: $heading;
+      }
+    }
+  }
+}
+
+.breakpoint-on .classy-navbar .classy-menu {
+  left: auto;
+  right: -340px;
+  z-index: 99999;
+  width: 260px;
+
+  &.menu-on {
+    left: auto;
+    right: 0;
+  }
+}
+
+.classy-nav-container {
+  position: relative;
+  z-index: auto;
+  background-color: transparent;
+}
+
+.classynav ul li {
+  position: relative;
+}
+
+.breakpoint-off .classynav ul li .megamenu {
+  width: 600px;
+}
+
+.classynav ul li .megamenu li a {
+  padding: 0 1.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breakpoint-on .classy-navbar .classy-menu.menu-on {
+  background-color: #E2E8FA;
+}
+
+.breakpoint-on .classynav>ul>li>a {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+}
+
+.classynav ul li .dropdown {
+  box-shadow: 0px 1px 2px 0px rgba(27, 42, 82, 0.14);
+}
+
+.classynav ul li .dropdown li {
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.breakpoint-on .classynav ul li .megamenu {
+  background-color: transparent;
+}
+
+.breakpoint-on .dd-trigger {
+  border-radius: 8px;
+}
+
+.breakpoint-on .dd-trigger {
+  background-color: $primary;
+  border-radius: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.breakpoint-on .classynav ul li a {
+  height: 36px;
+  line-height: 36px;
+}

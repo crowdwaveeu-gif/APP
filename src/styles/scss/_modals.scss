@@ -1,0 +1,607 @@
+.ar-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 0;
+    height: 0;
+    background-color: #000;
+    opacity: 0;
+    visibility: hidden;
+    margin: 0;
+
+    &.active {
+        width: 100vw;
+        height: 100vh;
+        visibility: visible;
+        opacity: .6;
+        padding: 25px;
+    }
+}
+
+.ar-modal {
+
+    /* width */
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    /* Track */
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    /* Handle */
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+    }
+
+    /* Handle on hover */
+    &::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+}
+
+.ar-modal-content {
+    display: none;
+}
+
+.active .ar-modal-content {
+    display: block;
+}
+
+.edit-task-modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background: #fff;
+    z-index: 1001;
+    width: 60%;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.4s ease-in-out;
+    height: 0;
+
+    @include lg {
+        width: 70%;
+    }
+
+    @include md {
+        width: 80%;
+    }
+
+    @include xs {
+        width: 90%;
+    }
+
+    &.active {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        visibility: visible;
+        height: 90%;
+        overflow: auto;
+    }
+
+    .react-datepicker-wrapper {
+        width: 100%;
+    }
+
+    .edit-task-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, .15);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            color: #595959;
+            font-weight: 600;
+            margin-bottom: 0;
+
+            @include xxs {
+                font-size: 16px;
+            }
+        }
+    }
+
+    .edit-task-modal-body {
+        padding: 15px;
+    }
+
+    .edit-task-modal-footer {
+        padding: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+}
+
+.add-new-task-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background: #fff;
+    z-index: 1001;
+    width: 60%;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.4s ease-in-out;
+    height: 0;
+
+    @include lg {
+        width: 70%;
+    }
+
+    @include md {
+        width: 80%;
+    }
+
+    @include xs {
+        width: 90%;
+    }
+
+    &.active {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        visibility: visible;
+        height: 90%;
+        overflow: auto;
+    }
+
+    .add-new-task-modal-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, .15);
+        align-items: center;
+
+        h2 {
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 100%;
+            color: #595959;
+            font-weight: 600;
+            margin-bottom: 0;
+
+            @include xxs {
+                font-size: 16px;
+            }
+        }
+    }
+
+    .add-new-task-modal-body {
+        padding: 15px;
+    }
+
+    .add-new-task-modal-footer {
+        padding: 0 15px 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+}
+
+.view-task-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    background: #fff;
+    z-index: 1001;
+    width: 823px;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.4s ease-in-out;
+    height: 0;
+
+    @include md {
+        width: 90%;
+    }
+
+    @include xxs {
+        width: 95%;
+    }
+
+    &.active {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        visibility: visible;
+        height: 90%;
+        overflow: auto;
+    }
+
+    .view-task-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, .15);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h2 {
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            color: #595959;
+            font-weight: 600;
+
+            margin-bottom: 0;
+
+            @include xxs {
+                font-size: 16px;
+            }
+        }
+    }
+
+    .view-task {
+        padding: 15px;
+    }
+
+}
+
+.event-modal-container {
+    position: fixed;
+    top: 30px;
+    background: #fff;
+    width: 80%;
+    max-width: 420px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1111;
+    padding: 0;
+    margin: 0;
+    border-radius: 6px;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    visibility: hidden;
+    transition-duration: 400ms;
+
+    &.active {
+        transform: translate(-50%, 0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .event-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+        h4 {
+            font-size: 20px;
+            line-height: 100%;
+            color: #252F4A;
+            font-weight: 600;
+            margin: 0;
+        }
+    }
+
+    .event-modal-body {
+        padding: 15px;
+    }
+
+    .event-modal-footer {
+        padding: 0 15px 15px;
+        text-align: end;
+    }
+}
+
+.delete-event-modal-container {
+    position: fixed;
+    top: 10%;
+    z-index: 1111;
+    background: #fff;
+    width: max-content;
+    padding: 0;
+    margin: 0;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    visibility: hidden;
+    transition-duration: 400ms;
+    border-radius: 6px;
+
+    &.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0);
+    }
+
+    .delete-event-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+        h4 {
+            font-size: 20px;
+            line-height: 100%;
+            color: #252F4A;
+            font-weight: 600;
+            margin: 0;
+        }
+    }
+
+    .delete-event-modal-body {
+        padding: 15px;
+    }
+
+    .delete-event-modal-footer {
+        padding: 0 15px 15px;
+        text-align: end;
+    }
+}
+
+.voice-call-modal,
+.video-call-modal {
+    top: 50%;
+    left: 50%;
+    position: fixed;
+    background: #fff;
+    z-index: 1111;
+    transform: translate(-50%, 100%);
+    padding: 15px 0;
+    border-radius: 10px;
+    transition: 400ms;
+    opacity: 0;
+    visibility: hidden;
+
+    &.active {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.video-call-modal {
+    max-width: 800px;
+    padding: 16px;
+    width: 80%;
+}
+
+.voice-call-modal {
+    max-width: 498px;
+    width: 70%;
+}
+
+.expand-mail-modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1111;
+    background: #fff;
+    width: 80%;
+    transform: translate(-50%, 100%);
+    opacity: 0;
+    visibility: hidden;
+    transition-duration: 400ms;
+    min-height: 600px;
+
+    .scrollabe {
+        @include xs {
+            padding-bottom: 20px;
+        }
+    }
+
+    @include xs {
+        min-height: unset;
+    }
+
+    @include xxs {
+        width: 90%;
+    }
+
+    &.active {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mail-body-top {
+        margin-bottom: 20px !important;
+    }
+
+    .mail-details {
+        width: 100%;
+        border: 0;
+
+        .mail-conversation {
+            min-height: 560px;
+
+            @include xs {
+                height: 460px;
+                min-height: unset;
+            }
+        }
+    }
+}
+
+.upload-modal-container {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    z-index: 1001;
+    background: #fff;
+    min-width: 45%;
+    transition-duration: 400ms;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+
+    @include md {
+        min-width: 60%;
+    }
+
+    @include sm {
+        min-width: 70%;
+    }
+
+    @include xxs {
+        min-width: 80%;
+    }
+
+    &.active {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        visibility: visible;
+        opacity: 1;
+        height: auto;
+    }
+
+    .upload-modal-header {
+        padding: 15px;
+
+        h3 {
+            color: #595959;
+            font-weight: 600;
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            margin: 0;
+        }
+    }
+
+    .upload-modal-footer {
+        padding: 15px;
+        text-align: end;
+    }
+
+    .dropzone .dz-message {
+        border-left: 0;
+        border-right: 0;
+    }
+
+}
+
+.create-folder-modal-container {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    z-index: 1001;
+    background: #fff;
+    width: 30%;
+    max-width: 500px;
+    transition-duration: 400ms;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    border-radius: 10px;
+
+    @include xl {
+        width: 40%;
+    }
+
+    @include lg {
+        width: 50%;
+    }
+
+    @include md {
+        width: 60%;
+    }
+
+    @include xs {
+        width: 70%;
+    }
+
+    @include xxs {
+        width: 80%;
+    }
+
+    &.active {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        visibility: visible;
+        opacity: 1;
+        height: auto;
+    }
+
+    .create-folder-modal-header {
+        display: flex;
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+            color: #595959;
+            font-weight: 600;
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            margin: 0;
+        }
+    }
+
+    .create-folder-modal-body form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .create-folder-modal-footer {
+        padding: 15px;
+        text-align: end;
+    }
+}
+
+.file-details-modal-container {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    z-index: 1001;
+    background: #fff;
+    max-width: 800px;
+    width: 70%;
+    transition-duration: 400ms;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    border-radius: 10px;
+
+    @include sm {
+        width: 90%;
+    }
+
+    &.active {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        visibility: visible;
+        opacity: 1;
+        height: max-content;
+        max-height: 90%;
+        overflow: auto;
+        scrollbar-width: 0;
+    }
+
+    .file-details-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+
+        h3 {
+            color: #595959;
+            font-weight: 600;
+            font-family: Lato, sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            margin: 0;
+        }
+    }
+
+    .file-details-modal-body {
+        padding: 15px;
+    }
+
+    .file-details-modal-footer {
+        padding: 15px;
+        text-align: end;
+    }
+}

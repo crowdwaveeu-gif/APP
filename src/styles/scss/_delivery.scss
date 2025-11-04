@@ -1,0 +1,182 @@
+.home-delivery {
+   background-color: #D3DBE7;
+
+   .top-header-area {
+      background-color: #3C3266;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+   }
+
+   .logistic-main-content {
+      .card {
+         @include xl {
+            padding: 20px;
+         }
+
+
+         &.cta-card {
+            p {
+               @include xl {
+                  font-size: 12px;
+               }
+            }
+
+            span {
+               font-size: 14px;
+               margin-top: 5px;
+            }
+         }
+      }
+   }
+
+
+   .webdesh-logo {
+      background-color: $white;
+   }
+
+   &.mobile-menu-open {
+      .webdesh-sidemenu-area {
+         left: 0;
+      }
+
+      .webdesh-logo {
+         left: 0;
+      }
+   }
+
+   .mobile-menu-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 0;
+   }
+
+   .sidebar-menu {
+      .treeview.active {
+         li.active {
+            a {
+               color: $white;
+
+               &::after {
+                  background-color: $white;
+               }
+            }
+         }
+      }
+
+      li {
+         a {
+            &::before {
+               background-color: #1A83FE;
+            }
+
+            &::after {
+               background: rgba(26, 131, 254, 0.10);
+            }
+         }
+
+         &.treeview.active .treeview-menu li.active a {
+            color: #1A83FE;
+         }
+
+         .treeview-menu li a:hover {
+            color: #1A83FE;
+         }
+      }
+
+      >li>a:hover,
+      >li.menu-open>a {
+         color: #1A83FE;
+      }
+   }
+
+   .sidebar-menu li .treeview-menu li.active a {
+      color: #1A83FE;
+   }
+
+   .top-navbar>ul>li>a {
+      background-color: transparent;
+      font-size: 14px;
+
+      @media #{$breakpoint-xs} {
+         color: $heading;
+      }
+
+      @media #{$breakpoint-md} {
+         color: $heading;
+      }
+
+      @media #{$breakpoint-lg} {
+         padding: 8px 10px;
+         color: #dedede;
+      }
+
+      &::before {
+         display: none;
+      }
+
+      &:hover,
+      &:focus {
+
+         @media #{$breakpoint-xs} {
+            color: $primary;
+         }
+
+         @media #{$breakpoint-md} {
+            color: $primary;
+         }
+
+         @media #{$breakpoint-lg} {
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(2px);
+            color: $white;
+         }
+      }
+   }
+
+   .top-search-bar form input {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+
+      @media #{$breakpoint-md} {
+         width: 170px;
+      }
+
+      @media #{$breakpoint-lg} {
+         width: 200px;
+      }
+   }
+
+   .right-side-navbar .nav-item.dropdown .btn {
+      color: #737B8B;
+      background-color: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+   }
+
+   .classy-navbar-toggler {
+      background: transparent;
+   }
+
+   .navbarToggler {
+      color: $white;
+   }
+
+   .classy-navbar-toggler {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 1px 5px;
+      font-size: 24px;
+
+      @media #{$breakpoint-md} {
+         width: 46px;
+         height: 46px;
+         padding: 5px 10px;
+      }
+   }
+
+   .dropdown-menu.show {
+      top: 0;
+      right: 0;
+      border-radius: 2px;
+   }
+}

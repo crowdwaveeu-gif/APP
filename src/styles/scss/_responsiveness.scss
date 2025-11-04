@@ -1,0 +1,334 @@
+@media #{$breakpoint-xs} {
+   .panel .panel-header {
+      height: auto;
+      padding: 20px;
+      flex-wrap: wrap;
+      gap: 1rem;
+   }
+
+   .table-bottom-control {
+      flex-wrap: wrap;
+      gap: 1rem;
+   }
+
+   .fc-toolbar.fc-header-toolbar {
+      flex-wrap: wrap;
+      gap: 1rem;
+   }
+
+   .file-manager-row .file-manager-col {
+      width: 100%;
+   }
+
+   .utility-box {
+      width: 60px;
+      height: 60px;
+   }
+
+   .coming-soon-panel .countdown li {
+      font-size: 1rem;
+   }
+
+   .coming-soon-panel .countdown li span {
+      min-width: 40px;
+      padding: .5rem;
+      border-radius: 8px;
+   }
+
+   .coming-soon-panel .countdown li p {
+      font-size: 14px;
+      padding-top: 12px;
+   }
+
+   .pricing-panel .pricing .table thead th .table-title h2 {
+      font-size: 24px;
+      line-height: 30px;
+   }
+
+   .under-construction-panel .part-img img {
+      max-height: 120px;
+   }
+
+   .under-construction-panel .part-txt h2 {
+      font-size: 24px;
+   }
+
+   .chatting-panel {
+      height: auto;
+      flex-wrap: wrap;
+   }
+
+   .chatting-panel .panel:first-child {
+      width: 100%;
+      height: 300px;
+   }
+
+   .chatting-panel .panel:nth-child(2) {
+      width: 100%;
+      height: 450px;
+   }
+
+   .chatting-panel .chatting-area .chat-top-bar {
+      flex-wrap: wrap;
+      gap: 1rem;
+   }
+
+   .chatting-panel .msg-type-area {
+      position: relative;
+   }
+
+   .email-panel {
+      flex-wrap: wrap;
+   }
+
+   .email-panel>.panel:first-child {
+      width: 100%;
+      height: 500px;
+   }
+
+   .email-panel>.panel:nth-child(2) {
+      width: 100%;
+   }
+
+
+   .compose-mail {
+      overflow-y: auto;
+      display: block;
+   }
+
+   .login-panel {
+      padding: 0 1rem;
+   }
+
+   .login-body {
+      width: 100%;
+      max-width: 500px;
+   }
+
+   .login-body .bottom {
+      padding: 2rem;
+   }
+
+   .login-body.login-body-2 {
+      padding: 1.5rem;
+   }
+
+   .static-body .panel-body {
+      padding: 1.5rem;
+   }
+
+   .error-panel .part-img {
+      margin-bottom: 2rem;
+   }
+
+   .error-panel .part-img img {
+      max-height: 150px;
+   }
+
+   .profile-sidebar .top .part-img {
+      width: 80px;
+   }
+
+   .profile-sidebar .top .part-txt {
+      width: calc(100% - 80px);
+   }
+}
+
+@media #{$breakpoint-sm} {
+   .file-manager-row .file-manager-col {
+      width: calc(50% - 16px);
+   }
+}
+
+@media #{$breakpoint-xs-landscape} {
+   .file-manager-row .file-manager-col {
+      width: calc(50% - 16px);
+   }
+}
+
+@media #{$breakpoint-md} {
+   .file-manager-row .file-manager-col {
+      width: calc(50% - 16px);
+   }
+
+   .coming-soon-panel .countdown li {
+      font-size: 2rem;
+   }
+
+   .pricing-panel .pricing .table thead th .table-title h2 {
+      font-size: 24px;
+      line-height: 30px;
+   }
+
+   .under-construction-panel .part-txt h2 {
+      font-size: 3rem;
+   }
+
+   .chatting-panel {
+      height: auto;
+      flex-wrap: wrap;
+   }
+
+   .chatting-panel .panel:first-child {
+      width: 100%;
+      height: 300px;
+   }
+
+   .chatting-panel .panel:nth-child(2) {
+      width: 100%;
+      height: 450px;
+   }
+
+   .chatting-panel .chatting-area .chat-top-bar {
+      flex-wrap: wrap;
+      gap: 1rem;
+   }
+
+   .chatting-panel .msg-type-area {
+      position: relative;
+   }
+
+   .email-panel {
+      flex-wrap: wrap;
+   }
+
+   .email-panel>.panel:first-child {
+      width: 100%;
+      height: 500px;
+   }
+
+   .email-panel>.panel:nth-child(2) {
+      width: 100%;
+   }
+
+
+   .compose-mail {
+      overflow-y: auto;
+      display: block;
+   }
+
+   .all-steps {
+      flex: 0 0 calc(100% - 325px);
+      max-width: calc(100% - 325px);
+      width: calc(100% - 325px);
+      display: flex;
+      align-items: center;
+      height: 100%;
+   }
+
+   .steps-sidebar {
+      flex: 0 0 325px;
+      max-width: 325px;
+      width: 325px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+   }
+
+   .multi-step-signup-panel {
+      display: flex;
+      align-content: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 100vh;
+   }
+
+   .all-steps .single-step {
+      max-height: 100%;
+   }
+
+   .error-panel {
+      top: 2rem;
+      right: 2rem;
+      bottom: 2rem;
+      left: 2rem;
+   }
+
+   .error-panel .part-img {
+      margin-bottom: 4rem;
+   }
+
+   .error-panel .part-img img {
+      max-height: 200px;
+   }
+
+   .profile-sidebar .top .part-img {
+      width: 120px;
+   }
+
+   .profile-sidebar .top .part-txt {
+      width: calc(100% - 120px);
+   }
+}
+
+@media #{$breakpoint-lg} {
+   .file-manager-row .file-manager-col {
+      width: calc(33.3333333% - 16px);
+   }
+
+   .pricing-panel .pricing .table thead th .table-title h2 {
+      font-size: 35px;
+      line-height: 45px;
+   }
+
+   .chatting-panel {
+      height: calc(100vh - 139px);
+      flex-wrap: nowrap;
+   }
+
+   .chatting-panel .panel:first-child {
+      width: 300px;
+      height: 100%;
+   }
+
+   .chatting-panel .panel:nth-child(2) {
+      width: calc(100% - 300px);
+      height: 100%;
+   }
+
+   .chatting-panel .chatting-area .chat-top-bar {
+      flex-wrap: nowrap;
+      gap: 1rem;
+   }
+
+   .chatting-panel .msg-type-area {
+      position: absolute;
+   }
+
+   .email-panel {
+      flex-wrap: nowrap;
+   }
+
+   .email-panel>.panel:first-child {
+      width: 250px;
+      height: 100%;
+   }
+
+   .email-panel>.panel:nth-child(2) {
+      width: calc(100% - 250px);
+      height: 100%;
+   }
+
+
+
+   .compose-mail {
+      overflow-y: auto;
+      display: flex;
+   }
+}
+
+@media #{$breakpoint-xl} {
+   .under-construction-panel .part-txt h2 {
+      font-size: 4rem;
+   }
+
+   .email-panel>.panel:first-child {
+      width: 300px;
+      height: 100%;
+   }
+
+   .email-panel>.panel:nth-child(2) {
+      width: calc(100% - 300px);
+      height: 100%;
+   }
+}

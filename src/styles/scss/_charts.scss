@@ -1,0 +1,107 @@
+.panel.chart-panel-1 .panel-body {
+   padding-right: 10px;
+   padding-left: 2px;
+   padding-bottom: 1px;
+   padding-top: 1px;
+}
+
+.panel.chart-panel-2 .panel-body {
+   padding-right: 0;
+   padding-bottom: 5px;
+   padding-top: 1px;
+}
+
+.apexcharts-datalabel-value,
+.apexcharts-legend-text,
+.apexcharts-text,
+.apexcharts-xaxis-texts-g>*,
+.apexcharts-yaxis-texts-g>* {
+   fill: $border;
+   color: $border !important;
+}
+
+.apexcharts-pie .apexcharts-text {
+   fill: $white;
+}
+
+.apexcharts-datalabel-label {
+   fill: $white;
+}
+
+.apexcharts-marker {
+   stroke-width: 1;
+}
+
+.apexcharts-pie circle,
+.apexcharts-pie line,
+.apexcharts-radar-series line,
+.apexcharts-radar-series polygon {
+   stroke: rgba(255, 255, 255, 0.15);
+}
+
+.apexcharts-datalabel-value,
+.apexcharts-legend-text,
+.apexcharts-text,
+.apexcharts-xaxis-texts-g>*,
+.apexcharts-yaxis-texts-g>* {
+   fill: $heading;
+   color: #595959 !important;
+}
+
+.apexcharts-gridline {
+   stroke: rgba(0, 0, 0, 0.17);
+}
+
+.occupancy-statistics {
+   .apexcharts-series {
+      .apexcharts-bar-area {
+         &:nth-child(1) {
+            fill: #5BA6FF;
+         }
+
+         &:nth-child(2) {
+            fill: #17C653;
+         }
+
+         &:nth-child(3) {
+            fill: #F35D82;
+         }
+
+         &:nth-child(4) {
+            fill: #6AD49A;
+         }
+
+         &:nth-child(5) {
+            fill: #FFCF26;
+         }
+
+         &:nth-child(6) {
+            fill: #8756ED;
+         }
+
+         &:nth-child(7) {
+            fill: #F35DC9;
+         }
+
+         &:nth-child(8) {
+            fill: #F38A5D;
+         }
+
+         &:nth-child(9) {
+            fill: #5DF37E;
+         }
+
+         &:nth-child(10) {
+            fill: #B15DF3;
+         }
+
+         &:nth-child(11) {
+            fill: #5BA6FF;
+         }
+
+         &:nth-child(12) {
+            fill: #17C653;
+         }
+      }
+   }
+}

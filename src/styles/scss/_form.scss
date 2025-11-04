@@ -1,0 +1,228 @@
+/* :: Form CSS */
+
+.form-control[type=file]::-webkit-file-upload-button {
+  transition: 0.3s;
+}
+
+.form-control[type=file]::file-selector-button {
+  transition: 0.3s;
+}
+
+input[type=radio],
+input[type=checkbox] {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: $border;
+  opacity: 1;
+}
+
+.input-group-text {
+  border-color: $border;
+}
+
+.form-group,
+.form-row,
+.form-range-area {
+  label {
+    display: inline-block;
+    margin-bottom: .25rem;
+    font-size: 14px;
+  }
+}
+
+.form-control {
+  transition-duration: 400ms;
+  border-color: $border;
+  border-radius: 6px;
+  width: 100%;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: none;
+  }
+}
+
+.form-control::file-selector-button {
+  padding: 9px .8rem;
+  background-color: $border;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+table.dataTable thead th,
+table.dataTable thead td {
+  padding: 12px 16px 12px 10px;
+  border-bottom: 1px solid $heading;
+}
+
+table.dataTable tbody th,
+table.dataTable tbody td {
+  padding: 10px;
+}
+
+div.dt-container.dt-empty-footer tbody>tr:last-child>* {
+  border-bottom-width: 0;
+}
+
+.digi-dropdown .dropdown-menu {
+  width: 10rem;
+  border: 0;
+  padding: .5rem !important;
+  right: 0;
+  top: 10px;
+}
+
+.form-floating label {
+  color: $text;
+}
+
+.form-floating .form-control::-webkit-input-placeholder {
+  opacity: 0;
+}
+
+.form-floating .form-control::-moz-placeholder {
+  opacity: 0;
+}
+
+.form-floating .form-control:-ms-input-placeholder {
+  opacity: 0;
+}
+
+.form-floating .form-control::-ms-input-placeholder {
+  opacity: 0;
+}
+
+.form-floating .form-control::placeholder {
+  opacity: 0;
+}
+
+.input-flush {
+  padding: 0;
+  border: 0;
+  outline: none;
+}
+
+.form-group {
+  display: flex;
+  gap: 10px;
+}
+
+.form-control[type=file]::-webkit-file-upload-button {
+  color: $text;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.form-control[type=file]::file-selector-button {
+  color: $text;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.form-control[type=file]:hover::-webkit-file-upload-button {
+  background-color: #f1f4fb !important;
+}
+
+.form-control[type=file]:hover::file-selector-button {
+  background-color: #f1f4fb !important;
+}
+
+.col-form-label {
+  color: $border;
+  height: -webkit-max-content;
+  height: -moz-max-content;
+  height: max-content;
+}
+
+.form-select,
+.form-control {
+  font-size: 14px;
+  color: $text;
+  border-color: $border;
+  height: 40px;
+
+  &.form-control-sm {
+    height: 31px;
+  }
+
+  &.form-control-lg {
+    height: 50px;
+  }
+
+  &:focus,
+  &:focus {
+    color: $text;
+    border-color: $heading;
+  }
+}
+
+textarea.form-control {
+  min-height: 120px;
+}
+
+.form-select::-webkit-input-placeholder,
+.form-control::-webkit-input-placeholder,
+.form-select::-moz-placeholder,
+.form-control::-moz-placeholder,
+.form-select:-ms-input-placeholder,
+.form-control:-ms-input-placeholder,
+.form-select::-ms-input-placeholder,
+.form-control::-ms-input-placeholder,
+.form-select::placeholder,
+.form-control::placeholder {
+  color: $text;
+}
+
+.form-select {
+  background-image: url(/img/arrow-down.png);
+  background-size: 12px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+}
+
+.form-control:disabled {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.form-control-plaintext {
+  font-size: 14px;
+}
+
+.input-group>*:first-child {
+  border-radius: 6px 0 0 6px;
+  border-right-width: 0;
+}
+
+.input-group>*:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.input-group-text {
+  min-width: 40px;
+  padding: 0 5px;
+  justify-content: center;
+  border: 1px solid rgba(223, 223, 223, 0.15);
+  border-radius: 3px;
+  background-color: transparent;
+  color: $border;
+  font-size: 14px;
+}
+
+.form-check label {
+  font-size: 14px;
+  line-height: 16px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}

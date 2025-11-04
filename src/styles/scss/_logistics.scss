@@ -1,0 +1,132 @@
+.home-logistics {
+   background: #34376D;
+
+   .classy-menu .classynav.top-navbar {
+      padding: 0;
+      padding-left: 30px;
+
+      @include lg {
+         padding-left: 15px;
+      }
+
+      @include md {
+         padding: 80px 0;
+      }
+
+      a {
+         color: #cbcbcb;
+         transition: 0.15s;
+
+         @include lg {
+            padding: 10px;
+            font-size: 14px;
+         }
+
+         @include md {
+            padding: 16px;
+            color: #676d78;
+         }
+
+         &:hover {
+            color: #fff;
+
+            @include md {
+               color: #32353b;
+            }
+
+         }
+      }
+   }
+
+   .classynav ul#corenav {
+
+      li.cn-dropdown-item ul.dropdown a,
+      li.megamenu-item .megamenu a {
+         color: #59646e;
+         transition: 0.15s;
+
+         &:hover {
+            color: #222;
+         }
+      }
+   }
+
+   .logistic-main-content {
+      .card {
+         @include lg {
+            padding: 25px;
+         }
+
+         @include xxs {
+            padding: 20px;
+         }
+
+         &.cta-card p {
+            @include lg {
+               font-size: 12px;
+            }
+         }
+      }
+   }
+
+   .webdesh-page-content {
+      margin-left: 0;
+   }
+
+   .top-header-area {
+      padding: 0;
+      left: 0;
+      width: 100%;
+      background-color: #3C3266;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+   }
+
+   .main-content-wrap .main-container {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+   }
+
+   .top-search-bar form input {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.20);
+
+      @include lg {
+         width: 220px;
+      }
+
+      @include sm {
+         width: 130px;
+      }
+   }
+
+   .left-side-content-area img {
+      @include sm {
+         width: 140px;
+      }
+   }
+
+   .right-side-navbar .nav-item.dropdown .btn {
+      color: #737B8B;
+      background-color: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+   }
+
+   .footer-area {
+      width: 100%;
+      margin-left: 0;
+   }
+
+   .cta-card {
+      >p {
+         color: $heading;
+         font-weight: 600;
+      }
+
+      span {
+         font-size: 12px;
+         color: $heading;
+         font-weight: 500;
+      }
+   }
+}

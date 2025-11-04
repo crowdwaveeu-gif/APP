@@ -1,0 +1,259 @@
+.login-panel {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  background: url(/img/bg-img/auth-bg.png) center center no-repeat;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  &::after {
+    background-color: transparent;
+  }
+}
+
+.login-panel.login-panel-2 .panel-title {
+  font-size: 40px;
+  line-height: 100%;
+  font-weight: 400;
+  color: $white;
+  padding-bottom: 12px;
+  margin-top: -5px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.login-panel.login-panel-2 .panel-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2px;
+}
+
+.login-panel.login-panel-3 {
+  background: url(/img/bg-img/login-bg.jpg) center center no-repeat;
+  background-size: cover;
+  z-index: 2;
+}
+
+.login-panel.login-panel-3::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: -webkit-gradient(linear, left top, right top, from(rgba(17, 33, 67, 0.25)), to(rgba(0, 0, 0, 0.2)));
+  background-color: linear-gradient(to right, rgba(17, 33, 67, 0.25), rgba(0, 0, 0, 0.2));
+  opacity: 1;
+  z-index: -1;
+}
+
+.login-body {
+  border-radius: 10px;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  max-width: 500px;
+  width: 100%;
+}
+
+.login-body.login-body-2 {
+  padding: 50px;
+}
+
+.login-body.login-body-2 .top {
+  height: 90px;
+  background-color: $white;
+  border-radius: 3px;
+  padding: 0 20px;
+  margin-bottom: 30px;
+}
+
+.login-body.login-body-2 .bottom {
+  padding: 0;
+}
+
+.login-body .top {
+  height: 100px;
+  padding: 0 30px;
+  border-bottom: 1px solid rgba(223, 223, 223, 0.15);
+}
+
+.login-body .top a {
+  color: #F9F9F9;
+}
+
+.login-body .bottom {
+  padding: 2.5rem;
+}
+
+.login-body .bottom .panel-title {
+  text-align: center;
+  font-size: 24px;
+  line-height: 100%;
+  font-weight: 400;
+  color: #F9F9F9;
+  margin-top: -2px;
+  margin-bottom: 26px;
+}
+
+.login-body .bottom .input-group-text {
+  width: 50px;
+  justify-content: center;
+  background-color: $white;
+}
+
+.login-body .bottom .form-control {
+  background-color: $white;
+  border-width: 0;
+  border-left: 1px solid rgba(49, 49, 49, 0.15);
+  height: 50px;
+  color: $heading;
+  font-size: 14px;
+
+  @include xxs {
+    font-size: 12px;
+  }
+}
+
+.login-body .bottom .form-control:not(:focus) {
+  border-color: rgba(49, 49, 49, 0.15);
+}
+
+.login-body .bottom .other-option {
+  text-align: center;
+  padding-top: 20px;
+}
+
+.login-body .bottom .other-option p {
+  font-size: 16px;
+  line-height: 100%;
+  color: $border;
+  margin-top: -2px;
+  margin-bottom: 17px;
+
+  @include xxs {
+    font-size: 14px;
+  }
+}
+
+.login-body .bottom .other-option p.mb-0 {
+  margin-bottom: -3px !important;
+}
+
+.login-body .bottom .other-option .social-box a {
+  text-align: center;
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  font-size: 22px;
+}
+
+.login-body .bottom .other-option .social-box a:hover {
+  color: #F7F7F7;
+}
+
+.login-body .bottom .input-group {
+  position: relative;
+}
+
+.login-body .bottom .input-group .password-show {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: $heading;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 5;
+}
+
+.login-body .login-btn {
+  position: relative;
+  z-index: 2;
+}
+
+.login-body .login-btn::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 0;
+  height: calc(100% + 2px);
+  background-color: $bg-lime;
+  border-radius: 3px;
+  z-index: -1;
+  -webkit-transition: all 0.3s ease-in;
+  transition: all 0.3s ease-in;
+}
+
+.login-body .login-btn:focus::after {
+  width: calc(100% + 2px);
+}
+
+.login-body a.fs-14 {
+  line-height: 100%;
+
+  @include xxs {
+    font-size: 12px;
+  }
+}
+
+.login-panel {
+  background: url(/img/bg-img/auth-bg-light.png) center center no-repeat;
+  background-size: cover;
+}
+
+.login-panel::after {
+  background-color: transparent;
+}
+
+.login-panel.login-panel-2 .panel-title {
+  color: $text;
+}
+
+.login-panel .footer {
+  background-color: #f1f4fb;
+}
+
+.login-panel .footer p {
+  color: $text;
+}
+
+.login-body {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.login-body .top {
+  border-color: rgba(0, 0, 0, 0.07);
+}
+
+.login-body .top a {
+  color: $text;
+}
+
+.login-body .bottom .panel-title {
+  color: $text;
+  font-weight: 500;
+}
+
+.login-body .bottom .form-control {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.login-body .bottom .other-option p {
+  color: $text;
+}
+
+.login-body .text-white {
+  color: #595959 !important;
+}

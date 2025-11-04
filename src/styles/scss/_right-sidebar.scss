@@ -1,0 +1,338 @@
+.right-sidebar-btn {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 1051;
+  border: none;
+
+  button {
+    width: 45px;
+    height: 45px;
+    border-radius: 5px 0 0 5px;
+    padding: 0;
+    border: none;
+    font-size: 1.5rem;
+    color: $white;
+    background-color: $primary;
+
+    i {
+      line-height: 45px;
+    }
+  }
+}
+
+.right-sidebar {
+  transition-duration: 400ms;
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 280px;
+  height: 100%;
+  transition: 0.3s;
+  z-index: 1052;
+  box-shadow: 0px 0px 9px 12px rgba(27, 42, 82, 0.15);
+  background-color: $white;
+
+  @media #{$breakpoint-sm} {
+    width: 350px;
+    right: -450px;
+  }
+
+  @media #{$breakpoint-md} {
+    width: 350px;
+    right: -450px;
+  }
+
+  .sidebar-title {
+    height: 60px;
+    padding: 0 20px;
+    background-color: $primary;
+    display: flex;
+    align-items: center;
+
+    h3 {
+      font-size: 18px;
+      margin-bottom: 0;
+      color: $white;
+    }
+  }
+}
+
+.right-sidebar.active {
+  right: 0;
+}
+
+.right-sidebar .sidebar-body {
+  padding: 20px;
+  height: calc(100% - 60px);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.right-sidebar .right-sidebar-group {
+  margin-bottom: 20px;
+  transition: none;
+}
+
+.right-sidebar .right-sidebar-group:last-child {
+  padding-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.right-sidebar .sidebar-subtitle {
+  display: block;
+  font-size: 14px;
+  line-height: 100%;
+  color: #F7F7F7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -1px;
+  margin-bottom: 20px;
+}
+
+.right-sidebar .sidebar-subtitle span {
+  font-size: 12px;
+  text-align: center;
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  border: 1px solid rgba(121, 121, 121, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.right-sidebar .sidebar-subtitle .collapsed {
+  transform: rotate(180deg);
+}
+
+.right-sidebar .settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.right-sidebar .settings-row .settings-col {
+  width: calc(33.3333333333% - 6.7px);
+}
+
+.right-sidebar .settings-row-2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.right-sidebar .dashboard-icon {
+  border: 1px solid rgba(121, 121, 121, 0.25) !important;
+  transition: 0.3s;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.right-sidebar .dashboard-icon.light-theme-btn .part-txt {
+  background-color: rgba(70, 70, 70, 0.75);
+}
+
+.right-sidebar .dashboard-icon::after {
+  content: "\f00c";
+  font-family: "Font Awesome 6 Pro";
+  font-weight: 700;
+  line-height: 15px;
+  color: $white;
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  text-align: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 0 2px 0 3px;
+  transition: 0.3s;
+  opacity: 0;
+  background-color: $primary;
+}
+
+.right-sidebar .dashboard-icon .part-txt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(121, 121, 121, 0.25);
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 300;
+  color: $white;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.right-sidebar .dashboard-icon:hover .part-txt,
+.right-sidebar .dashboard-icon.active::after {
+  opacity: 1;
+}
+
+.right-sidebar .bg-menu {
+  border-color: rgba(121, 121, 121, 0.25) !important;
+}
+
+.right-sidebar .sidebar-bg-btn-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.right-sidebar .sidebar-bg-btn-box button {
+  width: 50px;
+  height: 90px;
+  padding: 0;
+  background-size: cover;
+  border: 1px solid $text;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-size: 20px;
+  position: relative;
+}
+
+.right-sidebar .sidebar-bg-btn-box button#noBackground::after {
+  display: none;
+}
+
+.right-sidebar .sidebar-bg-btn-box button::after {
+  content: "\f00c";
+  font-family: "Font Awesome 6 Pro";
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $white;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.right-sidebar .sidebar-bg-btn-box button.active::after {
+  opacity: 1;
+}
+
+.right-sidebar .main-content-bg-btn-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.right-sidebar .main-content-bg-btn-box button {
+  width: calc(33.3333333333% - 6.7px);
+  height: 60px;
+  padding: 0;
+  background-size: cover;
+  border: 1px solid $text;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-size: 20px;
+  position: relative;
+}
+
+.right-sidebar .main-content-bg-btn-box button#noBackground2::after {
+  display: none;
+}
+
+.right-sidebar .main-content-bg-btn-box button::after {
+  content: "\f00c";
+  font-family: "Font Awesome 6 Pro";
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $white;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.right-sidebar .main-content-bg-btn-box button.active::after {
+  opacity: 1;
+}
+
+.right-bar-close {
+  position: absolute;
+  top: 50%;
+  right: calc(100% - 2px);
+  transform: translateY(-50%);
+  padding: 5px 2px;
+  border: 0;
+  background-color: $white;
+  color: $text;
+  font-size: 30px;
+  perspective: 70px;
+  z-index: 2;
+
+  i {
+    margin-right: 5px;
+  }
+}
+
+.right-bar-close::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -5px;
+  width: 200%;
+  height: calc(100% + 6px);
+  background-color: #0a1735;
+  border: 0;
+  border-left-width: 2px;
+  border-right-width: 0;
+  border-radius: 10px 0 0 10px;
+  transform: rotateY(-50deg) translateY(-2px);
+  z-index: -1;
+}
+
+.right-bar-close::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: -1px;
+  width: 155%;
+  height: calc(100% - 4px);
+  border-radius: 5px;
+  transform: rotateY(-53deg) translateY(-2px);
+  z-index: -1;
+}
+
+.right-sidebar .sidebar-subtitle {
+  color: #000;
+}
+
+.right-sidebar .sidebar-subtitle span {
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
+.right-sidebar .dashboard-icon .part-txt {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.right-sidebar .main-content-bg-btn-box button,
+.right-sidebar .sidebar-bg-btn-box button {
+  border-color: rgba(0, 0, 0, 0.15);
+}

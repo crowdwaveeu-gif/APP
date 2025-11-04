@@ -1,0 +1,86 @@
+/* ============================================================
+[Master Stylesheet]
+Theme Name:            Webdesh - Responsive Admin Template
+Version:               1.0.0
+Author:                Codebasket
+Developer:             Azizur Rahman
+URL:                   https://themeforest.net/user/codebasket
+============================================================ */
+
+/* ====================================
+[CSS Index]
+   + Import Fonts
+   + Third Party Libraries
+   + Template variables & responsive
+   + Core Styles
+      + reboot
+      + animation
+      + bootstraping
+      + button
+      + form
+      + select2
+      + dashboard
+      + classymenu
+      + hrm
+      + hr-management
+      + call-center
+      + ota
+      + crm
+      + charts
+      + chatting
+      + datatable
+      + email
+      + inner-page
+      + login
+      + pricing
+      + right-sidebar
+      + step
+      + ui-datepicker
+      + dark-theme
+      + responsiveness
+==================================== */
+
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+
+// Template variables & responsive
+@import "../flag-icon/flag-icons.min.css";
+@import "breakpoints";
+@import "responsive";
+@import "variables";
+@import "colors";
+// Core Styles
+@import "reboot";
+@import "animation";
+@import "logo-animation";
+@import "crowdwave-logo";
+@import "bootstraping";
+@import "button";
+@import "form";
+@import "select2";
+@import "dashboard";
+@import "classymenu";
+@import "courier";
+@import "charts";
+@import "chatting";
+@import "datatable";
+@import "email";
+@import "inner-page";
+@import "login";
+@import "pricing";
+@import "right-sidebar";
+@import "step";
+@import "ui-datepicker";
+@import "dark-theme";
+@import "responsiveness";
+@import "demo";
+@import "header";
+@import "welcome_page";
+@import "left-sidebar";
+@import "calender";
+@import "modals";
+@import "email-template";
+@import "delivery";
+@import "logistics";

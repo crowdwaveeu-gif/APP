@@ -1,0 +1,121 @@
+.home-courier {
+    .top-header-area {
+        background-color: #444392;
+    }
+
+    .logistic-main-content {
+        .card {
+            @include xl {
+                padding: 20px;
+            }
+
+            &.cta-card {
+                p {
+                    @include xl {
+                        font-size: 12px;
+                    }
+                }
+
+                span {
+                    font-size: 14px;
+                    margin-top: 5px;
+                }
+            }
+        }
+    }
+
+    .dropdown-menu {
+        border-radius: 2px;
+        top: 0;
+        right: 0;
+    }
+
+    &.bg-detected {
+        .top-header-area {
+            &.header-sticky {
+                background-color: #444392;
+            }
+        }
+    }
+
+    &.mobile-menu-open {
+        .webdesh-sidemenu-area {
+            left: 0;
+        }
+
+        .webdesh-logo {
+            left: 0;
+        }
+    }
+
+    .mobile-menu-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 0;
+        line-height: 36px;
+    }
+
+    .sidebar-menu .treeview.active {
+        li.active {
+            a {
+                color: $white;
+
+                &::after {
+                    background-color: $white;
+                }
+            }
+        }
+    }
+
+    .custom-tab-content {
+        margin-top: 1.5rem;
+
+        .ar-tab-pane.active {
+            max-height: 270px;
+        }
+    }
+
+    .delivery-dashboard-header {
+        margin-top: 1rem;
+        margin-bottom: 0;
+        background: #444392;
+        padding: 44px;
+    }
+
+    .logistics-tab .nav-item .nav-link {
+        background: #515382;
+
+        &.active {
+            background: #1B84FF;
+        }
+    }
+
+}
+
+.sidebar-bg-detected {
+    .sidebar-menu li a::after {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-menu li a::before {
+        background-color: #1A83FE;
+    }
+
+    .sidebar-menu>li>a:hover,
+    .sidebar-menu>li.menu-open>a {
+        color: #1A83FE;
+    }
+
+    .sidebar-menu>li>a:hover i,
+    .sidebar-menu>li.menu-open>a i {
+        color: #1A83FE;
+    }
+
+    .sidebar-menu li .treeview-menu li a:hover {
+        color: #1A83FE;
+    }
+
+    .sidebar-menu li.active>a {
+        color: #1A83FE;
+    }
+}
