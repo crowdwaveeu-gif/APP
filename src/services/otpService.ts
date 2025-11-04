@@ -86,34 +86,30 @@ class OTPService {
     }
   }
 
-  // Send OTP via email using Zoho SMTP
+  // Send OTP via email using Firebase Cloud Functions
   async sendOTPEmail(email: string, otp: string, purpose: 'login' | 'password-reset' = 'login'): Promise<void> {
     try {
-      const EMAIL_API_URL = import.meta.env.VITE_EMAIL_API_URL || 'http://localhost:3001';
+      console.log('📧 Sending OTP email via Firebase Cloud Functions to:', email, 'Purpose:', purpose);
       
-      console.log('📧 Sending OTP email to:', email, 'Purpose:', purpose);
+      // Import Firebase Functions dynamically to avoid circular dependencies
+      const { getFunctions, httpsCallable } = await import('firebase/functions');
+      const { default: app } = await import('./firebase');
       
-      const response = await fetch(`${EMAIL_API_URL}/api/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp, purpose })
+      const functions = getFunctions(app);
+      const sendCrmLoginOTP = httpsCallable(functions, 'sendCrmLoginOTP');
+      
+      await sendCrmLoginOTP({
+        email,
+        otp
       });
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to send OTP email');
-      }
-
-      console.log('✅ OTP email sent successfully');
+      console.log('✅ OTP email sent successfully via Firebase Cloud Functions');
       console.log('🔐 OTP FOR TESTING:', otp); // Keep this for testing, remove in production
       
     } catch (error: any) {
       console.error('❌ Error sending OTP email:', error);
       
-      // Fallback: Log to console if email API is not available
+      // Fallback: Log to console if Firebase Functions are unavailable
       const subject = purpose === 'password-reset' 
         ? 'Your Password Reset Code' 
         : 'Your CRM Login OTP Code';
@@ -122,7 +118,7 @@ class OTPService {
         : 'You have requested to login to CrowdWave CRM.';
       
       console.log('='.repeat(60));
-      console.log('📧 OTP EMAIL (Email API unavailable - Using console fallback)');
+      console.log('📧 OTP EMAIL (Firebase Functions unavailable - Using console fallback)');
       console.log('='.repeat(60));
       console.log(`To: ${email}`);
       console.log(`Subject: ${subject}`);

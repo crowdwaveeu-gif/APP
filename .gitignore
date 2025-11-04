@@ -40,3 +40,5 @@ check-*.cjs
 create-*.cjs
 populate-*.cjs
 query-*.js
+
+.vercel
