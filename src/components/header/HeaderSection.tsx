@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { authService } from "../../services/authService";
 import { useLocation } from "react-router-dom";
 
@@ -23,19 +23,19 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
 const HeaderSection = ({ toggleSidebarOpen }: Props) => {
   const location = useLocation();
   const pageInfo = pageTitles[location.pathname] || { title: 'Dashboard', subtitle: 'CrowdWave System' };
-  const [activeDropdown, setActiveDropdown] = useState<string>("");
+  // const [activeDropdown, setActiveDropdown] = useState<string>("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const dropdownRef = useRef<HTMLUListElement>(null);
+  // const dropdownRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setActiveDropdown("");
-      }
+    const handleOutsideClick = (_event: MouseEvent) => {
+      // if (
+      //   dropdownRef.current &&
+      //   !dropdownRef.current.contains(event.target as Node)
+      // ) {
+      //   setActiveDropdown("");
+      // }
     };
 
     document.addEventListener("mousedown", handleOutsideClick);
@@ -45,9 +45,9 @@ const HeaderSection = ({ toggleSidebarOpen }: Props) => {
     };
   }, []);
 
-  const toggleDropdown = (dropdown: string) => {
-    setActiveDropdown(activeDropdown === dropdown ? "" : dropdown);
-  };
+  // const toggleDropdown = (dropdown: string) => {
+  //   setActiveDropdown(activeDropdown === dropdown ? "" : dropdown);
+  // };
 
   return (
     <header

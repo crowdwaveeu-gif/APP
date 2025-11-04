@@ -132,14 +132,15 @@ const TruckChart2: React.FC<TruckChart2Props> = ({ dataSource }) => {
   useEffect(() => {
     if (!chartRef.current || loading || !transportStats) return;
 
-    // Use public transport data (bus/train)
+    // Use public transport data (bus/train) - combine bus and train data
+    const publicTransportData = transportStats.bus.map((val, idx) => val + transportStats.train[idx]);
     const updatedOptions = {
       ...chartOptions,
       labels: transportStats.labels,
       series: [
         {
           name: "Public Transport (Bus/Train)",
-          data: transportStats.publicTransport,
+          data: publicTransportData,
         },
       ],
     };

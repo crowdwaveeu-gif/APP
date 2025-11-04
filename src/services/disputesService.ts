@@ -9,8 +9,8 @@ import {
   query,
   where,
   orderBy,
-  Timestamp,
-  QueryConstraint
+  Timestamp
+  // QueryConstraint
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 

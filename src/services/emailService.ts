@@ -4,7 +4,7 @@
  */
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { app } from './firebase'; // Adjust this import based on your Firebase setup
+import app from './firebase'; // Adjust this import based on your Firebase setup
 
 const functions = getFunctions(app);
 

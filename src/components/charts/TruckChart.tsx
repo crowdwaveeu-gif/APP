@@ -139,7 +139,7 @@ const TruckChart: React.FC<TruckChartProps> = ({ dataSource }) => {
       series: [
         {
           name: "Vehicle (Car/Bike)",
-          data: transportStats.vehicle,
+          data: transportStats.car,
         },
       ],
     };

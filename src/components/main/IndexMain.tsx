@@ -1,11 +1,11 @@
-import FleetTonnageCard from "../cards/FleetTonnageCard";
-import OverviewPerformanceCard from "../cards/OverviewPerformanceCard";
+// import FleetTonnageCard from "../cards/FleetTonnageCard";
+// import OverviewPerformanceCard from "../cards/OverviewPerformanceCard";
 import ReturnPendingCard from "../cards/ReturnPendingCard";
 import TotalDeliveredCard from "../cards/TotalDeliveredCard";
 import TotalOrderCard from "../cards/TotalOrderCard";
 import TotalOrderCard2 from "../cards/TotalOrderCard2";
 import TransportationCard from "../cards/TransportationCard";
-import VisitedCountryCard from "../cards/VisitedCountryCard";
+// import VisitedCountryCard from "../cards/VisitedCountryCard";
 import ShipmentHistoryCard from "../cards/ShipmentHistoryCard";
 
 const IndexMain = () => {
