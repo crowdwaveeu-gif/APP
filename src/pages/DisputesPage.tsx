@@ -858,7 +858,7 @@ const DisputesPage = () => {
         <div 
           className="modal show d-block" 
           tabIndex={-1} 
-          style={{ backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1060 }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 9999 }}
           onClick={() => setShowImageModal(false)}
         >
           <div className="modal-dialog modal-fullscreen">
