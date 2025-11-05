@@ -422,7 +422,7 @@ const DisputesPage = () => {
 
       {/* View Dispute Modal */}
       {showViewModal && selectedDispute && (
-        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)', paddingTop: '60px' }}>
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)', paddingTop: '60px', zIndex: 1050 }}>
           <div className="modal-dialog modal-xl">
             <div className="modal-content">
               <div className="modal-header">
@@ -728,7 +728,7 @@ const DisputesPage = () => {
 
       {/* Edit Dispute Modal */}
       {showEditModal && editingDispute && (
-        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)', paddingTop: '60px' }}>
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)', paddingTop: '60px', zIndex: 1050 }}>
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
