@@ -128,14 +128,15 @@ class ConversationsService {
   /**
    * Get user details from Firestore
    */
-  async getUserDetails(userId: string): Promise<{ name: string; avatar?: string } | null> {
+  async getUserDetails(userId: string): Promise<{ name: string; email?: string; avatar?: string } | null> {
     try {
       const userDoc = await getDoc(doc(db, 'users', userId));
       
       if (userDoc.exists()) {
         const data = userDoc.data();
         return {
-          name: data.fullName || data.name || 'Unknown User',
+          name: data.fullName || data.name || data.username || 'Unknown User',
+          email: data.email || undefined,
           avatar: data.photoUrl || data.avatar || undefined,
         };
       }

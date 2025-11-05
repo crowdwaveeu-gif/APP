@@ -19,6 +19,9 @@ const DisputesPage = () => {
   const [activeTab, setActiveTab] = useState<'details' | 'messages'>('details');
   const [reporterName, setReporterName] = useState<string>('');
   const [reportedName, setReportedName] = useState<string>('');
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
 
   // Load disputes from Firebase on mount
   useEffect(() => {
@@ -127,8 +130,31 @@ const DisputesPage = () => {
     setReporterName('');
     setReportedName('');
     
-    // Load chat messages between the two users
+    // Fetch user details if not already present (for old disputes)
     if (dispute.reporterId && dispute.reportedUserId) {
+      // Only fetch if names are missing
+      if (!dispute.reporterName || !dispute.reportedUserName) {
+        try {
+          const [reporter, reported] = await Promise.all([
+            conversationsService.getUserDetails(dispute.reporterId),
+            conversationsService.getUserDetails(dispute.reportedUserId)
+          ]);
+          
+          // Update the selected dispute with fetched names
+          const updatedDispute = {
+            ...dispute,
+            reporterName: reporter?.name || 'Unknown User',
+            reporterEmail: reporter?.email || 'N/A',
+            reportedUserName: reported?.name || 'Unknown User',
+            reportedUserEmail: reported?.email || 'N/A',
+          };
+          setSelectedDispute(updatedDispute);
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+      
+      // Load chat messages between the two users
       await loadChatMessages(dispute.reporterId, dispute.reportedUserId);
     }
   };
@@ -505,7 +531,7 @@ const DisputesPage = () => {
                     </div>
                     
                     {/* Evidence Images */}
-                    {(selectedDispute as any).evidence && (selectedDispute as any).evidence.length > 0 && (
+                    {(selectedDispute as any).evidence && (selectedDispute as any).evidence.length > 0 ? (
                       <div className="col-12">
                         <label className="form-label fw-medium">Evidence Attachments</label>
                         <div className="row g-2">
@@ -521,8 +547,13 @@ const DisputesPage = () => {
                                     objectFit: 'cover',
                                     cursor: 'pointer'
                                   }}
-                                  onClick={() => window.open(imageData, '_blank')}
+                                  onClick={() => {
+                                    setSelectedImage(imageData);
+                                    setSelectedImageIndex(index);
+                                    setShowImageModal(true);
+                                  }}
                                   onError={(e) => {
+                                    console.error('Image load error for evidence', index);
                                     (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2UgRXJyb3I8L3RleHQ+PC9zdmc+';
                                   }}
                                 />
@@ -531,9 +562,13 @@ const DisputesPage = () => {
                                   <br />
                                   <button 
                                     className="btn btn-sm btn-outline-primary mt-1"
-                                    onClick={() => window.open(imageData, '_blank')}
+                                    onClick={() => {
+                                      setSelectedImage(imageData);
+                                      setSelectedImageIndex(index);
+                                      setShowImageModal(true);
+                                    }}
                                   >
-                                    <i className="fas fa-external-link-alt me-1"></i>
+                                    <i className="fas fa-search-plus me-1"></i>
                                     View Full Size
                                   </button>
                                 </div>
@@ -541,6 +576,11 @@ const DisputesPage = () => {
                             </div>
                           ))}
                         </div>
+                      </div>
+                    ) : (
+                      <div className="col-12">
+                        <label className="form-label fw-medium">Evidence Attachments</label>
+                        <p className="text-muted">No evidence files attached</p>
                       </div>
                     )}
                     
@@ -806,6 +846,61 @@ const DisputesPage = () => {
                   onClick={handleSaveDispute}
                 >
                   Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Size Image Modal */}
+      {showImageModal && (
+        <div 
+          className="modal show d-block" 
+          tabIndex={-1} 
+          style={{ backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1060 }}
+          onClick={() => setShowImageModal(false)}
+        >
+          <div className="modal-dialog modal-fullscreen">
+            <div className="modal-content bg-transparent border-0">
+              <div className="modal-header border-0">
+                <h5 className="modal-title text-white">
+                  Evidence {selectedImageIndex + 1}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowImageModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body d-flex align-items-center justify-content-center p-0">
+                <img 
+                  src={selectedImage} 
+                  alt={`Evidence ${selectedImageIndex + 1}`}
+                  style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '90vh',
+                    objectFit: 'contain'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="modal-footer border-0 justify-content-center">
+                <a 
+                  href={selectedImage} 
+                  download={`evidence-${selectedImageIndex + 1}.jpg`}
+                  className="btn btn-light"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <i className="fas fa-download me-2"></i>
+                  Download Image
+                </a>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={() => setShowImageModal(false)}
+                >
+                  Close
                 </button>
               </div>
             </div>
