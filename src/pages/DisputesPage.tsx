@@ -858,51 +858,81 @@ const DisputesPage = () => {
         <div 
           className="modal show d-block" 
           tabIndex={-1} 
-          style={{ backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 9999 }}
+          style={{ 
+            backgroundColor: 'rgba(0,0,0,0.95)', 
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
           onClick={() => setShowImageModal(false)}
         >
-          <div className="modal-dialog modal-fullscreen">
-            <div className="modal-content bg-transparent border-0">
-              <div className="modal-header border-0">
-                <h5 className="modal-title text-white">
-                  Evidence {selectedImageIndex + 1}
-                </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white"
-                  onClick={() => setShowImageModal(false)}
-                ></button>
-              </div>
-              <div className="modal-body d-flex align-items-center justify-content-center p-0">
-                <img 
-                  src={selectedImage} 
-                  alt={`Evidence ${selectedImageIndex + 1}`}
-                  style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '90vh',
-                    objectFit: 'contain'
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-              <div className="modal-footer border-0 justify-content-center">
-                <a 
-                  href={selectedImage} 
-                  download={`evidence-${selectedImageIndex + 1}.jpg`}
-                  className="btn btn-light"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <i className="fas fa-download me-2"></i>
-                  Download Image
-                </a>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={() => setShowImageModal(false)}
-                >
-                  Close
-                </button>
-              </div>
+          <div style={{ 
+            width: '95%', 
+            height: '95vh',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px',
+              color: 'white'
+            }}>
+              <h5 style={{ margin: 0, fontSize: '18px' }}>
+                Evidence {selectedImageIndex + 1}
+              </h5>
+              <button 
+                type="button" 
+                className="btn-close btn-close-white"
+                onClick={() => setShowImageModal(false)}
+                style={{ fontSize: '20px' }}
+              ></button>
+            </div>
+            <div style={{ 
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+              <img 
+                src={selectedImage} 
+                alt={`Evidence ${selectedImageIndex + 1}`}
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '100%',
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'contain'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div style={{
+              padding: '20px',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '10px'
+            }}>
+              <a 
+                href={selectedImage} 
+                download={`evidence-${selectedImageIndex + 1}.jpg`}
+                className="btn btn-light"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <i className="fas fa-download me-2"></i>
+                Download Image
+              </a>
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={() => setShowImageModal(false)}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
