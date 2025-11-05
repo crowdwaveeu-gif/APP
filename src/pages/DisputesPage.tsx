@@ -907,8 +907,8 @@ const DisputesPage = () => {
                 src={selectedImage} 
                 alt={`Evidence ${selectedImageIndex + 1}`}
                 style={{ 
-                  maxWidth: '100%', 
-                  maxHeight: '100%',
+                  maxWidth: '60%', 
+                  maxHeight: '60%',
                   width: 'auto',
                   height: 'auto',
                   objectFit: 'contain'
