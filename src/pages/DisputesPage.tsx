@@ -173,6 +173,10 @@ const DisputesPage = () => {
       
       // Fetch chat history
       const { messages } = await conversationsService.getChatHistoryBetweenUsers(userId1, userId2);
+      console.log('Loaded messages:', messages);
+      if (messages.length > 0) {
+        console.log('Sample message structure:', messages[0]);
+      }
       setChatMessages(messages);
     } catch (error) {
       console.error('Error loading chat messages:', error);
@@ -665,7 +669,7 @@ const DisputesPage = () => {
                                       </small>
                                     </div>
                                     <p className="mb-0" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                      {message.text}
+                                      {message.text || (message as any).message || (message as any).content || (message as any).body || 'No message content'}
                                     </p>
                                     {message.type === 'image' && (
                                       <span className="badge bg-info mt-1">
