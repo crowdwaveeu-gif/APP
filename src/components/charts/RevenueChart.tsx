@@ -77,14 +77,14 @@ const RevenueChart = () => {
         yaxis: {
           labels: {
             formatter: function (value: number) {
-              return '$' + value.toLocaleString();
+              return '€' + value.toLocaleString();
             },
           },
         },
         tooltip: {
           y: {
             formatter: function (value: number) {
-              return '$' + value.toLocaleString(undefined, {
+              return '€' + value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               });

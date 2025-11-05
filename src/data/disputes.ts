@@ -13,6 +13,13 @@ export interface DisputeData {
   reporterId?: string;
   reportedUserId?: string;
   bookingId?: string;
+  // New fields from Flutter app
+  reporterName?: string;
+  reporterEmail?: string;
+  reportedUserName?: string;
+  reportedUserEmail?: string;
+  evidence?: string[];
+  evidenceCount?: number;
 }
 
 export const mockDisputesData: DisputeData[] = [

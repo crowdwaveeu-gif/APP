@@ -49,10 +49,7 @@ class AuthService {
       await signOut(auth);
       
       // Generate and send OTP
-      const otp = await otpService.initiateOTP(email);
-      
-      console.log('OTP sent successfully to:', email);
-      console.log('🔐 OTP FOR TESTING:', otp); // Remove in production
+      await otpService.initiateOTP(email);
       
       return {
         success: true,
@@ -225,10 +222,7 @@ class AuthService {
   async initiatePasswordReset(email: string): Promise<{ success: boolean; message: string }> {
     try {
       // Generate and send OTP with password-reset purpose
-      const otp = await otpService.initiateOTP(email, 'password-reset');
-      
-      console.log('Password reset OTP sent to:', email);
-      console.log('🔐 OTP FOR TESTING:', otp); // Remove in production
+      await otpService.initiateOTP(email, 'password-reset');
       
       return {
         success: true,

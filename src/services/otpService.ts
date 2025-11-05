@@ -32,7 +32,6 @@ class OTPService {
       };
 
       await setDoc(otpDoc, otpRecord);
-      console.log('OTP stored successfully for:', email);
     } catch (error) {
       console.error('Error storing OTP:', error);
       throw new Error('Failed to store OTP');
@@ -46,7 +45,6 @@ class OTPService {
       const otpSnap = await getDoc(otpDoc);
 
       if (!otpSnap.exists()) {
-        console.log('No OTP found for email:', email);
         return false;
       }
 
@@ -54,20 +52,17 @@ class OTPService {
 
       // Check if OTP has expired
       if (Date.now() > otpRecord.expiresAt) {
-        console.log('OTP expired for:', email);
         await this.deleteOTP(email);
         return false;
       }
 
       // Check if OTP matches
       if (otpRecord.code !== otp) {
-        console.log('OTP mismatch for:', email);
         return false;
       }
 
       // OTP is valid, delete it after successful verification
       await this.deleteOTP(email);
-      console.log('OTP verified successfully for:', email);
       return true;
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -80,7 +75,6 @@ class OTPService {
     try {
       const otpDoc = doc(db, this.OTP_COLLECTION, email);
       await deleteDoc(otpDoc);
-      console.log('OTP deleted for:', email);
     } catch (error) {
       console.error('Error deleting OTP:', error);
     }
@@ -89,8 +83,6 @@ class OTPService {
   // Send OTP via email using Firebase Cloud Functions
   async sendOTPEmail(email: string, otp: string, purpose: 'login' | 'password-reset' = 'login'): Promise<void> {
     try {
-      console.log('📧 Sending OTP email via Firebase Cloud Functions to:', email, 'Purpose:', purpose);
-      
       // Import Firebase Functions dynamically to avoid circular dependencies
       const { getFunctions, httpsCallable } = await import('firebase/functions');
       const { default: app } = await import('./firebase');
@@ -100,35 +92,13 @@ class OTPService {
       
       await sendCrmLoginOTP({
         email,
-        otp
+        otp,
+        purpose
       });
-
-      console.log('✅ OTP email sent successfully via Firebase Cloud Functions');
-      console.log('🔐 OTP FOR TESTING:', otp); // Keep this for testing, remove in production
       
     } catch (error: any) {
-      console.error('❌ Error sending OTP email:', error);
-      
-      // Fallback: Log to console if Firebase Functions are unavailable
-      const subject = purpose === 'password-reset' 
-        ? 'Your Password Reset Code' 
-        : 'Your CRM Login OTP Code';
-      const message = purpose === 'password-reset'
-        ? 'You have requested to reset your password.'
-        : 'You have requested to login to CrowdWave CRM.';
-      
-      console.log('='.repeat(60));
-      console.log('📧 OTP EMAIL (Firebase Functions unavailable - Using console fallback)');
-      console.log('='.repeat(60));
-      console.log(`To: ${email}`);
-      console.log(`Subject: ${subject}`);
-      console.log(`\n${message}`);
-      console.log(`Your OTP code is: ${otp}`);
-      console.log(`This code will expire in ${this.OTP_EXPIRY_MINUTES} minutes.`);
-      console.log('='.repeat(60));
-      
-      // Don't throw error - allow flow to continue with console OTP
-      // In production, you might want to throw the error instead
+      console.error('Failed to send OTP email:', error);
+      throw new Error('Failed to send OTP email. Please try again.');
     }
   }
 

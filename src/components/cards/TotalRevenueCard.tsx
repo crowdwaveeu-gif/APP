@@ -67,7 +67,7 @@ const TotalRevenueCard = () => {
           </svg>
         </div>
         <h6>Total revenue</h6>
-        <h2>{loading ? 'Loading...' : `$${stats?.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`}</h2>
+        <h2>{loading ? 'Loading...' : `€${stats?.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}`}</h2>
         <p>
           <span className={isPositiveGrowth ? 'text-success' : 'text-danger'}>
             <svg

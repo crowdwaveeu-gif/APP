@@ -143,7 +143,15 @@ const PromotionalEmailPage = () => {
 
     fetchCampaigns();
 
-    return () => unsubscribe();
+    // Set up polling interval to refresh campaigns every 10 seconds
+    const intervalId = setInterval(() => {
+      fetchCampaigns();
+    }, 10000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(intervalId);
+    };
   }, []);
 
   const fetchCampaigns = async () => {
@@ -240,6 +248,9 @@ const PromotionalEmailPage = () => {
         status: 'sending'
       });
 
+      // Immediately refresh to show sending status
+      await fetchCampaigns();
+
       // Fetch recipients based on target audience
       let recipients: string[] = [];
       
@@ -265,6 +276,9 @@ const PromotionalEmailPage = () => {
           .filter(email => email);
       }
 
+      // Remove duplicate emails
+      recipients = [...new Set(recipients)];
+
       if (recipients.length === 0) {
         alert('No recipients found for this audience');
         await updateDoc(doc(db, 'emailCampaigns', campaign.id), {
@@ -272,6 +286,8 @@ const PromotionalEmailPage = () => {
         });
         return;
       }
+
+      console.log(`Sending to ${recipients.length} unique recipients`);
 
       // Call Firebase Function to send emails
       const sendPromotionalEmail = httpsCallable(functions, 'sendPromotionalEmail');
@@ -286,11 +302,12 @@ const PromotionalEmailPage = () => {
 
       const resultData = result.data as { sent: number; failed: number };
       
+      // Refresh campaigns to show completed status
+      await fetchCampaigns();
+      
       alert(
         `Campaign sent!\nSuccessfully sent: ${resultData.sent}\nFailed: ${resultData.failed}`
       );
-      
-      fetchCampaigns();
     } catch (error: any) {
       console.error('Error sending campaign:', error);
       alert(`Failed to send campaign: ${error.message}`);

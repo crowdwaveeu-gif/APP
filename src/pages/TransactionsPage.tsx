@@ -129,7 +129,7 @@ const TransactionsPage = () => {
     const csv = [
       'Transaction ID,User ID,User Name,User Email,Type,Amount,Currency,Status,Payment Method,Description,Related Booking,Related Package,Created At,Updated At',
       ...filteredTransactions.map(txn => 
-        `${txn.id},${txn.userId},${txn.userName || 'N/A'},${txn.userEmail || 'N/A'},${txn.type},${txn.amount},${txn.currency || 'USD'},${txn.status},${txn.paymentMethod || 'N/A'},${txn.description || 'N/A'},${txn.relatedBookingId || 'N/A'},${txn.relatedPackageId || 'N/A'},${txn.createdAt.toLocaleDateString()},${txn.updatedAt?.toLocaleDateString() || 'N/A'}`
+        `${txn.id},${txn.userId},${txn.userName || 'N/A'},${txn.userEmail || 'N/A'},${txn.type},${txn.amount},${txn.currency || 'EUR'},${txn.status},${txn.paymentMethod || 'N/A'},${txn.description || 'N/A'},${txn.relatedBookingId || 'N/A'},${txn.relatedPackageId || 'N/A'},${txn.createdAt.toLocaleDateString()},${txn.updatedAt?.toLocaleDateString() || 'N/A'}`
       )
     ].join('\n');
     
@@ -178,10 +178,11 @@ const TransactionsPage = () => {
     return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const formatAmount = (amount: number, currency: string = 'USD') => {
+  const formatAmount = (amount: number, _currency?: string) => {
+    // Always use EUR regardless of stored currency
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency
+      currency: 'EUR'
     }).format(amount);
   };
 

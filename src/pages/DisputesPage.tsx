@@ -31,10 +31,10 @@ const DisputesPage = () => {
       const firebaseDisputes = await disputesService.getAllDisputes();
       const formattedDisputes: DisputeData[] = firebaseDisputes.map(dispute => ({
         id: dispute.id,
-        disputeId: dispute.disputeId,
-        customer: dispute.customer || dispute.reporterId || 'Unknown',
+        disputeId: dispute.disputeId || 'N/A',
+        customer: (dispute as any).reporterName || dispute.customer || `User ${dispute.reporterId?.substring(0, 8)}...` || 'Unknown',
         order: dispute.bookingId || dispute.order || 'N/A',
-        issue: dispute.issue || dispute.description?.substring(0, 50) || 'No description',
+        issue: (dispute as any).reasonDisplayText || dispute.issue || dispute.description?.substring(0, 50) || 'No description',
         description: dispute.description,
         status: mapFirebaseStatusToUI(dispute.status),
         priority: dispute.priority ? capitalizeFirst(dispute.priority) as DisputeData['priority'] : 'Medium',
@@ -44,6 +44,12 @@ const DisputesPage = () => {
         reporterId: dispute.reporterId,
         reportedUserId: dispute.reportedUserId,
         bookingId: dispute.bookingId,
+        reporterName: (dispute as any).reporterName,
+        reporterEmail: (dispute as any).reporterEmail,
+        reportedUserName: (dispute as any).reportedUserName,
+        reportedUserEmail: (dispute as any).reportedUserEmail,
+        evidence: dispute.evidence || [],
+        evidenceCount: (dispute as any).evidenceCount || dispute.evidence?.length || 0,
       }));
       setDisputes(formattedDisputes);
     } catch (error) {
@@ -438,20 +444,110 @@ const DisputesPage = () => {
                       <p className="form-control-plaintext">{selectedDispute.disputeId}</p>
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fw-medium">Customer</label>
-                      <p className="form-control-plaintext">{selectedDispute.customer}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-medium">Order</label>
+                      <label className="form-label fw-medium">Booking ID</label>
                       <p className="form-control-plaintext font-monospace">{selectedDispute.order}</p>
                     </div>
+                    
+                    {/* Reporter Information */}
+                    <div className="col-12">
+                      <hr className="my-2" />
+                      <h6 className="text-muted mb-3"><i className="fas fa-user me-2"></i>Reporter (Filed Dispute)</h6>
+                    </div>
                     <div className="col-md-6">
-                      <label className="form-label fw-medium">Issue</label>
+                      <label className="form-label fw-medium">Reporter Name</label>
+                      <p className="form-control-plaintext">{(selectedDispute as any).reporterName || selectedDispute.customer}</p>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Reporter Email</label>
+                      <p className="form-control-plaintext">{(selectedDispute as any).reporterEmail || 'N/A'}</p>
+                    </div>
+                    <div className="col-md-12">
+                      <label className="form-label fw-medium">Reporter ID</label>
+                      <p className="form-control-plaintext font-monospace small text-muted">{selectedDispute.reporterId}</p>
+                    </div>
+                    
+                    {/* Reported User Information */}
+                    <div className="col-12">
+                      <hr className="my-2" />
+                      <h6 className="text-muted mb-3"><i className="fas fa-user-times me-2"></i>Reported User</h6>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Reported User Name</label>
+                      <p className="form-control-plaintext">{(selectedDispute as any).reportedUserName || 'Unknown'}</p>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Reported User Email</label>
+                      <p className="form-control-plaintext">{(selectedDispute as any).reportedUserEmail || 'N/A'}</p>
+                    </div>
+                    <div className="col-md-12">
+                      <label className="form-label fw-medium">Reported User ID</label>
+                      <p className="form-control-plaintext font-monospace small text-muted">{selectedDispute.reportedUserId}</p>
+                    </div>
+                    
+                    {/* Dispute Details */}
+                    <div className="col-12">
+                      <hr className="my-2" />
+                      <h6 className="text-muted mb-3"><i className="fas fa-exclamation-triangle me-2"></i>Dispute Details</h6>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Issue Type</label>
                       <p className="form-control-plaintext">{selectedDispute.issue}</p>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Evidence Count</label>
+                      <p className="form-control-plaintext">
+                        {(selectedDispute as any).evidenceCount || 0} file(s)
+                      </p>
                     </div>
                     <div className="col-12">
                       <label className="form-label fw-medium">Description</label>
-                      <p className="form-control-plaintext">{selectedDispute.description}</p>
+                      <p className="form-control-plaintext bg-light p-3 rounded">{selectedDispute.description}</p>
+                    </div>
+                    
+                    {/* Evidence Images */}
+                    {(selectedDispute as any).evidence && (selectedDispute as any).evidence.length > 0 && (
+                      <div className="col-12">
+                        <label className="form-label fw-medium">Evidence Attachments</label>
+                        <div className="row g-2">
+                          {(selectedDispute as any).evidence.map((imageData: string, index: number) => (
+                            <div key={index} className="col-md-4 col-sm-6">
+                              <div className="card">
+                                <img 
+                                  src={imageData} 
+                                  alt={`Evidence ${index + 1}`}
+                                  className="card-img-top"
+                                  style={{ 
+                                    height: '200px', 
+                                    objectFit: 'cover',
+                                    cursor: 'pointer'
+                                  }}
+                                  onClick={() => window.open(imageData, '_blank')}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2UgRXJyb3I8L3RleHQ+PC9zdmc+';
+                                  }}
+                                />
+                                <div className="card-body text-center p-2">
+                                  <small className="text-muted">Evidence {index + 1}</small>
+                                  <br />
+                                  <button 
+                                    className="btn btn-sm btn-outline-primary mt-1"
+                                    onClick={() => window.open(imageData, '_blank')}
+                                  >
+                                    <i className="fas fa-external-link-alt me-1"></i>
+                                    View Full Size
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Status Information */}
+                    <div className="col-12">
+                      <hr className="my-2" />
+                      <h6 className="text-muted mb-3"><i className="fas fa-tasks me-2"></i>Status & Assignment</h6>
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-medium">Status</label>
@@ -477,7 +573,7 @@ const DisputesPage = () => {
                       <label className="form-label fw-medium">Last Updated</label>
                       <p className="form-control-plaintext">{new Date(selectedDispute.lastUpdated).toLocaleDateString()}</p>
                     </div>
-                    <div className="col-md-6">
+                    <div className="col-md-12">
                       <label className="form-label fw-medium">Assigned To</label>
                       <p className="form-control-plaintext">{selectedDispute.assignedTo}</p>
                     </div>
