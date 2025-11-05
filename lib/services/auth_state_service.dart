@@ -8,6 +8,7 @@ import '../controllers/chat_controller.dart';
 import '../controllers/smart_matching_controller.dart';
 import 'service_manager.dart';
 import 'wallet_service.dart';
+import 'user_profile_service.dart';
 
 class AuthStateService extends ChangeNotifier {
   final FirebaseAuthService _authService = FirebaseAuthService();
@@ -42,6 +43,29 @@ class AuthStateService extends ChangeNotifier {
 
         // ✅ AUTO-INITIALIZE CHAT FOR EXISTING LOGGED-IN USERS (APP STARTUP)
         if (user != null) {
+          // ✅ CHECK IF USER IS BLOCKED
+          try {
+            final userProfileService = UserProfileService();
+            final isBlocked = await userProfileService.isUserBlocked(user.uid);
+
+            if (isBlocked) {
+              // User is blocked, sign them out
+              if (kDebugMode) {
+                print('🚫 User is blocked, signing out...');
+              }
+              _error =
+                  'Your account has been restricted. Please contact support for assistance.';
+              await signOut();
+              notifyListeners();
+              return;
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('⚠️ Failed to check user blocked status: $e');
+            }
+            // Continue even if check fails to avoid blocking legitimate users
+          }
+
           await _initializeChatSystem();
 
           // ✅ ENSURE WALLET EXISTS FOR LOGGED-IN USER

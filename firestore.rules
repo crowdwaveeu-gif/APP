@@ -439,5 +439,89 @@ service cloud.firestore {
       // MAXIMALLY RELAXED - Allow all authenticated users full access
       allow read, write: if request.auth != null;
     }
+
+    // ========================================
+    // TRAVEL TRIPS COLLECTION RULES
+    // ========================================
+    match /travelTrips/{tripId} {
+      // Allow all authenticated users to read trips
+      allow read: if request.auth != null;
+      
+      // Allow trip creator to write their own trips
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.travelerId;
+      
+      // Allow trip owner or admin to update
+      allow update: if request.auth != null 
+        && (request.auth.uid == resource.data.travelerId || hasAdminRole(request.auth.uid));
+      
+      // Allow trip owner or admin to delete
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.travelerId || hasAdminRole(request.auth.uid));
+    }
+
+    // ========================================
+    // PACKAGE REQUESTS COLLECTION RULES
+    // ========================================
+    match /packageRequests/{packageId} {
+      // Allow all authenticated users to read packages
+      allow read: if request.auth != null;
+      
+      // Allow package sender to create their own packages
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.senderId;
+      
+      // Allow package owner or admin to update
+      allow update: if request.auth != null 
+        && (request.auth.uid == resource.data.senderId || hasAdminRole(request.auth.uid));
+      
+      // Allow package owner or admin to delete
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.senderId || hasAdminRole(request.auth.uid));
+    }
+
+    // ========================================
+    // BOOKINGS COLLECTION RULES (CRM)
+    // ========================================
+    match /bookings/{bookingId} {
+      // Allow all authenticated users to read bookings
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to create bookings
+      allow create: if request.auth != null;
+      
+      // Allow admins to update/delete bookings
+      allow update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    // ========================================
+    // DELIVERY TRACKING COLLECTION RULES (CRM)
+    // ========================================
+    match /deliveryTracking/{trackingId} {
+      // Allow all authenticated users to read delivery tracking
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to create tracking records
+      allow create: if request.auth != null;
+      
+      // Allow authenticated users to update tracking records
+      allow update: if request.auth != null;
+      
+      // Allow admins to delete tracking records
+      allow delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    // ========================================
+    // STATIC CONTENT COLLECTION RULES
+    // Terms of Service, Privacy Policy, FAQ, etc.
+    // ========================================
+    match /staticContent/{contentId} {
+      // Allow ANYONE (including unauthenticated users) to read published content
+      // This is needed for signup/login screens to show Terms & Privacy Policy
+      allow read: if true;
+      
+      // Only admins can create, update, or delete static content
+      allow create, update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
   }
 }

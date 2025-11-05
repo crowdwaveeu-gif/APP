@@ -8,12 +8,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/app_export.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../services/kyc_service.dart';
 import '../../services/matching_service.dart';
 import '../../controllers/chat_controller.dart';
 import '../chat/individual_chat_screen.dart';
-// import '../../models/review_model.dart';
-// import '../../services/review_service.dart';
-// import '../reviews/review_list_screen.dart';
+import '../../models/review_model.dart';
+import '../../services/review_service.dart';
+import '../reviews/review_list_screen.dart';
+import '../../widgets/star_rating_widget.dart';
+import '../../routes/app_routes.dart';
 
 class TripDetailScreen extends StatefulWidget {
   final TravelTrip trip;
@@ -35,14 +38,33 @@ class _TripDetailScreenState extends State<TripDetailScreen>
   late Animation<double> _fadeAnimation;
 
   final FirebaseAuthService _authService = FirebaseAuthService();
+  final KycService _kycService = KycService();
   bool _isRequested = false;
   bool _isLoading = false;
+  bool _hasApprovedKyc = false;
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
     _startAnimations();
+    _checkKycStatus();
+  }
+
+  Future<void> _checkKycStatus() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      try {
+        final hasKyc = await _kycService.hasSubmittedKyc(currentUser.uid);
+        if (mounted) {
+          setState(() {
+            _hasApprovedKyc = hasKyc;
+          });
+        }
+      } catch (e) {
+        print('Error checking KYC status: $e');
+      }
+    }
   }
 
   void _initializeAnimations() {
@@ -120,8 +142,10 @@ class _TripDetailScreenState extends State<TripDetailScreen>
                         SizedBox(height: 24),
                         _buildNotesSection(),
                       ],
-                      // SizedBox(height: 24),
-                      // _buildReviewsSection(),
+                      SizedBox(height: 24),
+                      _buildTravelerReputationSection(),
+                      SizedBox(height: 24),
+                      _buildReviewsSection(),
                       SizedBox(height: 100), // Space for FAB
                     ],
                   ),
@@ -1069,6 +1093,39 @@ class _TripDetailScreenState extends State<TripDetailScreen>
     print('Are they equal? ${currentUserId == travelerId}');
     print('========================');
 
+    // Don't show button if user is not authenticated
+    if (currentUserId == null) {
+      print('HIDING BUTTONS: User is not authenticated');
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: FloatingActionButton.extended(
+          heroTag: "login_button_${widget.trip.id}",
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please log in to chat or request a match'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            Navigator.pushNamed(context, AppRoutes.onboardingFlow);
+          },
+          backgroundColor: Color(0xFF215C5C),
+          foregroundColor: Colors.white,
+          elevation: 6,
+          icon: Icon(Icons.login),
+          label: Text(
+            'Login to Continue',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
+
     // Don't show button if user is the traveler
     if (currentUserId == travelerId) {
       print('HIDING BUTTONS: User is the trip owner');
@@ -1079,6 +1136,44 @@ class _TripDetailScreenState extends State<TripDetailScreen>
     if (widget.trip.status != TripStatus.active) {
       print('HIDING BUTTONS: Trip is not active');
       return SizedBox.shrink();
+    }
+
+    // Don't show buttons if user doesn't have approved KYC
+    if (!_hasApprovedKyc) {
+      print('HIDING BUTTONS: User does not have approved KYC');
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: FloatingActionButton.extended(
+          heroTag: "kyc_button_${widget.trip.id}",
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Please complete KYC verification to chat or request a match'),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            // Navigate to KYC completion and refresh status when returning
+            Navigator.pushNamed(context, AppRoutes.kycCompletion).then((_) {
+              // Refresh KYC status when user returns
+              _checkKycStatus();
+            });
+          },
+          backgroundColor: Colors.orange,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          icon: Icon(Icons.verified_user),
+          label: Text(
+            'Complete KYC Verification',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
     }
 
     return Container(
@@ -1190,7 +1285,8 @@ class _TripDetailScreenState extends State<TripDetailScreen>
       // Show success feedback with chat option
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('matching.request_sent'.tr(args: [widget.trip.travelerName])),
+          content: Text(
+              'matching.request_sent'.tr(args: [widget.trip.travelerName])),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1446,5 +1542,376 @@ class _TripDetailScreenState extends State<TripDetailScreen>
       print('Failed to create match request: $e');
       throw Exception('Failed to send match request: $e');
     }
+  }
+
+  /// Build traveler reputation section with ratings
+  Widget _buildTravelerReputationSection() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF215C5C), Color(0xFF2D7A6E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF215C5C).withOpacity(0.3),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user, color: Colors.white, size: 24),
+              SizedBox(width: 8),
+              Text(
+                'Traveler Reputation',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          FutureBuilder<ReviewSummary>(
+            future: ReviewService().getReviewSummary(widget.trip.travelerId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Text(
+                  'Unable to load reputation',
+                  style: TextStyle(color: Colors.white70),
+                );
+              }
+
+              final summary = snapshot.data!;
+
+              if (summary.totalReviews == 0) {
+                return Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.rate_review_outlined,
+                          color: Colors.white70, size: 48),
+                      SizedBox(height: 8),
+                      Text(
+                        'No reviews yet',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        'This traveler is new to the platform',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                summary.averageRating.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  height: 1,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                '/ 5.0',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          StarRatingWidget(
+                            rating: summary.averageRating,
+                            size: 20,
+                            isReadOnly: true,
+                            filledColor: Colors.amber,
+                            unfilledColor: Colors.white30,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            '${summary.totalReviews} reviews',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          if (summary.verifiedReviewsCount > 0) ...[
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.verified,
+                                    size: 16, color: Colors.greenAccent),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${summary.verifiedReviewsCount} verified',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.greenAccent,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      onPressed: () => _navigateToReviews(),
+                      icon: Icon(Icons.rate_review, size: 18),
+                      label: Text('View All'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Color(0xFF215C5C),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build reviews section showing recent reviews
+  Widget _buildReviewsSection() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Reviews',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              TextButton(
+                onPressed: () => _navigateToReviews(),
+                child: Text('View All'),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          FutureBuilder<List<Review>>(
+            future: ReviewService().getReviews(
+              targetId: widget.trip.travelerId,
+              limit: 3,
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Text(
+                  'Unable to load reviews',
+                  style: TextStyle(color: Colors.grey[600]),
+                );
+              }
+
+              final reviews = snapshot.data!;
+
+              if (reviews.isEmpty) {
+                return Container(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(Icons.rate_review_outlined,
+                          size: 48, color: Colors.grey[300]),
+                      SizedBox(height: 8),
+                      Text(
+                        'No reviews yet',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: reviews.length > 3 ? 3 : reviews.length,
+                separatorBuilder: (_, __) => Divider(height: 24),
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  return _buildReviewCard(review);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build a single review card
+  Widget _buildReviewCard(Review review) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: Color(0xFF215C5C).withOpacity(0.1),
+              backgroundImage: review.reviewerAvatar != null &&
+                      review.reviewerAvatar!.isNotEmpty
+                  ? CachedNetworkImageProvider(review.reviewerAvatar!)
+                  : null,
+              child: review.reviewerAvatar == null ||
+                      review.reviewerAvatar!.isEmpty
+                  ? Icon(Icons.person, size: 20, color: Color(0xFF215C5C))
+                  : null,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        review.reviewerName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      if (review.isVerifiedBooking) ...[
+                        SizedBox(width: 4),
+                        Icon(Icons.verified,
+                            size: 16, color: Colors.green[700]),
+                      ],
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  StarRatingWidget(
+                    rating: review.rating,
+                    size: 14,
+                    isReadOnly: true,
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              DateFormat('MMM dd, yyyy').format(review.createdAt),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        if (review.comment != null && review.comment!.isNotEmpty) ...[
+          SizedBox(height: 8),
+          Text(
+            review.comment!,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[800],
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Navigate to full reviews list
+  void _navigateToReviews() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReviewListScreen(
+          targetId: widget.trip.travelerId,
+          reviewType: ReviewType.traveler,
+          targetName: widget.trip.travelerName,
+        ),
+      ),
+    );
   }
 }

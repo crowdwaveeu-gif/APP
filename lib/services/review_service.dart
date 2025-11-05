@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/review_model.dart';
 import '../services/image_storage_service.dart';
+import '../services/review_verification_service.dart';
 
 class ReviewService {
   static final ReviewService _instance = ReviewService._internal();
@@ -10,6 +11,8 @@ class ReviewService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImageStorageService _imageStorage = ImageStorageService();
+  final ReviewVerificationService _verificationService =
+      ReviewVerificationService();
 
   // Collections
   CollectionReference get _reviewsCollection =>
@@ -28,8 +31,32 @@ class ReviewService {
     String? comment,
     List<File>? photos,
     bool isVerifiedBooking = false,
+    String? bookingId,
   }) async {
     try {
+      // ✅ VERIFY: Users can only review each other if they completed a transaction
+      final canReview = await _verificationService.canUserReviewUser(
+        reviewerId: reviewerId,
+        targetUserId: targetId,
+      );
+
+      if (!canReview) {
+        throw Exception(
+            'You can only review users after completing a transaction with them');
+      }
+
+      // Check if user already reviewed this booking
+      if (bookingId != null) {
+        final hasReviewed = await _verificationService.hasUserReviewedBooking(
+          reviewerId: reviewerId,
+          bookingId: bookingId,
+        );
+
+        if (hasReviewed) {
+          throw Exception('You have already reviewed this booking');
+        }
+      }
+
       // Generate review ID
       final reviewId = _reviewsCollection.doc().id;
 
@@ -55,6 +82,7 @@ class ReviewService {
         createdAt: DateTime.now(),
         moderationStatus: ModerationStatus.approved, // Auto-approve for now
         isVerifiedBooking: isVerifiedBooking,
+        bookingId: bookingId,
       );
 
       // Save to Firestore

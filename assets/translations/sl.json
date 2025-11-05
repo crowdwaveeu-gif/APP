@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Bodite prvi, ki objavi!",
     "add_images": "Dodajte slike",
     "tell_others_about_your_experience": "Povejte drugim o svoji izkušnji...",
-    "offer_price": "Cena ponudbe"
+    "offer_price": "Cena ponudbe",
+    "maybe_later": "Morda pozneje"
   },
   "home": {
     "title": "Domov",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Način prevzema",
+    "pickup_method_subtitle": "Kako bo potnik dobil vašo pošiljko?",
+    "self_pickup": "Dostavil bom potniku",
+    "self_pickup_desc": "Potnik bo prevzel na določeni lokaciji",
+    "sender_delivers": "Potnik prevzame od mene",
+    "sender_delivers_desc": "Sestal se bom s potnikom na kraju prevzema"
   },
   "post_trip": {
     "title": "Zverejniť cestu",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Zobraziť recenzie",
     "recent_reviews": "Nedávne recenzie",
     "filter_reviews": "Filtrovať recenzie",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Ste si istý, že chcete nahlásiť túto recenziu za nevhodný obsah?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Ste si istý, že chcete nahlásiť túto recenziu za nevhodný obsah?",
+    "how_was_experience": "Kakšna je bila vaša izkušnja?",
+    "help_community": "Pomagajte skupnosti z ocenjevanjem {0}"
   },
   "onboarding": {
     "welcome": "Vitajte v CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Moji Spori",
+    "report_issue": "Prijavi Problem",
+    "filed": "Spor Oddan",
+    "filed_message": "Vaš spor je bil uspešno oddan. Kmalu ga bomo pregledali.",
+    "exists": "Spor Obstaja",
+    "exists_message": "Za to rezervacijo že imate odprt spor",
+    "error": "Napaka",
+    "error_message": "Oddaja spora ni uspela",
+    "load_error": "Nalaganje sporov ni uspelo",
+    "info_message": "Prosimo, navedite podrobne informacije o težavi. Naša podporna ekipa bo pregledala in odgovorila v 24 urah.",
+    "issue_type": "Vrsta Problema *",
+    "description": "Opis *",
+    "description_hint": "Prosimo, podrobno opišite težavo...",
+    "description_required": "Prosimo, opišite problem",
+    "description_min_length": "Prosimo, navedite več podrobnosti (najmanj 20 znakov)",
+    "evidence": "Dokaz (Neobvezno)",
+    "submit": "Oddaj Spor",
+    "booking_info": "Informacije o Rezervaciji",
+    "add_photos": "Dodaj Fotografije",
+    "add_more_photos": "Dodaj Več Fotografij",
+    "upload_hint": "Naložite fotografije problema (neobvezno)",
+    "open": "Odprto",
+    "resolved": "Rešeno",
+    "all": "Vsi",
+    "no_disputes": "Ni Sporov",
+    "no_disputes_message": "V tej kategoriji nimate sporov",
+    "attachments": "priloga(e)",
+    "reason": {
+      "no_show": "Neudeležba",
+      "damaged_package": "Poškodovan Paket",
+      "late_delivery": "Pozna Dostava",
+      "inappropriate_behavior": "Neprimerno Vedenje",
+      "payment_issue": "Težava s Plačilom",
+      "fraudulent_activity": "Goljufiva Dejavnost",
+      "safety_concern": "Varnostna Skrb",
+      "other": "Drugo"
+    },
+    "status": {
+      "pending": "V Čakanju",
+      "under_review": "V Pregledu",
+      "resolved": "Rešeno",
+      "dismissed": "Zavrnjeno",
+      "escalated": "Stopnjevano"
+    },
+    "notification": {
+      "title": "Posodobitev Spora",
+      "response": "Administrator je odgovoril na vaš spor",
+      "status_change": "Status vašega spora se je spremenil v"
+    }
   }
 }

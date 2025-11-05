@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/notification_service.dart';
-import '../services/auth_state_service.dart';
 import '../models/notification_model.dart';
 
 class OfferService {
@@ -11,7 +11,6 @@ class OfferService {
   OfferService._internal();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthStateService _authService = AuthStateService();
 
   // Collection names
   static const String _offersCollection = 'offers';
@@ -24,7 +23,7 @@ class OfferService {
     required String notes,
   }) async {
     try {
-      final currentUser = _authService.currentUser;
+      final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         throw Exception('User not authenticated');
       }
@@ -132,7 +131,7 @@ class OfferService {
           '${tripData['departureLocation']['city']} to ${tripData['destinationLocation']['city']}';
 
       // Get traveler name
-      final currentUser = _authService.currentUser;
+      final currentUser = FirebaseAuth.instance.currentUser;
       final travelerName = currentUser?.displayName ?? 'The traveler';
 
       // Send notification to sender
@@ -188,7 +187,7 @@ class OfferService {
           '${tripData['departureLocation']['city']} to ${tripData['destinationLocation']['city']}';
 
       // Get traveler name
-      final currentUser = _authService.currentUser;
+      final currentUser = FirebaseAuth.instance.currentUser;
       final travelerName = currentUser?.displayName ?? 'The traveler';
 
       // Send notification to sender

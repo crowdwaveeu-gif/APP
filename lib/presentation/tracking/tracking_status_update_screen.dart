@@ -11,6 +11,7 @@ import '../../services/location_service.dart';
 import '../../services/geocoding_service.dart';
 import '../../services/image_storage_service.dart';
 import '../../utils/toast_utils.dart';
+import 'delivery_otp_entry_screen.dart';
 
 class TrackingStatusUpdateScreen extends StatefulWidget {
   final String trackingId;
@@ -545,6 +546,67 @@ class _TrackingStatusUpdateScreenState
   }
 
   Widget _buildUpdateButton() {
+    // Special handling for delivery status - use OTP verification
+    if (_selectedStatus == DeliveryStatus.delivered) {
+      return Column(
+        children: [
+          // OTP Info Box
+          Container(
+            padding: EdgeInsets.all(3.w),
+            margin: EdgeInsets.only(bottom: 2.h),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.security, color: Colors.green[700], size: 5.w),
+                SizedBox(width: 3.w),
+                Expanded(
+                  child: Text(
+                    '🔐 Delivery requires OTP verification from receiver for security',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: EdgeInsets.only(bottom: 5.h),
+            child: SizedBox(
+              width: double.infinity,
+              height: 6.h,
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _navigateToOTPFlow,
+                icon: const Icon(Icons.verified_user),
+                label: Text(
+                  'Proceed to OTP Verification',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Standard flow for other statuses
     final canUpdate = _selectedImage != null && _selectedStatus != null;
 
     return Column(
@@ -724,5 +786,17 @@ class _TrackingStatusUpdateScreenState
       print('❌ Error saving photo: $e');
       // Don't throw - photo save failure shouldn't block status update
     }
+  }
+
+  /// Navigate to OTP verification flow for delivery
+  void _navigateToOTPFlow() {
+    Get.to(
+      () => DeliveryOTPEntryScreen(tracking: widget.tracking),
+    )?.then((result) {
+      // If OTP verification was successful, go back to tracking
+      if (result == true) {
+        Get.back(result: true);
+      }
+    });
   }
 }

@@ -3,6 +3,7 @@ import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/models/delivery_tracking.dart';
+import '../../widgets/review_prompt_widget.dart';
 
 class DeliveryFeedbackScreen extends StatefulWidget {
   final DeliveryTracking tracking;
@@ -101,9 +102,18 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
         duration: const Duration(seconds: 3),
       );
 
-      // Navigate back to home or tracking list
+      // Navigate back
       Get.back();
-      Get.back(); // Go back twice to return to main screen
+
+      // Show review prompt after a short delay
+      if (context.mounted) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (context.mounted) {
+            // Fetch booking ID from package request
+            _fetchAndShowReviewPrompt(context);
+          }
+        });
+      }
     } catch (e) {
       Get.snackbar(
         '❌ Error',
@@ -132,7 +142,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
         actions: [
           TextButton(
             onPressed: _isSubmitting ? null : _skipFeedback,
-            child: Text('onboarding.skip'.tr(),
+            child: Text(
+              'onboarding.skip'.tr(),
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -153,7 +164,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
               const SizedBox(height: 16),
 
               // Title
-              Text('tracking.feedback_hint'.tr(),
+              Text(
+                'tracking.feedback_hint'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,
@@ -162,7 +174,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text('common.your_feedback_helps_us_improve_our_service'.tr(),
+              Text(
+                'common.your_feedback_helps_us_improve_our_service'.tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -217,7 +230,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
               const SizedBox(height: 30),
 
               // Quick Tags
-              Text('common.what_did_you_like'.tr(),
+              Text(
+                'common.what_did_you_like'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -278,7 +292,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
                 maxLines: 5,
                 maxLength: 500,
                 decoration: InputDecoration(
-                  hintText: 'travel.share_your_experience_with_the_traveler'.tr(),
+                  hintText:
+                      'travel.share_your_experience_with_the_traveler'.tr(),
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   filled: true,
                   fillColor: Colors.grey[100],
@@ -320,7 +335,8 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : Text('tracking.submit_feedback'.tr(),
+                      : Text(
+                          'tracking.submit_feedback'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -342,5 +358,45 @@ class _DeliveryFeedbackScreenState extends State<DeliveryFeedbackScreen> {
     if (rating >= 3.0) return 'Good';
     if (rating >= 2.0) return 'Fair';
     return 'Needs Improvement';
+  }
+
+  /// Fetch booking and show review prompt
+  Future<void> _fetchAndShowReviewPrompt(BuildContext context) async {
+    try {
+      // Get booking associated with this package request
+      final bookingQuery = await _firestore
+          .collection('bookings')
+          .where('packageId', isEqualTo: widget.tracking.packageRequestId)
+          .where('status', isEqualTo: 'completed')
+          .limit(1)
+          .get();
+
+      if (bookingQuery.docs.isNotEmpty && context.mounted) {
+        final bookingId = bookingQuery.docs.first.id;
+
+        // Get traveler info
+        final travelerDoc = await _firestore
+            .collection('users')
+            .doc(widget.tracking.travelerId)
+            .get();
+
+        final travelerName = travelerDoc.exists
+            ? (travelerDoc.data()?['fullName'] ?? 'the traveler')
+            : 'the traveler';
+
+        if (context.mounted) {
+          showReviewPrompt(
+            context,
+            bookingId: bookingId,
+            packageId: widget.tracking.packageRequestId,
+            otherUserId: widget.tracking.travelerId,
+            otherUserName: travelerName,
+            otherUserRole: 'traveler',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching booking for review prompt: $e');
+    }
   }
 }

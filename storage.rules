@@ -39,6 +39,12 @@ service firebase.storage {
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
     
+    // Email assets - public read for email templates (logo, images)
+    match /email_assets/{asset} {
+      allow read: if true; // Public read for email embedding
+      allow write: if false; // Only upload via admin/functions
+    }
+    
     // Default rule - deny all other access
     match /{allPaths=**} {
       allow read, write: if false;

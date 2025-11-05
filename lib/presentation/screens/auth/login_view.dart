@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:get/get.dart' hide Trans;
@@ -9,8 +10,12 @@ import '../../../core/constants.dart';
 import '../../../controllers/simple_ui_controller.dart';
 import '../../../services/enhanced_firebase_auth_service.dart';
 import '../../../services/username_service.dart';
+import '../../../services/static_content_service.dart';
+import '../../../services/otp_service.dart';
 import '../../../routes/app_routes.dart';
 import '../../../core/validation_messages.dart';
+import '../../widgets/static_content_viewer.dart';
+import 'otp_verification_screen.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -28,6 +33,7 @@ class _LoginViewState extends State<LoginView> {
   final EnhancedFirebaseAuthService _authService =
       EnhancedFirebaseAuthService();
   final UsernameService _usernameService = UsernameService();
+  final OTPService _otpService = OTPService();
 
   @override
   void dispose() {
@@ -296,11 +302,7 @@ class _LoginViewState extends State<LoginView> {
                 SizedBox(
                   height: size.height * 0.02,
                 ),
-                Text(
-                  'Creating an account means you\'re okay with our Terms of Services and our Privacy Policy',
-                  style: kLoginTermsAndPrivacyStyle(size),
-                  textAlign: TextAlign.center,
-                ),
+                _buildTermsAndPrivacyText(size),
                 SizedBox(
                   height: size.height * 0.02,
                 ),
@@ -588,8 +590,8 @@ class _LoginViewState extends State<LoginView> {
               if (user != null) {
                 // Check if email is verified
                 if (!user.emailVerified) {
-                  // Show email verification required dialog
-                  _showEmailVerificationRequiredDialog(user);
+                  // Send OTP and navigate to verification screen
+                  await _handleEmailVerificationRequired(user, email);
                   return;
                 }
 
@@ -765,101 +767,91 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  // Show Email Verification Required Dialog
-  void _showEmailVerificationRequiredDialog(User user) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // User must take action
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+  // Handle Email Verification Required - Send OTP and navigate to verification screen
+  Future<void> _handleEmailVerificationRequired(User user, String email) async {
+    try {
+      // Send OTP to email
+      _showCustomSnackbar(
+        'Sending OTP',
+        'Sending verification code to $email...',
+        isInfo: true,
+      );
+
+      await _otpService.sendSignUpVerificationOTP(email);
+
+      _showCustomSnackbar(
+        'Success',
+        'Verification code sent! Please check your email.',
+      );
+
+      // Navigate to OTP verification screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationScreen(
+            email: email,
+            user: user,
+            verificationType: 'email_verification',
           ),
-          title: Row(
-            children: [
-              const Icon(Icons.email, color: Color(0xFF008080)),
-              const SizedBox(width: 10),
-              Text(
-                'kyc.email_verification_required'.tr(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF008080),
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Please verify your email address (${user.email}) before accessing the app.',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 15),
-              const Text(
-                'Check your inbox for a verification email. If you didn\'t receive it, you can request a new one.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Sign out the user since they can't access the app yet
-                _authService.signOut();
-              },
-              child: Text(
-                'common.cancel'.tr(),
-                style: const TextStyle(color: Colors.grey),
-              ),
+        ),
+      );
+    } catch (e) {
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _showCustomSnackbar('Error', errorMessage, isError: true);
+
+      // Sign out the user since verification failed
+      await _authService.signOut();
+    }
+  }
+
+  /// Build Terms and Privacy Policy Text with clickable links
+  Widget _buildTermsAndPrivacyText(Size size) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: kLoginTermsAndPrivacyStyle(size),
+          children: [
+            const TextSpan(
+              text: 'Creating an account means you\'re okay with our ',
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Diagnostics functionality removed for now
-              },
-              child: Text(
-                'common.diagnostics'.tr(),
-                style: const TextStyle(color: Color(0xFF008080)),
+            TextSpan(
+              text: 'Terms of Service',
+              style: kLoginTermsAndPrivacyStyle(size).copyWith(
+                decoration: TextDecoration.underline,
+                color: const Color(0xFF008080),
+                fontWeight: FontWeight.w600,
               ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  showStaticContentSheet(
+                    context,
+                    StaticContentType.termsOfService,
+                  );
+                },
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF008080),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+            const TextSpan(
+              text: ' and our ',
+            ),
+            TextSpan(
+              text: 'Privacy Policy',
+              style: kLoginTermsAndPrivacyStyle(size).copyWith(
+                decoration: TextDecoration.underline,
+                color: const Color(0xFF008080),
+                fontWeight: FontWeight.w600,
               ),
-              onPressed: () async {
-                try {
-                  await _authService.sendEmailVerification();
-                  Navigator.of(context).pop();
-                  _showCustomSnackbar(
-                    'Success',
-                    'Verification email sent! Please check your inbox and try logging in again after verifying.',
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  showStaticContentSheet(
+                    context,
+                    StaticContentType.privacyPolicy,
                   );
-                  // Sign out the user since they need to verify first
-                  await _authService.signOut();
-                } catch (e) {
-                  String errorMessage =
-                      e.toString().replaceFirst('Exception: ', '');
-                  _showCustomSnackbar(
-                    'Error',
-                    errorMessage,
-                    isError: true,
-                  );
-                }
-              },
-              child: Text(
-                'kyc.resend_verification_email'.tr(),
-                style: const TextStyle(color: Colors.white),
-              ),
+                },
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 }

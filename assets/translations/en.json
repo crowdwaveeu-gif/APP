@@ -148,6 +148,7 @@
     "add_photo": "Add Photo",
     "package_posted_successfully": "Package Posted Successfully!",
     "check_nearby_opportunities": "Check Nearby Opportunities",
+    "maybe_later": "Maybe Later",
     "content_reported_successfully_thank_you_for_helpin": "Content reported successfully. Thank you for helping keep our community safe.",
     "waiting_for_response": "Waiting for response...",
     "content_safety_assessment": "Content Safety Assessment",
@@ -814,7 +815,13 @@
     "package_is_already_delivered_or_cancelled": "Package is already delivered or cancelled",
     "your_posted_packages_will_appear_here": "Your posted packages will appear here",
     "crowdwave_connects_senders_and_travelers_for_effic": "CrowdWave connects senders and travelers for efficient package delivery worldwide.",
-    "package_photos": "Package Photos"
+    "package_photos": "Package Photos",
+    "pickup_method": "Pickup Method",
+    "pickup_method_subtitle": "How will the traveler get your package?",
+    "self_pickup": "I will deliver to traveler",
+    "self_pickup_desc": "Traveler will pick up from the specified location",
+    "sender_delivers": "Traveler picks up from me",
+    "sender_delivers_desc": "I will meet the traveler at pickup location"
   },
   "post_trip": {
     "title": "Post a Trip",
@@ -1193,6 +1200,7 @@
     "review_description": "Tell us about your experience",
     "submit_review": "Submit Review",
     "review_submitted": "Review submitted successfully",
+    "submitted_successfully": "Review submitted successfully!",
     "no_reviews": "No reviews yet",
     "helpful": "Helpful",
     "not_helpful": "Not Helpful",
@@ -1202,7 +1210,10 @@
     "see_all_reviews": "See All Reviews",
     "average_rating": "Average Rating",
     "total_reviews": "{count} reviews",
+    "recent_reviews": "Recent Reviews",
     "thank_you_feedback": "Thank you for the positive feedback!",
+    "how_was_experience": "How was your experience?",
+    "help_community": "Help the community by reviewing {0}",
     "demo_title": "Review System Demo",
     "current_rating": "Current Rating: {rating} stars",
     "helpful_count": "Helpful ({count})",
@@ -1225,7 +1236,6 @@
     "sort_lowest": "Lowest rated",
     "sort_helpful": "Most helpful",
     "reviews_for": "Reviews - {targetName}",
-    "submitted_successfully": "Review submitted successfully!",
     "view_all": "View All",
     "report": "Report",
     "clear": "Clear",
@@ -1233,7 +1243,6 @@
     "write_review_1": "Write Review",
     "all_reviews": "All Reviews",
     "view_reviews": "View Reviews",
-    "recent_reviews": "Recent Reviews",
     "filter_reviews": "Filter Reviews",
     "are_you_sure_you_want_to_report_this_review_for_in": "Are you sure you want to report this review for inappropriate content?"
   },
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "My Disputes",
+    "report_issue": "Report Issue",
+    "filed": "Dispute Filed",
+    "filed_message": "Your dispute has been submitted successfully. We will review it soon.",
+    "exists": "Dispute Exists",
+    "exists_message": "You already have an open dispute for this booking",
+    "error": "Error",
+    "error_message": "Failed to file dispute",
+    "load_error": "Failed to load disputes",
+    "info_message": "Please provide detailed information about the issue. Our support team will review and respond within 24 hours.",
+    "issue_type": "Issue Type *",
+    "description": "Description *",
+    "description_hint": "Please describe the issue in detail...",
+    "description_required": "Please describe the issue",
+    "description_min_length": "Please provide more details (min 20 characters)",
+    "evidence": "Evidence (Optional)",
+    "submit": "Submit Dispute",
+    "booking_info": "Booking Information",
+    "add_photos": "Add Photos",
+    "add_more_photos": "Add More Photos",
+    "upload_hint": "Upload photos of the issue (optional)",
+    "open": "Open",
+    "resolved": "Resolved",
+    "all": "All",
+    "no_disputes": "No Disputes",
+    "no_disputes_message": "You have no disputes in this category",
+    "attachments": "attachment(s)",
+    "reason": {
+      "no_show": "No Show",
+      "damaged_package": "Damaged Package",
+      "late_delivery": "Late Delivery",
+      "inappropriate_behavior": "Inappropriate Behavior",
+      "payment_issue": "Payment Issue",
+      "fraudulent_activity": "Fraudulent Activity",
+      "safety_concern": "Safety Concern",
+      "other": "Other"
+    },
+    "status": {
+      "pending": "Pending",
+      "under_review": "Under Review",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed",
+      "escalated": "Escalated"
+    },
+    "notification": {
+      "title": "Dispute Update",
+      "response": "Admin responded to your dispute",
+      "status_change": "Your dispute status changed to"
+    }
   }
 }

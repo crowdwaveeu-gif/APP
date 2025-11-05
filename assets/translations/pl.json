@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Bądź pierwszym, który opublikuje!",
     "add_images": "Dodaj Obrazy",
     "tell_others_about_your_experience": "Opowiedz innym o swoim doświadczeniu...",
-    "offer_price": "Cena Oferty"
+    "offer_price": "Cena Oferty",
+    "maybe_later": "Może później"
   },
   "home": {
     "title": "Strona Główna",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Metoda odbioru",
+    "pickup_method_subtitle": "Jak podróżny otrzyma twoją paczkę?",
+    "self_pickup": "Dostarczę podróżnemu",
+    "self_pickup_desc": "Podróżny odbierze w określonym miejscu",
+    "sender_delivers": "Podróżny odbiera ode mnie",
+    "sender_delivers_desc": "Spotkam się z podróżnym w miejscu odbioru"
   },
   "post_trip": {
     "title": "Opublikuj Podróż",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Wyświetl Recenzje",
     "recent_reviews": "Ostatnie Recenzje",
     "filter_reviews": "Filtruj Recenzje",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Czy na pewno chcesz zgłosić tę recenzję za nieodpowiednią treść?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Czy na pewno chcesz zgłosić tę recenzję za nieodpowiednią treść?",
+    "how_was_experience": "Jak było Twoje doświadczenie?",
+    "help_community": "Pomóż społeczności, recenzując {0}"
   },
   "onboarding": {
     "welcome": "Witamy w CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Moje Spory",
+    "report_issue": "Zgłoś Problem",
+    "filed": "Spór Złożony",
+    "filed_message": "Twój spór został pomyślnie przesłany. Wkrótce go rozpatrzymy.",
+    "exists": "Spór Istnieje",
+    "exists_message": "Masz już otwarty spór dotyczący tej rezerwacji",
+    "error": "Błąd",
+    "error_message": "Nie udało się złożyć sporu",
+    "load_error": "Nie udało się załadować sporów",
+    "info_message": "Proszę podać szczegółowe informacje na temat problemu. Nasz zespół wsparcia rozpatrzy i odpowie w ciągu 24 godzin.",
+    "issue_type": "Typ Problemu *",
+    "description": "Opis *",
+    "description_hint": "Proszę opisać problem szczegółowo...",
+    "description_required": "Proszę opisać problem",
+    "description_min_length": "Proszę podać więcej szczegółów (min. 20 znaków)",
+    "evidence": "Dowody (Opcjonalnie)",
+    "submit": "Złóż Spór",
+    "booking_info": "Informacje o Rezerwacji",
+    "add_photos": "Dodaj Zdjęcia",
+    "add_more_photos": "Dodaj Więcej Zdjęć",
+    "upload_hint": "Prześlij zdjęcia problemu (opcjonalnie)",
+    "open": "Otwarty",
+    "resolved": "Rozwiązany",
+    "all": "Wszystkie",
+    "no_disputes": "Brak Sporów",
+    "no_disputes_message": "Nie masz sporów w tej kategorii",
+    "attachments": "załącznik(i)",
+    "reason": {
+      "no_show": "Nieobecność",
+      "damaged_package": "Uszkodzona Paczka",
+      "late_delivery": "Opóźniona Dostawa",
+      "inappropriate_behavior": "Nieodpowiednie Zachowanie",
+      "payment_issue": "Problem z Płatnością",
+      "fraudulent_activity": "Działalność Oszukańcza",
+      "safety_concern": "Obawy Dotyczące Bezpieczeństwa",
+      "other": "Inne"
+    },
+    "status": {
+      "pending": "Oczekujący",
+      "under_review": "W Trakcie Rozpatrywania",
+      "resolved": "Rozwiązany",
+      "dismissed": "Odrzucony",
+      "escalated": "Sprostowany"
+    },
+    "notification": {
+      "title": "Aktualizacja Sporu",
+      "response": "Administrator odpowiedział na Twój spór",
+      "status_change": "Status Twojego sporu zmienił się na"
+    }
   }
 }

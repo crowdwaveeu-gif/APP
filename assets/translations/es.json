@@ -225,7 +225,8 @@
     "be_the_first_to_post": "¡Sé el primero en postear!",
     "add_images": "Agregar Imágenes",
     "tell_others_about_your_experience": "Cuéntales a otros sobre tu experiencia...",
-    "offer_price": "Precio de Oferta"
+    "offer_price": "Precio de Oferta",
+    "maybe_later": "Quizás más tarde"
   },
   "home": {
     "title": "Inicio",
@@ -795,6 +796,12 @@
     "your_posted_packages_will_appear_here": "Tus paquetes publicados aparecerán aquí",
     "crowdwave_connects_senders_and_travelers_for_effic": "CrowdWave conecta remitentes y viajeros para entregas eficientes en todo el mundo.",
     "package_photos": "Fotos del Paquete",
+    "pickup_method": "Método de recogida",
+    "pickup_method_subtitle": "¿Cómo recibirá el viajero tu paquete?",
+    "self_pickup": "Entregaré al viajero",
+    "self_pickup_desc": "El viajero recogerá en el lugar especificado",
+    "sender_delivers": "El viajero recoge de mí",
+    "sender_delivers_desc": "Me encontraré con el viajero en el lugar de recogida",
     "step_receiver_details": "Detalles del Receptor",
     "subtitle_receiver_details": "¿Quién recibirá este paquete en el destino?",
     "receiver_details_title": "Información del Receptor",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Ver Reseñas",
     "recent_reviews": "Reseñas Recientes",
     "filter_reviews": "Filtrar Reseñas",
-    "are_you_sure_you_want_to_report_this_review_for_in": "¿Estás seguro de que quieres reportar esta reseña por contenido inapropiado?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "¿Estás seguro de que quieres reportar esta reseña por contenido inapropiado?",
+    "how_was_experience": "¿Cómo fue tu experiencia?",
+    "help_community": "Ayuda a la comunidad revisando {0}"
   },
   "onboarding": {
     "welcome": "Bienvenido a CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mis Disputas",
+    "report_issue": "Informar Problema",
+    "filed": "Disputa Presentada",
+    "filed_message": "Su disputa ha sido enviada con éxito. La revisaremos pronto.",
+    "exists": "Disputa Existe",
+    "exists_message": "Ya tiene una disputa abierta para esta reserva",
+    "error": "Error",
+    "error_message": "Fallo al presentar la disputa",
+    "load_error": "Fallo al cargar disputas",
+    "info_message": "Por favor, proporcione información detallada sobre el problema. Nuestro equipo de soporte lo revisará y responderá dentro de 24 horas.",
+    "issue_type": "Tipo de Problema *",
+    "description": "Descripción *",
+    "description_hint": "Por favor, describa el problema en detalle...",
+    "description_required": "Por favor, describa el problema",
+    "description_min_length": "Por favor, proporcione más detalles (mín. 20 caracteres)",
+    "evidence": "Evidencia (Opcional)",
+    "submit": "Enviar Disputa",
+    "booking_info": "Información de la Reserva",
+    "add_photos": "Añadir Fotos",
+    "add_more_photos": "Añadir Más Fotos",
+    "upload_hint": "Subir fotos del problema (opcional)",
+    "open": "Abierta",
+    "resolved": "Resuelta",
+    "all": "Todas",
+    "no_disputes": "No hay Disputas",
+    "no_disputes_message": "No tiene disputas en esta categoría",
+    "attachments": "adjunto(s)",
+    "reason": {
+      "no_show": "No Presentado",
+      "damaged_package": "Paquete Dañado",
+      "late_delivery": "Entrega Tardía",
+      "inappropriate_behavior": "Comportamiento Inapropiado",
+      "payment_issue": "Problema de Pago",
+      "fraudulent_activity": "Actividad Fraudulenta",
+      "safety_concern": "Preocupación de Seguridad",
+      "other": "Otro"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "under_review": "En Revisión",
+      "resolved": "Resuelta",
+      "dismissed": "Desestimada",
+      "escalated": "Escalada"
+    },
+    "notification": {
+      "title": "Actualización de Disputa",
+      "response": "El administrador respondió a su disputa",
+      "status_change": "El estado de su disputa cambió a"
+    }
   }
 }

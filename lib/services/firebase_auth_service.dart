@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:math';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -132,26 +135,118 @@ class FirebaseAuthService {
         }
       }
 
+      // Generate nonce for Apple Sign-In to improve security and state management
+      String generateNonce([int length = 32]) {
+        const charset =
+            '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+        final random = Random.secure();
+        return List.generate(
+            length, (_) => charset[random.nextInt(charset.length)]).join();
+      }
+
+      String sha256ofString(String input) {
+        final bytes = utf8.encode(input);
+        final digest = sha256.convert(bytes);
+        return digest.toString();
+      }
+
       // Request credential for the currently signed in Apple account
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        // Web authentication options are REQUIRED for Android and Web
-        webAuthenticationOptions: WebAuthenticationOptions(
-          clientId:
-              "com.crowdwave.courier.service", // ✅ Updated Apple Service ID to match app
-          redirectUri: Uri.parse(
-            "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler", // ✅ Firebase redirect URI
-          ),
-        ),
-      );
+      // Adding retry logic for "missing initial state" error
+      AuthorizationCredentialAppleID? appleCredential;
+      int retryCount = 0;
+      const maxRetries = 2;
+
+      final rawNonce = generateNonce();
+      final nonce = sha256ofString(rawNonce);
+
+      // ✅ ANDROID FIX: Small delay to ensure app state is ready
+      if (!kIsWeb && Platform.isAndroid) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (kDebugMode) {
+          print(
+              '🤖 Android detected - preparing for web-based Apple Sign-In flow');
+        }
+      }
+
+      while (retryCount <= maxRetries) {
+        try {
+          if (kDebugMode) {
+            print(
+                '🍎 Apple Sign-In attempt ${retryCount + 1}/${maxRetries + 1}');
+            print(
+                '🔧 Platform check: kIsWeb=$kIsWeb, isAndroid=${!kIsWeb && Platform.isAndroid}, isIOS=${!kIsWeb && Platform.isIOS}');
+          }
+
+          // ✅ FIX: webAuthenticationOptions required for web AND Android
+          // Only iOS uses native Apple Sign-In (no webAuthenticationOptions needed)
+          if (kIsWeb || (!kIsWeb && Platform.isAndroid)) {
+            // Web and Android both use web-based Apple Sign-In
+            if (kDebugMode) {
+              print('🌐 Using WEB flow with webAuthenticationOptions');
+            }
+            appleCredential = await SignInWithApple.getAppleIDCredential(
+              scopes: [
+                AppleIDAuthorizationScopes.email,
+                AppleIDAuthorizationScopes.fullName,
+              ],
+              nonce: nonce,
+              webAuthenticationOptions: WebAuthenticationOptions(
+                clientId: "com.crowdwave.courier.service",
+                redirectUri: Uri.parse(
+                  "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler",
+                ),
+              ),
+            );
+          } else {
+            // iOS only - native Apple Sign-In (no webAuthenticationOptions)
+            if (kDebugMode) {
+              print('📱 Using iOS NATIVE flow (NO webAuthenticationOptions)');
+            }
+            appleCredential = await SignInWithApple.getAppleIDCredential(
+              scopes: [
+                AppleIDAuthorizationScopes.email,
+                AppleIDAuthorizationScopes.fullName,
+              ],
+              nonce: nonce,
+            );
+          }
+
+          if (kDebugMode) {
+            print('✅ Apple Sign-In credentials obtained successfully');
+          }
+          break; // Success, exit retry loop
+        } on SignInWithAppleAuthorizationException catch (e) {
+          if (e.code == AuthorizationErrorCode.canceled) {
+            return null; // User cancelled
+          }
+
+          // Check for "missing initial state" or unknown errors
+          if (e.message.toLowerCase().contains('state') ||
+              e.code == AuthorizationErrorCode.unknown) {
+            retryCount++;
+            if (retryCount <= maxRetries) {
+              // Wait before retry (exponential backoff)
+              await Future.delayed(Duration(seconds: retryCount * 2));
+              continue;
+            }
+          }
+
+          // If not a state error or max retries reached, throw
+          throw Exception('Apple Sign In failed: ${e.message}\n'
+              'Please try again or contact support if the issue persists.');
+        }
+      }
+
+      if (appleCredential == null) {
+        throw Exception(
+            'Failed to get Apple credentials after $maxRetries retries');
+      }
 
       // Create an `OAuthCredential` from the credential returned by Apple
       final oauthCredential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
+        rawNonce: rawNonce, // ✅ Pass the raw nonce to Firebase
       );
 
       // Sign in the user with Firebase
@@ -174,10 +269,17 @@ class FirebaseAuthService {
         // User cancelled the sign-in flow
         return null;
       } else {
-        throw Exception('Apple Sign In failed: ${e.message}');
+        throw Exception('Apple Sign In Authorization Error:\n'
+            'Code: ${e.code}\n'
+            'Message: ${e.message}\n\n'
+            'This may be a temporary issue. Please try again.');
       }
     } catch (e) {
-      throw Exception('Apple sign in failed: $e');
+      throw Exception('Apple sign in failed: $e\n\n'
+          'If this error persists, please ensure:\n'
+          '- You have a stable internet connection\n'
+          '- Your browser allows cookies and storage\n'
+          '- Try again in a few minutes');
     }
   }
 

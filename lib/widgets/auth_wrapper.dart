@@ -6,6 +6,7 @@ import '../presentation/splash_screen/splash_screen.dart';
 import '../presentation/onboarding_flow/onboarding_flow.dart';
 import '../presentation/main_navigation/main_navigation_screen.dart';
 import '../presentation/screens/auth/login_view.dart';
+import '../presentation/screens/auth/account_blocked_screen.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
@@ -17,6 +18,12 @@ class AuthWrapper extends StatelessWidget {
         // Show loading screen while checking auth state
         if (authState.isLoading) {
           return SplashScreen();
+        }
+
+        // Check if there's an error (like blocked account)
+        if (authState.error != null &&
+            authState.error!.contains('restricted')) {
+          return AccountBlockedScreen(message: authState.error);
         }
 
         // If user is signed in, go to main navigation with 5 tabs

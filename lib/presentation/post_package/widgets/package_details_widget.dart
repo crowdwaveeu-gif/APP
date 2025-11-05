@@ -17,6 +17,7 @@ class PackageDetailsWidget extends StatefulWidget {
   final bool isPerishable;
   final bool requiresRefrigeration;
   final List<File> packagePhotos;
+  final String? pickupMethod;
   final Function(PackageSize) onSizeChanged;
   final Function(double) onWeightChanged;
   final Function(PackageType) onTypeChanged;
@@ -25,6 +26,7 @@ class PackageDetailsWidget extends StatefulWidget {
   final Function(bool) onPerishableChanged;
   final Function(bool) onRefrigerationChanged;
   final Function(List<File>) onPhotosChanged;
+  final Function(String?) onPickupMethodChanged;
 
   const PackageDetailsWidget({
     Key? key,
@@ -38,6 +40,7 @@ class PackageDetailsWidget extends StatefulWidget {
     required this.isPerishable,
     required this.requiresRefrigeration,
     required this.packagePhotos,
+    required this.pickupMethod,
     required this.onSizeChanged,
     required this.onWeightChanged,
     required this.onTypeChanged,
@@ -46,6 +49,7 @@ class PackageDetailsWidget extends StatefulWidget {
     required this.onPerishableChanged,
     required this.onRefrigerationChanged,
     required this.onPhotosChanged,
+    required this.onPickupMethodChanged,
   }) : super(key: key);
 
   @override
@@ -96,6 +100,13 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
             // Package Description
             _buildSectionTitle('Package Description', Icons.description),
             _buildDescriptionField(),
+
+            SizedBox(height: 4.h),
+
+            // Pickup Method
+            _buildSectionTitle(
+                'post_package.pickup_method'.tr(), Icons.local_shipping),
+            _buildPickupMethodSelector(),
 
             SizedBox(height: 4.h),
 
@@ -209,7 +220,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('post_package.upload_clear_photos_of_your_package'.tr(),
+          Text(
+            'post_package.upload_clear_photos_of_your_package'.tr(),
             style: TextStyle(
               fontSize: 12.sp,
               color: AppTheme.lightTheme.colorScheme.onSurface
@@ -268,7 +280,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
               size: 28,
             ),
             SizedBox(height: 1.h),
-            Text('common.add_photo'.tr(),
+            Text(
+              'common.add_photo'.tr(),
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w500,
@@ -357,7 +370,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('post_package.package_type'.tr(),
+        Text(
+          'post_package.package_type'.tr(),
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
@@ -452,7 +466,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('post_package.package_size'.tr(),
+        Text(
+          'post_package.package_size'.tr(),
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
@@ -557,7 +572,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('post_package.weight_label'.tr(),
+              Text(
+                'post_package.weight_label'.tr(),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
@@ -791,7 +807,8 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
             SizedBox(height: 3.h),
 
             // Title
-            Text('post_package.add_package_photo'.tr(),
+            Text(
+              'post_package.add_package_photo'.tr(),
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -846,6 +863,75 @@ class _PackageDetailsWidgetState extends State<PackageDetailsWidget>
             SizedBox(height: 2.h),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPickupMethodSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.lightTheme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.lightTheme.colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(4.w),
+            child: Text(
+              'post_package.pickup_method_subtitle'.tr(),
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: AppTheme.lightTheme.colorScheme.onSurface
+                    .withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+          RadioListTile<String>(
+            value: 'self_pickup',
+            groupValue: widget.pickupMethod,
+            onChanged: (value) => widget.onPickupMethodChanged(value),
+            title: Text(
+              'post_package.self_pickup'.tr(),
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              'post_package.self_pickup_desc'.tr(),
+              style: TextStyle(fontSize: 11.sp),
+            ),
+            secondary: Icon(
+              Icons.person,
+              color: AppTheme.lightTheme.primaryColor,
+            ),
+          ),
+          Divider(height: 1),
+          RadioListTile<String>(
+            value: 'sender_delivers',
+            groupValue: widget.pickupMethod,
+            onChanged: (value) => widget.onPickupMethodChanged(value),
+            title: Text(
+              'post_package.sender_delivers'.tr(),
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              'post_package.sender_delivers_desc'.tr(),
+              style: TextStyle(fontSize: 11.sp),
+            ),
+            secondary: Icon(
+              Icons.meeting_room,
+              color: AppTheme.lightTheme.primaryColor,
+            ),
+          ),
+        ],
       ),
     );
   }

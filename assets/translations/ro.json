@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Fii primul care postează!",
     "add_images": "Adaugă Imagini",
     "tell_others_about_your_experience": "Spune altora despre experiența ta...",
-    "offer_price": "Preț Ofertă"
+    "offer_price": "Preț Ofertă",
+    "maybe_later": "Poate mai târziu"
   },
   "home": {
     "title": "Acasă",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Metoda de ridicare",
+    "pickup_method_subtitle": "Cum va primi călătorul coletul tău?",
+    "self_pickup": "Voi livra călătorului",
+    "self_pickup_desc": "Călătorul va ridica de la locația specificată",
+    "sender_delivers": "Călătorul ridică de la mine",
+    "sender_delivers_desc": "Mă voi întâlni cu călătorul la locația de ridicare"
   },
   "post_trip": {
     "title": "Postează o Călătorie",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Vezi Recenzii",
     "recent_reviews": "Recenzii Recente",
     "filter_reviews": "Filtrează Recenzii",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Ești sigur că vrei să raportezi această recenzie pentru conținut inadecvat?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Ești sigur că vrei să raportezi această recenzie pentru conținut inadecvat?",
+    "how_was_experience": "Cum a fost experiența ta?",
+    "help_community": "Ajută comunitatea prin recenzarea {0}"
   },
   "onboarding": {
     "welcome": "Bine ai venit la CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Disputele Mele",
+    "report_issue": "Raportează Problema",
+    "filed": "Dispută Înregistrată",
+    "filed_message": "Disputa dumneavoastră a fost trimisă cu succes. O vom revizui în curând.",
+    "exists": "Disputa Există",
+    "exists_message": "Aveți deja o dispută deschisă pentru această rezervare",
+    "error": "Eroare",
+    "error_message": "Înregistrarea disputei a eșuat",
+    "load_error": "Încărcarea disputelor a eșuat",
+    "info_message": "Vă rugăm să furnizați informații detaliate despre problemă. Echipa noastră de asistență va revizui și va răspunde în termen de 24 de ore.",
+    "issue_type": "Tipul Problemei *",
+    "description": "Descriere *",
+    "description_hint": "Vă rugăm să descrieți problema în detaliu...",
+    "description_required": "Vă rugăm să descrieți problema",
+    "description_min_length": "Vă rugăm să oferiți mai multe detalii (min 20 de caractere)",
+    "evidence": "Dovezi (Opțional)",
+    "submit": "Trimite Disputa",
+    "booking_info": "Informații despre Rezervare",
+    "add_photos": "Adaugă Fotografii",
+    "add_more_photos": "Adaugă Mai Multe Fotografii",
+    "upload_hint": "Încarcă fotografii ale problemei (opțional)",
+    "open": "Deschisă",
+    "resolved": "Rezolvată",
+    "all": "Toate",
+    "no_disputes": "Nicio Dispută",
+    "no_disputes_message": "Nu aveți dispute în această categorie",
+    "attachments": "atașament(e)",
+    "reason": {
+      "no_show": "Neprezentare",
+      "damaged_package": "Pachet Deteriorat",
+      "late_delivery": "Livrare Târzie",
+      "inappropriate_behavior": "Comportament Inadecvat",
+      "payment_issue": "Probleme de Plată",
+      "fraudulent_activity": "Activitate Frauduloasă",
+      "safety_concern": "Probleme de Siguranță",
+      "other": "Altele"
+    },
+    "status": {
+      "pending": "În Așteptare",
+      "under_review": "În Revizuire",
+      "resolved": "Rezolvată",
+      "dismissed": "Respinsă",
+      "escalated": "Escaladată"
+    },
+    "notification": {
+      "title": "Actualizare Dispută",
+      "response": "Administratorul a răspuns disputei dumneavoastră",
+      "status_change": "Statutul disputei dumneavoastră s-a schimbat la"
+    }
   }
 }

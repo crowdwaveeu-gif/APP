@@ -13,6 +13,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'payment_method_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../services/platform_config_service.dart';
 
 /// 📝 Booking Confirmation Screen - Phase 2.1
 /// Handles booking confirmation flow after deal acceptance
@@ -36,6 +37,7 @@ class BookingConfirmationScreen extends StatefulWidget {
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     with SingleTickerProviderStateMixin {
   final BookingService _bookingService = BookingService();
+  final PlatformConfigService _configService = PlatformConfigService();
   final TextEditingController _specialInstructionsController =
       TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -44,7 +46,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
 
   bool _isTermsAgreed = false;
   bool _isLoading = false;
+  bool _isLoadingFee = true;
   String? _errorMessage;
+  double _platformFeePercent = 0.1; // Default 10%
 
   @override
   void initState() {
@@ -60,6 +64,15 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
       parent: _errorAnimationController,
       curve: Curves.elasticOut,
     ));
+    _loadPlatformFee();
+  }
+
+  Future<void> _loadPlatformFee() async {
+    final feePercent = await _configService.getPlatformFeePercent();
+    setState(() {
+      _platformFeePercent = feePercent;
+      _isLoadingFee = false;
+    });
   }
 
   @override
@@ -147,7 +160,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('booking.confirm_booking'.tr(),
+        title: Text(
+          'booking.confirm_booking'.tr(),
           style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
         ),
         backgroundColor: AppColors.surface,
@@ -266,21 +280,32 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Amount:',
-                          style: AppTextStyles.h3
-                              .copyWith(color: AppColors.textPrimary),
-                        ),
-                        Text(
-                          '€${(widget.acceptedDeal.offeredPrice + (widget.acceptedDeal.offeredPrice * 0.1)).toStringAsFixed(2)}',
-                          style: AppTextStyles.h2
-                              .copyWith(color: AppColors.primary),
-                        ),
-                      ],
-                    ),
+                    child: _isLoadingFee
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary),
+                              ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Amount:',
+                                style: AppTextStyles.h3
+                                    .copyWith(color: AppColors.textPrimary),
+                              ),
+                              Text(
+                                '€${(widget.acceptedDeal.offeredPrice + (widget.acceptedDeal.offeredPrice * _platformFeePercent)).toStringAsFixed(2)}',
+                                style: AppTextStyles.h2
+                                    .copyWith(color: AppColors.primary),
+                              ),
+                            ],
+                          ),
                   ),
                   const SizedBox(height: 16),
 
@@ -308,7 +333,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                                     AppColors.surface),
                               ),
                             )
-                          : Text('wallet.proceed_to_payment'.tr(),
+                          : Text(
+                              'wallet.proceed_to_payment'.tr(),
                               style: AppTextStyles.button,
                             ),
                     ),
@@ -441,7 +467,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
             children: [
               Icon(Icons.note_alt_outlined, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
-              Text('detail.special_instructions'.tr(),
+              Text(
+                'detail.special_instructions'.tr(),
                 style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
               ),
             ],
@@ -495,7 +522,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               Icon(Icons.contact_phone_outlined,
                   color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
-              Text('kyc.contact_information'.tr(),
+              Text(
+                'kyc.contact_information'.tr(),
                 style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
               ),
             ],
@@ -514,7 +542,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                     Icon(Icons.info_outline, color: AppColors.info, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('wallet.contact_details_will_be_shared_after_payment_confi'.tr(),
+                      child: Text(
+                        'wallet.contact_details_will_be_shared_after_payment_confi'
+                            .tr(),
                         style: AppTextStyles.caption
                             .copyWith(color: AppColors.info),
                       ),
@@ -527,7 +557,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                     Icon(Icons.security, color: AppColors.success, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('common.your_information_is_protected_and_secure'.tr(),
+                      child: Text(
+                        'common.your_information_is_protected_and_secure'.tr(),
                         style: AppTextStyles.caption
                             .copyWith(color: AppColors.success),
                       ),

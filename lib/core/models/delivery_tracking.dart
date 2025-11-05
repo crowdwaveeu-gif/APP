@@ -57,6 +57,13 @@ class DeliveryTracking {
   final String? senderFeedback; // Feedback from sender
   final double? senderRating; // Rating from sender (1-5)
 
+  // OTP verification fields for secure delivery
+  final String? deliveryOTP; // 6-digit OTP code
+  final DateTime? otpGeneratedAt; // When OTP was generated
+  final DateTime? otpExpiresAt; // When OTP expires
+  final bool otpVerified; // Whether OTP has been verified
+  final DateTime? otpVerifiedAt; // When OTP was verified
+
   DeliveryTracking({
     required this.id,
     required this.packageRequestId,
@@ -75,6 +82,11 @@ class DeliveryTracking {
     this.deliveryPhotoUrl,
     this.senderFeedback,
     this.senderRating,
+    this.deliveryOTP,
+    this.otpGeneratedAt,
+    this.otpExpiresAt,
+    this.otpVerified = false,
+    this.otpVerifiedAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -99,6 +111,14 @@ class DeliveryTracking {
       'deliveryPhotoUrl': deliveryPhotoUrl,
       'senderFeedback': senderFeedback,
       'senderRating': senderRating,
+      'deliveryOTP': deliveryOTP,
+      'otpGeneratedAt':
+          otpGeneratedAt != null ? Timestamp.fromDate(otpGeneratedAt!) : null,
+      'otpExpiresAt':
+          otpExpiresAt != null ? Timestamp.fromDate(otpExpiresAt!) : null,
+      'otpVerified': otpVerified,
+      'otpVerifiedAt':
+          otpVerifiedAt != null ? Timestamp.fromDate(otpVerifiedAt!) : null,
     };
   }
 
@@ -131,6 +151,11 @@ class DeliveryTracking {
       deliveryPhotoUrl: map['deliveryPhotoUrl'],
       senderFeedback: map['senderFeedback'],
       senderRating: map['senderRating']?.toDouble(),
+      deliveryOTP: map['deliveryOTP'],
+      otpGeneratedAt: (map['otpGeneratedAt'] as Timestamp?)?.toDate(),
+      otpExpiresAt: (map['otpExpiresAt'] as Timestamp?)?.toDate(),
+      otpVerified: map['otpVerified'] ?? false,
+      otpVerifiedAt: (map['otpVerifiedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -152,6 +177,11 @@ class DeliveryTracking {
     String? deliveryPhotoUrl,
     String? senderFeedback,
     double? senderRating,
+    String? deliveryOTP,
+    DateTime? otpGeneratedAt,
+    DateTime? otpExpiresAt,
+    bool? otpVerified,
+    DateTime? otpVerifiedAt,
   }) {
     return DeliveryTracking(
       id: id ?? this.id,
@@ -171,6 +201,11 @@ class DeliveryTracking {
       deliveryPhotoUrl: deliveryPhotoUrl ?? this.deliveryPhotoUrl,
       senderFeedback: senderFeedback ?? this.senderFeedback,
       senderRating: senderRating ?? this.senderRating,
+      deliveryOTP: deliveryOTP ?? this.deliveryOTP,
+      otpGeneratedAt: otpGeneratedAt ?? this.otpGeneratedAt,
+      otpExpiresAt: otpExpiresAt ?? this.otpExpiresAt,
+      otpVerified: otpVerified ?? this.otpVerified,
+      otpVerifiedAt: otpVerifiedAt ?? this.otpVerifiedAt,
     );
   }
 

@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Γίνετε ο πρώτος που θα δημοσιεύσει!",
     "add_images": "Προσθήκη Εικόνων",
     "tell_others_about_your_experience": "Πείτε στους άλλους για την εμπειρία σας...",
-    "offer_price": "Τιμή Προσφοράς"
+    "offer_price": "Τιμή Προσφοράς",
+    "maybe_later": "Ίσως αργότερα"
   },
   "home": {
     "title": "Αρχική",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Μέθοδος παραλαβής",
+    "pickup_method_subtitle": "Πώς θα πάρει ο ταξιδιώτης το πακέτο σας;",
+    "self_pickup": "Θα παραδώσω στον ταξιδιώτη",
+    "self_pickup_desc": "Ο ταξιδιώτης θα παραλάβει από την καθορισμένη τοποθεσία",
+    "sender_delivers": "Ο ταξιδιώτης παραλαμβάνει από εμένα",
+    "sender_delivers_desc": "Θα συναντήσω τον ταξιδιώτη στο σημείο παραλαβής"
   },
   "post_trip": {
     "title": "Δημοσίευση Ταξιδιού",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Δείτε Κριτικές",
     "recent_reviews": "Πρόσφατες Κριτικές",
     "filter_reviews": "Φιλτράρισμα Κριτικών",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Είστε σίγουροι ότι θέλετε να αναφέρετε αυτή την κριτική για ακατάλληλο περιεχόμενο;"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Είστε σίγουροι ότι θέλετε να αναφέρετε αυτή την κριτική για ακατάλληλο περιεχόμενο;",
+    "how_was_experience": "Πώς ήταν η εμπειρία σας;",
+    "help_community": "Βοηθήστε την κοινότητα αξιολογώντας {0}"
   },
   "onboarding": {
     "welcome": "Καλώς ήρθατε στο CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Οι Διαφωνίες Μου",
+    "report_issue": "Αναφορά Ζητήματος",
+    "filed": "Κατατέθηκε Διαφωνία",
+    "filed_message": "Η διαφωνία σας υποβλήθηκε επιτυχώς. Θα την ελέγξουμε σύντομα.",
+    "exists": "Υπάρχει Διαφωνία",
+    "exists_message": "Έχετε ήδη μια ανοιχτή διαφωνία για αυτήν την κράτηση",
+    "error": "Σφάλμα",
+    "error_message": "Αποτυχία κατάθεσης διαφωνίας",
+    "load_error": "Αποτυχία φόρτωσης διαφωνιών",
+    "info_message": "Παρακαλούμε δώστε λεπτομερείς πληροφορίες σχετικά με το ζήτημα. Η ομάδα υποστήριξής μας θα το ελέγξει και θα απαντήσει εντός 24 ωρών.",
+    "issue_type": "Τύπος Ζητήματος *",
+    "description": "Περιγραφή *",
+    "description_hint": "Παρακαλούμε περιγράψτε το ζήτημα λεπτομερώς...",
+    "description_required": "Παρακαλούμε περιγράψτε το ζήτημα",
+    "description_min_length": "Παρακαλούμε δώστε περισσότερες λεπτομέρειες (ελάχιστο 20 χαρακτήρες)",
+    "evidence": "Αποδεικτικά Στοιχεία (Προαιρετικό)",
+    "submit": "Υποβολή Διαφωνίας",
+    "booking_info": "Πληροφορίες Κράτησης",
+    "add_photos": "Προσθήκη Φωτογραφιών",
+    "add_more_photos": "Προσθήκη Περισσότερων Φωτογραφιών",
+    "upload_hint": "Ανεβάστε φωτογραφίες του ζητήματος (προαιρετικό)",
+    "open": "Ανοιχτή",
+    "resolved": "Επιλύθηκε",
+    "all": "Όλες",
+    "no_disputes": "Καμία Διαφωνία",
+    "no_disputes_message": "Δεν έχετε διαφωνίες σε αυτήν την κατηγορία",
+    "attachments": "συνημμένο(α)",
+    "reason": {
+      "no_show": "Μη Εμφάνιση",
+      "damaged_package": "Κατεστραμμένο Πακέτο",
+      "late_delivery": "Καθυστέρηση Παράδοσης",
+      "inappropriate_behavior": "Ανάρμοστη Συμπεριφορά",
+      "payment_issue": "Πρόβλημα Πληρωμής",
+      "fraudulent_activity": "Δόλια Δραστηριότητα",
+      "safety_concern": "Θέμα Ασφάλειας",
+      "other": "Άλλο"
+    },
+    "status": {
+      "pending": "Σε Εκκρεμότητα",
+      "under_review": "Υπό Εξέταση",
+      "resolved": "Επιλύθηκε",
+      "dismissed": "Απορρίφθηκε",
+      "escalated": "Κλιμακώθηκε"
+    },
+    "notification": {
+      "title": "Ενημέρωση Διαφωνίας",
+      "response": "Ο διαχειριστής απάντησε στη διαφωνία σας",
+      "status_change": "Η κατάσταση της διαφωνίας σας άλλαξε σε"
+    }
   }
 }

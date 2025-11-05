@@ -376,6 +376,44 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                       ),
                       child: Column(
                         children: [
+                          // Email Section (Read-only)
+                          _buildProfileOption(
+                            icon: Icons.email_outlined,
+                            title: 'Email',
+                            subtitle: _userProfile?.email ??
+                                currentUser?.email ??
+                                'Not set',
+                            actionText: '', // No action - email is read-only
+                            onTap: null,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Phone Number Section
+                          _buildProfileOption(
+                            icon: Icons.phone_outlined,
+                            title: 'Phone Number',
+                            subtitle: _userProfile?.phoneNumber ?? 'Not set',
+                            actionText: 'profile.update'.tr(),
+                            onTap: () => _showEditPhoneDialog(),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Date of Birth Section
+                          _buildProfileOption(
+                            icon: Icons.cake_outlined,
+                            title: 'Date of Birth',
+                            subtitle: _userProfile != null
+                                ? DateFormat('MMM dd, yyyy')
+                                    .format(_userProfile!.dateOfBirth)
+                                : 'Not set',
+                            actionText: 'profile.update'.tr(),
+                            onTap: () => _showEditDateOfBirthDialog(),
+                          ),
+
+                          const SizedBox(height: 20),
+
                           // Address Section
                           _buildProfileOption(
                             icon: Icons.location_on_outlined,
@@ -436,6 +474,20 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                                   true,
                               statusColor: _getIdentityVerificationColor(),
                             ),
+
+                          const SizedBox(height: 20),
+
+                          // My Disputes Section
+                          _buildProfileOption(
+                            icon: Icons.report_problem_outlined,
+                            title: 'My Disputes',
+                            subtitle: 'View and manage your disputes',
+                            actionText: 'View',
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.myDisputes,
+                            ),
+                          ),
 
                           const SizedBox(height: 40),
                         ],
@@ -856,6 +908,216 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
         ],
       ),
     );
+  }
+
+  // Show dialog to edit phone number
+  void _showEditPhoneDialog() {
+    final phoneController = TextEditingController(
+      text: _userProfile?.phoneNumber ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.phone_outlined, color: AppTheme.primaryVariantLight),
+            const SizedBox(width: 8),
+            Text('Edit Phone Number'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneController,
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                hintText: 'Enter your phone number',
+                prefixIcon: Icon(Icons.phone),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppTheme.primaryVariantLight,
+                    width: 2,
+                  ),
+                ),
+              ),
+              keyboardType: TextInputType.phone,
+              maxLength: 20,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              phoneController.dispose();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newPhone = phoneController.text.trim();
+              final dialogContext = context;
+
+              // Close the dialog first
+              Navigator.of(dialogContext).pop();
+
+              // Use mounted check to ensure widget is still in tree
+              if (!mounted) {
+                phoneController.dispose();
+                return;
+              }
+
+              // Show loading using the main screen context
+              showDialog(
+                context: this.context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              try {
+                // Update phone number
+                await _userProfileService.updateUserProfile(
+                  phoneNumber: newPhone.isEmpty ? null : newPhone,
+                );
+
+                // Close loading
+                if (mounted) {
+                  Navigator.of(this.context).pop();
+                }
+
+                // Reload profile
+                await _loadUserProfile();
+
+                // Show success
+                if (mounted) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text('Phone number updated successfully ✓'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                // Close loading
+                if (mounted) {
+                  Navigator.of(this.context).pop();
+                }
+
+                // Show error
+                if (mounted) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to update phone number: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+
+              phoneController.dispose();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryVariantLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Update',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Show dialog to edit date of birth
+  void _showEditDateOfBirthDialog() async {
+    final currentDate = _userProfile?.dateOfBirth ??
+        DateTime.now().subtract(const Duration(days: 365 * 18));
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now().subtract(
+          const Duration(days: 365 * 13)), // Must be at least 13 years old
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryVariantLight,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && mounted) {
+      // Show loading
+      showDialog(
+        context: this.context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      try {
+        // Update date of birth
+        await _userProfileService.updateUserProfile(
+          dateOfBirth: pickedDate,
+        );
+
+        // Close loading
+        if (mounted) {
+          Navigator.of(this.context).pop();
+        }
+
+        // Reload profile
+        await _loadUserProfile();
+
+        // Show success
+        if (mounted) {
+          ScaffoldMessenger.of(this.context).showSnackBar(
+            SnackBar(
+              content: Text('Date of birth updated successfully ✓'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        // Close loading
+        if (mounted) {
+          Navigator.of(this.context).pop();
+        }
+
+        // Show error
+        if (mounted) {
+          ScaffoldMessenger.of(this.context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update date of birth: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   void _showAddressUpdateDialog() {

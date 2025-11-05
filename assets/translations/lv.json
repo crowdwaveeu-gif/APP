@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Esi pirmais, kas publicē!",
     "add_images": "Pievienot Attēlus",
     "tell_others_about_your_experience": "Pastāstiet citiem par savu pieredzi...",
-    "offer_price": "Piedāvājuma Cena"
+    "offer_price": "Piedāvājuma Cena",
+    "maybe_later": "Varbūt vēlāk"
   },
   "home": {
     "title": "Sākums",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Saņemšanas metode",
+    "pickup_method_subtitle": "Kā ceļotājs saņems jūsu sūtījumu?",
+    "self_pickup": "Es piegādāšu ceļotājam",
+    "self_pickup_desc": "Ceļotājs saņems norādītajā vietā",
+    "sender_delivers": "Ceļotājs saņem no manis",
+    "sender_delivers_desc": "Tikšos ar ceļotāju saņemšanas vietā"
   },
   "post_trip": {
     "title": "Publicēt Ceļojumu",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Skatīt Atsauksmes",
     "recent_reviews": "Nesenās Atsauksmes",
     "filter_reviews": "Filtrēt Atsauksmes",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Vai esat pārliecināts, ka vēlaties ziņot par šo atsauksmi nepiedienīga satura dēļ?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Vai esat pārliecināts, ka vēlaties ziņot par šo atsauksmi nepiedienīga satura dēļ?",
+    "how_was_experience": "Kāda bija jūsu pieredze?",
+    "help_community": "Palīdziet kopienai, pārskatot {0}"
   },
   "onboarding": {
     "welcome": "Laipni lūgti CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mani Strīdi",
+    "report_issue": "Ziņot Par Problēmu",
+    "filed": "Strīds Iesniegts",
+    "filed_message": "Jūsu strīds ir veiksmīgi iesniegts. Mēs to drīzumā izskatīsim.",
+    "exists": "Strīds Pastāv",
+    "exists_message": "Jums jau ir atvērts strīds par šo rezervāciju",
+    "error": "Kļūda",
+    "error_message": "Neizdevās iesniegt strīdu",
+    "load_error": "Neizdevās ielādēt strīdus",
+    "info_message": "Lūdzu, sniedziet detalizētu informāciju par problēmu. Mūsu atbalsta komanda to pārskatīs un atbildēs 24 stundu laikā.",
+    "issue_type": "Problēmas Veids *",
+    "description": "Apraksts *",
+    "description_hint": "Lūdzu, detalizēti aprakstiet problēmu...",
+    "description_required": "Lūdzu, aprakstiet problēmu",
+    "description_min_length": "Lūdzu, sniedziet vairāk detaļu (vismaz 20 rakstzīmes)",
+    "evidence": "Pierādījumi (Izvēles)",
+    "submit": "Iesniegt Strīdu",
+    "booking_info": "Rezervācijas Informācija",
+    "add_photos": "Pievienot Fotoattēlus",
+    "add_more_photos": "Pievienot Vairāk Fotoattēlu",
+    "upload_hint": "Augšupielādējiet problēmas fotoattēlus (izvēles)",
+    "open": "Atvērts",
+    "resolved": "Atrisināts",
+    "all": "Visi",
+    "no_disputes": "Nav Strīdu",
+    "no_disputes_message": "Jums nav strīdu šajā kategorijā",
+    "attachments": "pielikums(i)",
+    "reason": {
+      "no_show": "Neierašanās",
+      "damaged_package": "Bojāts Iepakojums",
+      "late_delivery": "Novēlota Piegāde",
+      "inappropriate_behavior": "Nepiemērota Uzvedība",
+      "payment_issue": "Maksājuma Problēma",
+      "fraudulent_activity": "Krāpnieciskas Darbības",
+      "safety_concern": "Drošības Problēma",
+      "other": "Cits"
+    },
+    "status": {
+      "pending": "Gaida",
+      "under_review": "Tiek Pārskatīts",
+      "resolved": "Atrisināts",
+      "dismissed": "Noraidīts",
+      "escalated": "Eskalēts"
+    },
+    "notification": {
+      "title": "Strīda Atjauninājums",
+      "response": "Administrators atbildēja uz jūsu strīdu",
+      "status_change": "Jūsu strīda statuss mainīts uz"
+    }
   }
 }

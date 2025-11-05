@@ -22,9 +22,12 @@ import 'services/auth_state_service.dart';
 import 'services/app_initialization_service.dart';
 import 'services/onboarding_service.dart';
 import 'services/notification_service.dart';
+import 'services/dispute_service.dart';
+import 'services/dispute_notification_service.dart';
 import 'services/presence_service.dart';
 import 'services/location_service.dart';
 import 'services/tracking_service.dart';
+import 'services/delivery_otp_service.dart';
 import 'services/memory_management_service.dart';
 import 'services/zego_call_service.dart';
 import 'services/permission_manager_service.dart';
@@ -95,6 +98,14 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       }
       // Note: Background handler cannot show UI directly
       // The notification should trigger the app to open and handle the call
+      break;
+    case 'dispute_update':
+    case 'dispute_response':
+      if (kDebugMode) {
+        print('⚖️ BACKGROUND DISPUTE notification: $type');
+        print('📋 Dispute ID: ${message.data['disputeId']}');
+        print('📦 Booking ID: ${message.data['bookingId']}');
+      }
       break;
     default:
       if (kDebugMode) {
@@ -176,12 +187,21 @@ void main() async {
   // Initialize notification service (without automatic permission request)
   Get.put(NotificationService());
 
+  // ⚖️ Initialize dispute services - Real-time dispute updates
+  Get.put(DisputeService());
+  final disputeNotificationService = DisputeNotificationService();
+  disputeNotificationService.startListening();
+  Get.put(disputeNotificationService);
+
   // Initialize location service for smart caching
   final locationService = LocationService();
   await locationService.initialize();
   Get.put(locationService); // Put in GetX for dependency injection
 
-  // Initialize tracking service (depends on location and notification services)
+  // Initialize DeliveryOTPService (must be before TrackingService)
+  Get.put(DeliveryOTPService());
+
+  // Initialize tracking service (depends on location, notification, and OTP services)
   Get.put(TrackingService());
 
   // 🎤 Initialize voice calling service (without automatic permission request)

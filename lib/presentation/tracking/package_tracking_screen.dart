@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sizer/sizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/delivery_tracking.dart';
 import '../../core/models/package_request.dart';
 import '../../services/tracking_service.dart';
@@ -10,6 +11,7 @@ import '../tracking/tracking_timeline_widget.dart';
 import '../tracking/tracking_status_card.dart';
 import '../tracking/tracking_location_widget_simple.dart';
 import '../tracking/tracking_status_update_screen.dart';
+import '../disputes/file_dispute_screen.dart';
 import '../../widgets/liquid_loading_indicator.dart';
 import '../../widgets/liquid_refresh_indicator.dart';
 
@@ -536,25 +538,120 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
     }
   }
 
-  void _contactSupport() {
-    // Navigate to support chat or contact screen
-    Get.snackbar(
-      'Support',
-      'Contacting support...',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+  void _contactSupport() async {
+    // Show support options dialog
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.support_agent, color: Colors.blue),
+            SizedBox(width: 2.w),
+            Text('booking.contact_support'.tr()),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Get help with your delivery',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 2.h),
+            ListTile(
+              leading: Icon(Icons.email, color: Colors.blue),
+              title: Text('Email Support'),
+              subtitle: Text('support@crowdwave.com'),
+              contentPadding: EdgeInsets.zero,
+              onTap: () async {
+                final Uri emailUri = Uri(
+                  scheme: 'mailto',
+                  path: 'support@crowdwave.com',
+                  query:
+                      'subject=Support Request - Tracking ${widget.trackingId}',
+                );
+                try {
+                  if (await canLaunchUrl(emailUri)) {
+                    await launchUrl(emailUri);
+                    Get.back(); // Close dialog
+                    Get.snackbar(
+                      'Email Client Opened',
+                      'Opening your email client...',
+                      backgroundColor: Colors.blue,
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                    );
+                  } else {
+                    Get.back(); // Close dialog
+                    Get.snackbar(
+                      'Cannot Open Email',
+                      'Please email us at support@crowdwave.com',
+                      backgroundColor: Colors.orange,
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                      duration: Duration(seconds: 4),
+                    );
+                  }
+                } catch (e) {
+                  Get.back(); // Close dialog
+                  Get.snackbar(
+                    'Error',
+                    'Could not open email client. Please contact support@crowdwave.com',
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.TOP,
+                  );
+                }
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.report_problem, color: Colors.orange),
+              title: Text('File a Dispute'),
+              subtitle: Text('Report an issue with this delivery'),
+              contentPadding: EdgeInsets.zero,
+              onTap: () {
+                Get.back(); // Close dialog
+                _reportIssue(); // Open dispute screen
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('common.cancel'.tr()),
+          ),
+        ],
+      ),
     );
   }
 
-  void _reportIssue() {
-    // Navigate to issue reporting screen
-    Get.snackbar(
-      'Report Issue',
-      'Opening issue report...',
-      backgroundColor: Colors.orange,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+  void _reportIssue() async {
+    // Navigate to dispute filing screen
+    final result = await Get.to(
+      () => FileDisputeScreen(
+        bookingId: _currentTracking!
+            .packageRequestId, // Using packageRequestId as bookingId
+        reportedUserId: _isUserTraveler
+            ? _currentTracking!.senderId
+            : _currentTracking!.travelerId,
+        tracking: _currentTracking,
+      ),
     );
+
+    if (result == true) {
+      Get.snackbar(
+        'Dispute Filed',
+        'Your issue has been reported successfully',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 }

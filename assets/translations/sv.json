@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Var den första att posta!",
     "add_images": "Lägg till Bilder",
     "tell_others_about_your_experience": "Berätta för andra om din upplevelse...",
-    "offer_price": "Erbjudandepris"
+    "offer_price": "Erbjudandepris",
+    "maybe_later": "Kanske senare"
   },
   "home": {
     "title": "Hem",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Upphämtningsmetod",
+    "pickup_method_subtitle": "Hur får resenären ditt paket?",
+    "self_pickup": "Jag levererar till resenär",
+    "self_pickup_desc": "Resenären hämtar på angiven plats",
+    "sender_delivers": "Resenären hämtar från mig",
+    "sender_delivers_desc": "Jag träffar resenären på upphämtningsplatsen"
   },
   "post_trip": {
     "title": "Publicera en Resa",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Visa Recensioner",
     "recent_reviews": "Senaste Recensioner",
     "filter_reviews": "Filtrera Recensioner",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Är du säker på att du vill rapportera denna recension för olämpligt innehåll?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Är du säker på att du vill rapportera denna recension för olämpligt innehåll?",
+    "how_was_experience": "Hur var din upplevelse?",
+    "help_community": "Hjälp communityn genom att recensera {0}"
   },
   "onboarding": {
     "welcome": "Välkommen till CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mina Tvister",
+    "report_issue": "Rapportera Problem",
+    "filed": "Tvist Inlämnad",
+    "filed_message": "Din tvist har skickats in. Vi kommer att granska den snart.",
+    "exists": "Tvist Finns",
+    "exists_message": "Du har redan en öppen tvist för denna bokning",
+    "error": "Fel",
+    "error_message": "Misslyckades med att lämna in tvist",
+    "load_error": "Misslyckades med att ladda tvister",
+    "info_message": "Vänligen ange detaljerad information om problemet. Vårt supportteam kommer att granska och svara inom 24 timmar.",
+    "issue_type": "Problemtyp *",
+    "description": "Beskrivning *",
+    "description_hint": "Vänligen beskriv problemet i detalj...",
+    "description_required": "Vänligen beskriv problemet",
+    "description_min_length": "Vänligen ge mer detaljer (minst 20 tecken)",
+    "evidence": "Bevis (Valfritt)",
+    "submit": "Skicka In Tvist",
+    "booking_info": "Bokningsinformation",
+    "add_photos": "Lägg till Foton",
+    "add_more_photos": "Lägg till Fler Foton",
+    "upload_hint": "Ladda upp foton av problemet (valfritt)",
+    "open": "Öppen",
+    "resolved": "Löst",
+    "all": "Alla",
+    "no_disputes": "Inga Tvister",
+    "no_disputes_message": "Du har inga tvister i denna kategori",
+    "attachments": "bilaga(or)",
+    "reason": {
+      "no_show": "Utebliven Närvaro",
+      "damaged_package": "Skadat Paket",
+      "late_delivery": "Sen Leverans",
+      "inappropriate_behavior": "Olämpligt Beteende",
+      "payment_issue": "Betalningsproblem",
+      "fraudulent_activity": "Bedräglig Aktivitet",
+      "safety_concern": "Säkerhetsfråga",
+      "other": "Annat"
+    },
+    "status": {
+      "pending": "Avvaktar",
+      "under_review": "Under Granskning",
+      "resolved": "Löst",
+      "dismissed": "Avvisad",
+      "escalated": "Eskalerad"
+    },
+    "notification": {
+      "title": "Tvistuppdatering",
+      "response": "Admin svarade på din tvist",
+      "status_change": "Din tviststatus ändrades till"
+    }
   }
 }

@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Wees de eerste om te plaatsen!",
     "add_images": "Afbeeldingen toevoegen",
     "tell_others_about_your_experience": "Vertel anderen over je ervaring...",
-    "offer_price": "Aanbodsprijs"
+    "offer_price": "Aanbodsprijs",
+    "maybe_later": "Misschien later"
   },
   "home": {
     "title": "Home",
@@ -339,7 +340,8 @@
     "email_verification_required": "E-mail verificatie vereist",
     "click_the_verification_link_in_the_email_to_verify": "Klik op de verificatielink in de e-mail om je account te verifiëren",
     "kyc_verifikation_progress": "Voortgang KYC-verificatie",
-    "waiting_for_verification": "Wachten op verificatie..."
+    "waiting_for_verification": "Wachten op verificatie...",
+    "kyc_verification_progress": "KYC Verificatievoortgang"
   },
   "orders": {
     "title": "Mijn bestellingen",
@@ -814,7 +816,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Ophaalmethode",
+    "pickup_method_subtitle": "Hoe krijgt de reiziger je pakket?",
+    "self_pickup": "Ik lever bij reiziger",
+    "self_pickup_desc": "Reiziger haalt op bij opgegeven locatie",
+    "sender_delivers": "Reiziger haalt bij mij op",
+    "sender_delivers_desc": "Ik ontmoet de reiziger op de ophaallocatie"
   },
   "post_trip": {
     "title": "Reis plaatsen",
@@ -1235,7 +1243,9 @@
     "view_reviews": "Beoordelingen bekijken",
     "recent_reviews": "Recente beoordelingen",
     "filter_reviews": "Beoordelingen filteren",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Weet je zeker dat je deze beoordeling wilt rapporteren wegens ongepaste inhoud?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Weet je zeker dat je deze beoordeling wilt rapporteren wegens ongepaste inhoud?",
+    "how_was_experience": "Hoe was je ervaring?",
+    "help_community": "Help de community door {0} te beoordelen"
   },
   "onboarding": {
     "welcome": "Welkom bij CrowdWave",
@@ -1480,5 +1490,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mijn Geschillen",
+    "report_issue": "Meld Probleem",
+    "filed": "Geschil Ingediend",
+    "filed_message": "Uw geschil is succesvol ingediend. We zullen het spoedig beoordelen.",
+    "exists": "Geschil Bestaat",
+    "exists_message": "U heeft al een openstaand geschil voor deze boeking",
+    "error": "Fout",
+    "error_message": "Indienen van geschil is mislukt",
+    "load_error": "Laden van geschillen is mislukt",
+    "info_message": "Gelieve gedetailleerde informatie over het probleem te verstrekken. Ons supportteam zal het binnen 24 uur beoordelen en beantwoorden.",
+    "issue_type": "Type Probleem *",
+    "description": "Beschrijving *",
+    "description_hint": "Gelieve het probleem in detail te beschrijven...",
+    "description_required": "Gelieve het probleem te beschrijven",
+    "description_min_length": "Gelieve meer details te geven (min. 20 tekens)",
+    "evidence": "Bewijs (Optioneel)",
+    "submit": "Dien Geschil In",
+    "booking_info": "Boekingsinformatie",
+    "add_photos": "Voeg Foto's Toe",
+    "add_more_photos": "Voeg Meer Foto's Toe",
+    "upload_hint": "Upload foto's van het probleem (optioneel)",
+    "open": "Open",
+    "resolved": "Opgelost",
+    "all": "Alle",
+    "no_disputes": "Geen Geschillen",
+    "no_disputes_message": "U heeft geen geschillen in deze categorie",
+    "attachments": "bijlage(n)",
+    "reason": {
+      "no_show": "Niet Opdagen",
+      "damaged_package": "Beschadigd Pakket",
+      "late_delivery": "Late Levering",
+      "inappropriate_behavior": "Ongepast Gedrag",
+      "payment_issue": "Betalingsprobleem",
+      "fraudulent_activity": "Frauduleuze Activiteit",
+      "safety_concern": "Veiligheidsprobleem",
+      "other": "Anders"
+    },
+    "status": {
+      "pending": "In Afwachting",
+      "under_review": "Wordt Beoordeeld",
+      "resolved": "Opgelost",
+      "dismissed": "Afgehandeld",
+      "escalated": "Geëscaleerd"
+    },
+    "notification": {
+      "title": "Geschil Update",
+      "response": "Beheerder heeft gereageerd op uw geschil",
+      "status_change": "De status van uw geschil is gewijzigd naar"
+    }
   }
 }

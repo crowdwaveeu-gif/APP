@@ -6,6 +6,7 @@ import 'package:get/get.dart' hide Trans;
 
 import '../../core/app_export.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../services/kyc_service.dart';
 // import '../../services/booking_service.dart';
 import '../../controllers/chat_controller.dart';
 import '../chat/individual_chat_screen.dart';
@@ -15,6 +16,7 @@ import '../booking/make_offer_screen.dart';
 import '../../widgets/enhanced_snackbar.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import '../../widgets/custom_image_widget.dart';
+import '../../routes/app_routes.dart';
 // import '../reviews/review_list_screen.dart';
 // import '../reviews/create_review_screen.dart';
 
@@ -38,13 +40,32 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
   late Animation<double> _fadeAnimation;
 
   final FirebaseAuthService _authService = FirebaseAuthService();
+  final KycService _kycService = KycService();
   bool _isLoading = false;
+  bool _hasApprovedKyc = false;
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
     _startAnimations();
+    _checkKycStatus();
+  }
+
+  Future<void> _checkKycStatus() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      try {
+        final hasKyc = await _kycService.hasSubmittedKyc(currentUser.uid);
+        if (mounted) {
+          setState(() {
+            _hasApprovedKyc = hasKyc;
+          });
+        }
+      } catch (e) {
+        print('Error checking KYC status: $e');
+      }
+    }
   }
 
   void _initializeAnimations() {
@@ -1645,10 +1666,81 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
     print('Are they equal? ${currentUserId == senderId}');
     print('============================');
 
+    // Don't show button if user is not authenticated
+    if (currentUserId == null) {
+      print('HIDING BUTTONS: User is not authenticated');
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: FloatingActionButton.extended(
+          heroTag: "login_button_${widget.package.id}",
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Please log in to chat or make an offer'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            Navigator.pushNamed(context, AppRoutes.onboardingFlow);
+          },
+          backgroundColor: Color(0xFF215C5C),
+          foregroundColor: Colors.white,
+          elevation: 6,
+          icon: Icon(Icons.login),
+          label: Text(
+            'Login to Continue',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
+
     // Don't show button if user is the sender
     if (currentUserId == senderId) {
       print('HIDING BUTTONS: User is the package owner');
       return SizedBox.shrink();
+    }
+
+    // Don't show buttons if user doesn't have approved KYC
+    if (!_hasApprovedKyc) {
+      print('HIDING BUTTONS: User does not have approved KYC');
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: FloatingActionButton.extended(
+          heroTag: "kyc_button_${widget.package.id}",
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Please complete KYC verification to chat or make an offer'),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            // Navigate to KYC completion and refresh status when returning
+            Navigator.pushNamed(context, AppRoutes.kycCompletion).then((_) {
+              // Refresh KYC status when user returns
+              _checkKycStatus();
+            });
+          },
+          backgroundColor: Colors.orange,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          icon: Icon(Icons.verified_user),
+          label: Text(
+            'Complete KYC Verification',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
     }
 
     return Container(

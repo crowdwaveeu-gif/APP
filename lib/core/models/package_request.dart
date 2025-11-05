@@ -24,6 +24,7 @@ class PackageRequest {
   final bool isUrgent;
   final List<String> preferredTransportModes;
   final RecipientDetails? receiverDetails; // Added receiver details
+  final String? pickupMethod; // 'self_pickup' or 'sender_delivers'
 
   PackageRequest({
     required this.id,
@@ -48,6 +49,7 @@ class PackageRequest {
     this.isUrgent = false,
     this.preferredTransportModes = const [],
     this.receiverDetails, // Added receiver details parameter
+    this.pickupMethod, // Added pickup method parameter
   });
 
   Map<String, dynamic> toJson() {
@@ -74,6 +76,7 @@ class PackageRequest {
       'preferredTransportModes': preferredTransportModes,
       'receiverDetails':
           receiverDetails?.toMap(), // Added receiver details to JSON
+      'pickupMethod': pickupMethod, // Added pickup method to JSON
     };
 
     // Only include ID if it's not empty (for updates)
@@ -126,6 +129,7 @@ class PackageRequest {
       receiverDetails: json['receiverDetails'] != null
           ? RecipientDetails.fromMap(json['receiverDetails'])
           : null, // Added receiver details parsing
+      pickupMethod: json['pickupMethod'], // Added pickup method parsing
     );
   }
 
@@ -152,6 +156,7 @@ class PackageRequest {
     bool? isUrgent,
     List<String>? preferredTransportModes,
     RecipientDetails? receiverDetails, // Added receiver details parameter
+    String? pickupMethod, // Added pickup method parameter
   }) {
     return PackageRequest(
       id: id ?? this.id,
@@ -179,6 +184,8 @@ class PackageRequest {
           preferredTransportModes ?? this.preferredTransportModes,
       receiverDetails: receiverDetails ??
           this.receiverDetails, // Added receiver details assignment
+      pickupMethod:
+          pickupMethod ?? this.pickupMethod, // Added pickup method assignment
     );
   }
 }

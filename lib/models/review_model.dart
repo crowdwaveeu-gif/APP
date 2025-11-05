@@ -7,7 +7,7 @@ class Review {
   final String reviewerId;
   final String reviewerName;
   final String? reviewerAvatar;
-  final String targetId; // Trip ID or Package ID
+  final String targetId; // User ID (traveler or sender being reviewed)
   final ReviewType type;
   final double rating; // 1-5 stars
   final String? comment;
@@ -19,6 +19,7 @@ class Review {
   final int helpfulCount;
   final List<String> helpfulUserIds;
   final bool isVerifiedBooking;
+  final String? bookingId; // Booking ID that this review is associated with
 
   Review({
     required this.id,
@@ -37,6 +38,7 @@ class Review {
     this.helpfulCount = 0,
     this.helpfulUserIds = const [],
     this.isVerifiedBooking = false,
+    this.bookingId,
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
@@ -73,6 +75,7 @@ class Review {
           ? List<String>.from(json['helpfulUserIds'])
           : [],
       isVerifiedBooking: json['isVerifiedBooking'] ?? false,
+      bookingId: json['bookingId'],
     );
   }
 
@@ -94,6 +97,7 @@ class Review {
       'helpfulCount': helpfulCount,
       'helpfulUserIds': helpfulUserIds,
       'isVerifiedBooking': isVerifiedBooking,
+      'bookingId': bookingId,
     };
   }
 
@@ -114,6 +118,7 @@ class Review {
     int? helpfulCount,
     List<String>? helpfulUserIds,
     bool? isVerifiedBooking,
+    String? bookingId,
   }) {
     return Review(
       id: id ?? this.id,
@@ -132,6 +137,7 @@ class Review {
       helpfulCount: helpfulCount ?? this.helpfulCount,
       helpfulUserIds: helpfulUserIds ?? this.helpfulUserIds,
       isVerifiedBooking: isVerifiedBooking ?? this.isVerifiedBooking,
+      bookingId: bookingId ?? this.bookingId,
     );
   }
 }

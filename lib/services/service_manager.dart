@@ -4,6 +4,7 @@ import '../services/notification_service.dart';
 import '../services/tracking_service.dart';
 import '../services/presence_service.dart';
 import '../services/geocoding_service.dart';
+import '../services/delivery_otp_service.dart';
 import '../controllers/app_lifecycle_controller.dart';
 import '../controllers/chat_controller.dart';
 import '../controllers/smart_matching_controller.dart';
@@ -36,6 +37,17 @@ class ServiceManager {
         print('✅ NotificationService registered');
       }
 
+      if (!Get.isRegistered<GeocodingService>()) {
+        Get.put(GeocodingService());
+        print('✅ GeocodingService registered');
+      }
+
+      // Register DeliveryOTPService BEFORE TrackingService since TrackingService depends on it
+      if (!Get.isRegistered<DeliveryOTPService>()) {
+        Get.put(DeliveryOTPService());
+        print('✅ DeliveryOTPService registered');
+      }
+
       if (!Get.isRegistered<TrackingService>()) {
         Get.put(TrackingService());
         print('✅ TrackingService registered');
@@ -62,11 +74,6 @@ class ServiceManager {
         print('✅ ZegoCallService registered');
       }
 
-      if (!Get.isRegistered<GeocodingService>()) {
-        Get.put(GeocodingService());
-        print('✅ GeocodingService registered');
-      }
-
       print('✅ ServiceManager: All core services initialized successfully');
     } catch (e) {
       print('❌ ServiceManager: Error initializing core services: $e');
@@ -87,6 +94,7 @@ class ServiceManager {
         Get.isRegistered<MemoryManagementService>(),
         Get.isRegistered<ZegoCallService>(),
         Get.isRegistered<GeocodingService>(),
+        Get.isRegistered<DeliveryOTPService>(),
       ];
 
       final allAvailable = servicesChecks.every((check) => check);

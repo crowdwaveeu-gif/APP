@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Ole esimene postitaja!",
     "add_images": "Lisa pildid",
     "tell_others_about_your_experience": "Räägi teistele oma kogemusest...",
-    "offer_price": "Pakkumishind"
+    "offer_price": "Pakkumishind",
+    "maybe_later": "Võib-olla hiljem"
   },
   "home": {
     "title": "Avaleht",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Järeletulemise meetod",
+    "pickup_method_subtitle": "Kuidas reisija teie paketi kätte saab?",
+    "self_pickup": "Ma toon reisijale",
+    "self_pickup_desc": "Reisija võtab määratud kohast järele",
+    "sender_delivers": "Reisija võtab minult järele",
+    "sender_delivers_desc": "Kohtan reisijat järeletulemise kohas"
   },
   "post_trip": {
     "title": "Postita reis",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Vaata arvustusi",
     "recent_reviews": "Hiljutised arvustused",
     "filter_reviews": "Filtreeri arvustusi",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Kas oled kindel, et soovid seda arvustust sobimatu sisu tõttu raporteerida?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Kas oled kindel, et soovid seda arvustust sobimatu sisu tõttu raporteerida?",
+    "how_was_experience": "Kuidas oli teie kogemus?",
+    "help_community": "Aidake kogukonda, hinnates {0}"
   },
   "onboarding": {
     "welcome": "Tere tulemast CrowdWave'i",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Minu Vaidlused",
+    "report_issue": "Teata Probleemist",
+    "filed": "Vaidlus Esitatud",
+    "filed_message": "Teie vaidlus on edukalt esitatud. Vaatame selle varsti läbi.",
+    "exists": "Vaidlus Eksisteerib",
+    "exists_message": "Teil on selle broneeringu jaoks juba avatud vaidlus",
+    "error": "Viga",
+    "error_message": "Vaidlust ei õnnestunud esitada",
+    "load_error": "Vaidluste laadimine ebaõnnestus",
+    "info_message": "Palun esitage üksikasjalik teave probleemi kohta. Meie tugimeeskond vaatab selle läbi ja vastab 24 tunni jooksul.",
+    "issue_type": "Probleemi Tüüp *",
+    "description": "Kirjeldus *",
+    "description_hint": "Palun kirjeldage probleemi üksikasjalikult...",
+    "description_required": "Palun kirjeldage probleemi",
+    "description_min_length": "Palun esitage rohkem üksikasju (min 20 tähemärki)",
+    "evidence": "Tõendusmaterjal (Valikuline)",
+    "submit": "Esita Vaidlus",
+    "booking_info": "Broneeringu Teave",
+    "add_photos": "Lisa Pilte",
+    "add_more_photos": "Lisa Veel Pilte",
+    "upload_hint": "Laadi üles fotosid probleemist (valikuline)",
+    "open": "Avatud",
+    "resolved": "Lahendatud",
+    "all": "Kõik",
+    "no_disputes": "Vaidlusi Pole",
+    "no_disputes_message": "Teil pole selles kategoorias vaidlusi",
+    "attachments": "manus(ed)",
+    "reason": {
+      "no_show": "Mitteilmumine",
+      "damaged_package": "Kahjustatud Pakett",
+      "late_delivery": "Hiline Kohaletoimetamine",
+      "inappropriate_behavior": "Sobimatu Käitumine",
+      "payment_issue": "Makseprobleem",
+      "fraudulent_activity": "Petturlik Tegevus",
+      "safety_concern": "Ohutusprobleem",
+      "other": "Muu"
+    },
+    "status": {
+      "pending": "Ootel",
+      "under_review": "Vaatluse All",
+      "resolved": "Lahendatud",
+      "dismissed": "Tagasi Lükatud",
+      "escalated": "Eskaleeritud"
+    },
+    "notification": {
+      "title": "Vaidluse Uuendus",
+      "response": "Admin vastas teie vaidlusele",
+      "status_change": "Teie vaidluse staatus muutus olekusse"
+    }
   }
 }

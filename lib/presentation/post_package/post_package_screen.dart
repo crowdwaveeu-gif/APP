@@ -73,6 +73,9 @@ class _PostPackageScreenState extends State<PostPackageScreen>
   bool _insuranceRequired = false;
   double? _insuranceValue;
 
+  // Pickup Method
+  String? _pickupMethod; // 'self_pickup' or 'sender_delivers'
+
   // State
   bool _isLoading = false;
 
@@ -353,6 +356,7 @@ class _PostPackageScreenState extends State<PostPackageScreen>
         isPerishable: _isPerishable,
         requiresRefrigeration: _requiresRefrigeration,
         packagePhotos: _packagePhotos,
+        pickupMethod: _pickupMethod,
         onSizeChanged: (size) => setState(() => _selectedSize = size),
         onWeightChanged: (weight) => setState(() => _weightKg = weight),
         onTypeChanged: (type) => setState(() => _selectedType = type),
@@ -363,6 +367,8 @@ class _PostPackageScreenState extends State<PostPackageScreen>
         onRefrigerationChanged: (refrigeration) =>
             setState(() => _requiresRefrigeration = refrigeration),
         onPhotosChanged: (photos) => setState(() => _packagePhotos = photos),
+        onPickupMethodChanged: (method) =>
+            setState(() => _pickupMethod = method),
       ),
     );
   }
@@ -937,6 +943,7 @@ class _PostPackageScreenState extends State<PostPackageScreen>
         isUrgent: _isUrgent,
         preferredTransportModes: _preferredTransportModes,
         receiverDetails: _receiverDetails, // Added receiver details
+        pickupMethod: _pickupMethod, // Added pickup method
       );
 
       final packageId =

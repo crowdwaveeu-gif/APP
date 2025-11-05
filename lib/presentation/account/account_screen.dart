@@ -10,7 +10,7 @@ import '../../services/user_profile_service.dart';
 import '../../services/locale/locale_detection_service.dart';
 import '../../core/models/user_profile.dart';
 import '../../routes/app_routes.dart';
-import '../../utils/debug_menu.dart';
+// import '../../utils/debug_menu.dart'; // File not found - commented out
 import '../../widgets/liquid_loading_indicator.dart';
 import '../../widgets/language_picker_sheet.dart';
 
@@ -209,20 +209,12 @@ class _AccountScreenState extends State<AccountScreen> {
           title: 'account.settings_title'.tr(),
           children: [
             _buildAccountOption(
-              icon: Icons.person_outline,
-              title: 'drawer.profile'.tr(),
+              icon: Icons.edit_outlined,
+              title: 'Edit Profile',
               onTap: () async {
                 await Navigator.pushNamed(context, AppRoutes.profileOptions);
                 // Reload profile when returning from profile options screen
                 _loadUserProfile();
-              },
-            ),
-            _buildDivider(),
-            _buildAccountOption(
-              icon: Icons.history_outlined,
-              title: 'account.delivery_history'.tr(),
-              onTap: () {
-                Navigator.pushNamed(context, '/tracking-history');
               },
             ),
             _buildDivider(),
@@ -291,7 +283,12 @@ class _AccountScreenState extends State<AccountScreen> {
               _buildAccountOption(
                 icon: Icons.bug_report,
                 title: 'drawer.debug_menu'.tr(),
-                onTap: () => DebugMenu.show(context),
+                onTap: () {
+                  // DebugMenu.show(context); // File not found - commented out
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Debug menu not available')),
+                  );
+                },
                 iconColor: Colors.orange,
                 textColor: Colors.orange,
               ),
@@ -478,7 +475,7 @@ class _AccountScreenState extends State<AccountScreen> {
       final emailName = user!.email!.split('@').first;
       return emailName[0].toUpperCase() + emailName.substring(1);
     } else {
-      return 'User';
+      return 'Hi';
     }
   }
 
@@ -798,7 +795,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 color: Color(0xFF215C5C),
               ),
             ),
-      SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               'Your trusted platform for peer-to-peer package delivery and travel connections.',
               style: TextStyle(
@@ -826,4 +823,3 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 }
-      

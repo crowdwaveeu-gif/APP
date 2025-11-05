@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Bí ar an gcéad duine chun postáil!",
     "add_images": "Cuir Íomhánna Leis",
     "tell_others_about_your_experience": "Inis do dhaoine eile faoi do thaithí...",
-    "offer_price": "Praghas Tairiscinte"
+    "offer_price": "Praghas Tairiscinte",
+    "maybe_later": "B'fhéidir níos déanaí"
   },
   "home": {
     "title": "Baile",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Modh bailithe",
+    "pickup_method_subtitle": "Conas a gheobhaidh an t-aistritheoir do phacáiste?",
+    "self_pickup": "Seachadfaidh mé don aistritheoir",
+    "self_pickup_desc": "Baileoidh an t-aistritheoir ón áit sonraithe",
+    "sender_delivers": "Bailíonn an t-aistritheoir uaim",
+    "sender_delivers_desc": "Buailfidh mé leis an aistritheoir ag an láthair bailithe"
   },
   "post_trip": {
     "title": "Postáil Taisteal",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Féach ar Athbhreithnithe",
     "recent_reviews": "Athbhreithnithe Le Déanaí",
     "filter_reviews": "Scag Athbhreithnithe",
-    "are_you_sure_you_want_to_report_this_review_for_in": "An bhfuil tú cinnte go dteastaíonn uait an athbhreithniú seo a thuairisciú mar ábhar míchuí?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "An bhfuil tú cinnte go dteastaíonn uait an athbhreithniú seo a thuairisciú mar ábhar míchuí?",
+    "how_was_experience": "Conas a bhí d'eispéireas?",
+    "help_community": "Cuidigh leis an bpobal trí athbhreithniú a dhéanamh ar {0}"
   },
   "onboarding": {
     "welcome": "Fáilte chuig CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mo Dhíospóidí",
+    "report_issue": "Tuairiscigh Fadhb",
+    "filed": "Díospóid Comhdaithe",
+    "filed_message": "Cuireadh do dhíospóid isteach go rathúil. Déanfaimid athbhreithniú air go luath.",
+    "exists": "Díospóid Ann",
+    "exists_message": "Tá díospóid oscailte agat cheana féin don áirithint seo",
+    "error": "Earráid",
+    "error_message": "Theip ar an díospóid a chomhdú",
+    "load_error": "Theip ar dhíospóidí a luchtú",
+    "info_message": "Tabhair faisnéis mhionsonraithe faoin bhfadhb. Déanfaidh ár bhfoireann tacaíochta athbhreithniú agus freagra laistigh de 24 uair an chloig.",
+    "issue_type": "Cineál Fadhb *",
+    "description": "Cur Síos *",
+    "description_hint": "Déan cur síos mionsonraithe ar an bhfadhb, le do thoil...",
+    "description_required": "Déan cur síos ar an bhfadhb, le do thoil",
+    "description_min_length": "Tabhair níos mó sonraí (20 carachtar ar a laghad), le do thoil",
+    "evidence": "Fianaise (Roghnach)",
+    "submit": "Cuir Díospóid Isteach",
+    "booking_info": "Eolas Áirithinte",
+    "add_photos": "Cuir Grianghraif Leis",
+    "add_more_photos": "Cuir Tuilleadh Grianghraf Leis",
+    "upload_hint": "Uaslódáil grianghraif den fhadhb (roghnach)",
+    "open": "Oscailte",
+    "resolved": "Réitithe",
+    "all": "Gach",
+    "no_disputes": "Gan Díospóidí",
+    "no_disputes_message": "Níl díospóidí ar bith agat sa chatagóir seo",
+    "attachments": "ceangaltán(aí)",
+    "reason": {
+      "no_show": "Níor Thaispeáin",
+      "damaged_package": "Pacáiste Damáistithe",
+      "late_delivery": "Seachadadh Déanach",
+      "inappropriate_behavior": "Iompar Neamhoiriúnach",
+      "payment_issue": "Fadhb Íocaíochta",
+      "fraudulent_activity": "Gníomhaíocht Fraudúil",
+      "safety_concern": "Ábhar Imní Sábháilteachta",
+      "other": "Eile"
+    },
+    "status": {
+      "pending": "Ar Feitheamh",
+      "under_review": "Faoi Athbhreithniú",
+      "resolved": "Réitithe",
+      "dismissed": "Díbheach",
+      "escalated": "Escalaithe"
+    },
+    "notification": {
+      "title": "Nuashonrú Díospóide",
+      "response": "D'fhreagair an riarthóir do dhíospóid",
+      "status_change": "Athraíodh stádas do dhíospóide go"
+    }
   }
 }

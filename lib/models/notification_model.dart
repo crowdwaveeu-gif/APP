@@ -9,6 +9,8 @@ enum NotificationType {
   message,
   voiceCall,
   general,
+  disputeUpdate,
+  disputeResponse,
 }
 
 class NotificationModel {

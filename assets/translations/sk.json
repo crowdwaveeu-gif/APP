@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Buďte prvý, kto zverejní!",
     "add_images": "Pridať obrázky",
     "tell_others_about_your_experience": "Povedzte ostatným o svojej skúsenosti...",
-    "offer_price": "Cena ponuky"
+    "offer_price": "Cena ponuky",
+    "maybe_later": "Možno neskôr"
   },
   "home": {
     "title": "Domov",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Spôsob vyzdvihnutia",
+    "pickup_method_subtitle": "Ako cestujúci dostane váš balík?",
+    "self_pickup": "Donesiem cestujúcemu",
+    "self_pickup_desc": "Cestujúci vyzdvihne na uvedenom mieste",
+    "sender_delivers": "Cestujúci vyzdvihne odo mňa",
+    "sender_delivers_desc": "Stretnem sa s cestujúcim na mieste vyzdvihnutia"
   },
   "post_trip": {
     "title": "Zverejniť cestu",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Zobraziť recenzie",
     "recent_reviews": "Nedávne recenzie",
     "filter_reviews": "Filtrovať recenzie",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Ste si istý, že chcete nahlásiť túto recenziu za nevhodný obsah?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Ste si istý, že chcete nahlásiť túto recenziu za nevhodný obsah?",
+    "how_was_experience": "Aká bola vaša skúsenosť?",
+    "help_community": "Pomôžte komunite hodnotením {0}"
   },
   "onboarding": {
     "welcome": "Vitajte v CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Moje Spory",
+    "report_issue": "Nahlásiť Problém",
+    "filed": "Spor Podaný",
+    "filed_message": "Váš spor bol úspešne odoslaný. Čoskoro ho preveríme.",
+    "exists": "Spor Existuje",
+    "exists_message": "Už máte otvorený spor pre túto rezerváciu",
+    "error": "Chyba",
+    "error_message": "Nepodarilo sa podať spor",
+    "load_error": "Nepodarilo sa načítať spory",
+    "info_message": "Poskytnite prosím podrobné informácie o probléme. Náš tím podpory to preverí a odpovie do 24 hodín.",
+    "issue_type": "Typ Problému *",
+    "description": "Popis *",
+    "description_hint": "Prosím, opíšte problém podrobne...",
+    "description_required": "Prosím, opíšte problém",
+    "description_min_length": "Prosím, poskytnite viac detailov (min. 20 znakov)",
+    "evidence": "Dôkazy (Voliteľné)",
+    "submit": "Odoslať Spor",
+    "booking_info": "Informácie o Rezervácii",
+    "add_photos": "Pridať Fotografie",
+    "add_more_photos": "Pridať Ďalšie Fotografie",
+    "upload_hint": "Nahrajte fotografie problému (voliteľné)",
+    "open": "Otvorený",
+    "resolved": "Vyriešený",
+    "all": "Všetky",
+    "no_disputes": "Žiadne Spory",
+    "no_disputes_message": "Nemáte žiadne spory v tejto kategórii",
+    "attachments": "príloha(-y)",
+    "reason": {
+      "no_show": "Neprítomnosť",
+      "damaged_package": "Poškodený Balík",
+      "late_delivery": "Neskoré Doručenie",
+      "inappropriate_behavior": "Nevhodné Správanie",
+      "payment_issue": "Problém s Platbou",
+      "fraudulent_activity": "Podvodná Činnosť",
+      "safety_concern": "Bezpečnostný Problém",
+      "other": "Iné"
+    },
+    "status": {
+      "pending": "Čakajúci",
+      "under_review": "Preveruje sa",
+      "resolved": "Vyriešený",
+      "dismissed": "Zamietnutý",
+      "escalated": "Eskalovaný"
+    },
+    "notification": {
+      "title": "Aktualizácia Sporu",
+      "response": "Admin odpovedal na váš spor",
+      "status_change": "Stav vášho sporu sa zmenil na"
+    }
   }
 }

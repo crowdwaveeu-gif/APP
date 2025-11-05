@@ -12,14 +12,28 @@ import '../services/auth_state_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Initialize Firebase with proper error handling
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    if (kDebugMode) {
+      print('✅ Firebase initialized successfully for web');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Failed to initialize Firebase: $e');
+    }
+  }
 
   // Error handling
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    if (kDebugMode) {
+      print('Flutter Error: ${details.exception}');
+      print('Stack trace: ${details.stack}');
+    }
   };
 
   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
@@ -27,9 +41,13 @@ void main() async {
       child: Container(
         color: Colors.red,
         child: Center(
-          child: Text(
-            'Error: ${errorDetails.exception}',
-            style: const TextStyle(color: Colors.white),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Error: ${errorDetails.exception}',
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),

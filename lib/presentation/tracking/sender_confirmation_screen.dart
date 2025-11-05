@@ -255,7 +255,7 @@ class _SenderConfirmationScreenState extends State<SenderConfirmationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   // Info Text
                   Container(

@@ -20,7 +20,10 @@ import '../presentation/chat/chat_screen.dart';
 import '../presentation/chat/individual_chat_screen.dart';
 import '../presentation/tracking/tracking_history_screen.dart';
 import '../presentation/travel/travel_screen.dart';
-import '../utils/email_test_screen.dart';
+// import '../utils/email_test_screen.dart'; // File not found - commented out
+import '../presentation/disputes/my_disputes_screen.dart';
+import '../presentation/disputes/file_dispute_screen.dart';
+import '../presentation/disputes/dispute_details_screen.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -52,6 +55,9 @@ class AppRoutes {
   static const String trackingHistory = '/tracking-history';
   static const String trackingStatusUpdate = '/tracking-status-update';
   static const String travel = '/travel';
+  static const String myDisputes = '/my-disputes';
+  static const String fileDispute = '/file-dispute';
+  static const String disputeDetails = '/dispute-details';
 
   static Map<String, WidgetBuilder> get routes {
     final Map<String, WidgetBuilder> appRoutes = {
@@ -77,7 +83,7 @@ class AppRoutes {
       profileOptions: (context) => const ProfileOptionsScreen(),
       matching: (context) => const MatchingScreen(),
       notifications: (context) => const NotificationScreen(),
-      emailTest: (context) => const EmailTestScreen(),
+      // emailTest: (context) => const EmailTestScreen(), // File not found - commented out
       passwordReset: (context) => const PasswordResetWithCodeView(),
       emailVerification: (context) => const EmailVerificationScreen(),
       chat: (context) => const ChatScreen(),
@@ -88,6 +94,22 @@ class AppRoutes {
           ),
       trackingHistory: (context) => const TrackingHistoryScreen(),
       travel: (context) => const TravelScreen(),
+      myDisputes: (context) => const MyDisputesScreen(),
+      fileDispute: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return FileDisputeScreen(
+          bookingId: args?['bookingId'] as String,
+          reportedUserId: args?['reportedUserId'] as String,
+        );
+      },
+      disputeDetails: (context) {
+        final args =
+            ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+        return DisputeDetailsScreen(
+          dispute: args?['dispute'],
+        );
+      },
 
       // ✅ Payment Flow Routes - FIXED
       bookingConfirmation: (context) {

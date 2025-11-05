@@ -1,6 +1,13 @@
+// Updated: Logo implementation fixed
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+
+/**
+ * Email branding - using text-only header (no logo images)
+ */
+
+
 
 /**
  * Email Configuration
@@ -124,7 +131,8 @@ const emailTemplates = {
       <body>
         <div class="email-container">
           <div class="email-header">
-            <h1 class="email-logo">🌊 CrowdWave</h1>
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
           </div>
           
           <div class="email-body">
@@ -302,7 +310,8 @@ Questions? Email us at support@crowdwave.eu
       <body>
         <div class="email-container">
           <div class="email-header">
-            <h1 class="email-logo">🌊 CrowdWave</h1>
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
           </div>
           
           <div class="email-body">
@@ -482,7 +491,8 @@ Questions? Email us at security@crowdwave.eu
       <body>
         <div class="email-container">
           <div class="email-header">
-            <h1 class="email-logo">🌊 CrowdWave</h1>
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
           </div>
           
           <div class="email-body">
@@ -759,6 +769,207 @@ exports.testEmailConfig = functions.https.onCall(async (data, context) => {
 });
 
 /**
+ * Send CRM Login OTP Email
+ * Sends OTP for CRM login or password reset
+ */
+exports.sendCrmLoginOTP = functions.https.onCall(async (data, context) => {
+  const { email, otp, purpose } = data;
+
+  if (!email || !otp) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email and OTP are required');
+  }
+
+  try {
+    const transporter = getEmailTransporter();
+
+    const isPasswordReset = purpose === 'password-reset';
+    const subject = isPasswordReset ? 'Your Password Reset Code' : 'Your CRM Login Code';
+    const title = isPasswordReset ? 'Password Reset Request' : 'CRM Login Code';
+    const message = isPasswordReset 
+      ? 'We received a request to reset your password.'
+      : 'You have requested to login to CrowdWave CRM.';
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 2px;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 30px 0;
+          }
+          .otp-container {
+            background-color: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            letter-spacing: 8px;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+          }
+          .otp-label {
+            font-size: 14px;
+            color: #999999;
+            margin-top: 10px;
+          }
+          .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .warning-text {
+            font-size: 14px;
+            color: #856404;
+            margin: 0;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+      <div class="email-container">
+        <div class="email-header">
+          <h1 class="email-logo">CrowdWave</h1>
+        </div>
+        
+        <div class="email-body">
+          <h2 class="email-title">${title}</h2>            <p class="email-text">${message}</p>
+            
+            <div class="otp-container">
+              <p class="otp-code">${otp}</p>
+              <p class="otp-label">Your 6-digit code</p>
+            </div>
+            
+            <p class="email-text" style="text-align: center; font-weight: 600;">
+              Enter this code to continue.
+            </p>
+            
+            <div class="warning-box">
+              <p class="warning-text">
+                ⚠️ <strong>Security Notice:</strong><br>
+                • This code expires in 10 minutes<br>
+                • If you didn't request this code, please ignore this email<br>
+                • Never share this code with anyone
+              </p>
+            </div>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              Questions? Contact us at 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+${title}
+
+${message}
+
+Your code is: ${otp}
+
+Enter this code to continue.
+
+Security Notice:
+- This code expires in 10 minutes
+- If you didn't request this code, please ignore this email
+- Never share this code with anyone
+
+Questions? Email us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+    `.trim();
+
+    const mailOptions = {
+      from: '"CrowdWave CRM" <nauman@crowdwave.eu>',
+      to: email,
+      subject: subject,
+      text: text,
+      html: html,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    functions.logger.info('CRM OTP email sent successfully', { email, purpose });
+
+    return { success: true, message: 'OTP email sent successfully' };
+
+  } catch (error) {
+    functions.logger.error('Failed to send CRM OTP email', {
+      error: error.message,
+      email,
+    });
+    
+    throw new functions.https.HttpsError('internal', `Failed to send CRM OTP email: ${error.message}`);
+  }
+});
+
+/**
  * Send OTP Email for Email Verification
  * Sends a 6-digit OTP code to verify email
  */
@@ -849,7 +1060,6 @@ exports.sendOTPEmail = functions.https.onCall(async (data, context) => {
               color: #667eea;
               letter-spacing: 8px;
               margin: 0;
-              font-family: 'Courier New', monospace;
             }
             .otp-label {
               font-size: 14px;
@@ -859,14 +1069,15 @@ exports.sendOTPEmail = functions.https.onCall(async (data, context) => {
             .warning-box {
               background-color: #fff3cd;
               border-left: 4px solid #ffc107;
-              padding: 15px;
-              margin: 20px 0;
+              padding: 20px;
               border-radius: 4px;
+              margin: 20px 0;
             }
             .warning-text {
               font-size: 14px;
               color: #856404;
               margin: 0;
+              line-height: 1.6;
             }
             .email-footer {
               background-color: #f9f9f9;
@@ -884,15 +1095,15 @@ exports.sendOTPEmail = functions.https.onCall(async (data, context) => {
         <body>
           <div class="email-container">
             <div class="email-header">
-              <img src="https://crowdwave-website-live.vercel.app/assets/images/CrowdWaveLogo.png" alt="CrowdWave Logo" class="email-logo-img">
+              <h1 class="email-logo">CrowdWave</h1>
               <p class="email-tagline">Crowd-Powered Package Delivery</p>
             </div>
             
             <div class="email-body">
-              <h2 class="email-title">Verify Your Email Address</h2>
+              <h2 class="email-title">Welcome to CrowdWave! 🎉</h2>
               
               <p class="email-text">
-                Welcome to CrowdWave! To complete your registration, please enter this verification code in the app:
+                Thank you for joining our community! To complete your registration and verify your email address, please use this verification code:
               </p>
               
               <div class="otp-container">
@@ -929,9 +1140,9 @@ exports.sendOTPEmail = functions.https.onCall(async (data, context) => {
       `;
 
       text = `
-Welcome to CrowdWave!
+Welcome to CrowdWave! 🎉
 
-Your email verification code is: ${otp}
+Thank you for joining our community! Your email verification code is: ${otp}
 
 Enter this code in the app to verify your email address.
 
@@ -1050,7 +1261,7 @@ Questions? Email us at support@crowdwave.eu
         <body>
           <div class="email-container">
             <div class="email-header">
-              <img src="https://crowdwave-website-live.vercel.app/assets/images/CrowdWaveLogo.png" alt="CrowdWave Logo" class="email-logo-img">
+              <h1 class="email-logo">CrowdWave</h1>
               <p class="email-tagline">Crowd-Powered Package Delivery</p>
             </div>
             
@@ -1293,9 +1504,12 @@ exports.sendPasswordResetOTP = functions.https.onCall(async (data, context) => {
             padding: 40px 30px;
             text-align: center;
           }
-          .email-logo-img {
-            max-width: 180px;
-            height: auto;
+          .email-logo {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
           }
           .email-tagline {
             color: rgba(255, 255, 255, 0.9);
@@ -1366,7 +1580,7 @@ exports.sendPasswordResetOTP = functions.https.onCall(async (data, context) => {
       <body>
         <div class="email-container">
           <div class="email-header">
-            <img src="https://crowdwave-website-live.vercel.app/assets/images/CrowdWaveLogo.png" alt="CrowdWave Logo" class="email-logo-img">
+            <h1 class="email-logo">CrowdWave</h1>
             <p class="email-tagline">Crowd-Powered Package Delivery</p>
           </div>
           
@@ -1463,6 +1677,673 @@ Questions? Email us at support@crowdwave.eu
   }
 });
 
+/**
+ * Cloud Function: Send CRM Login OTP Email
+ * Endpoint for CRM admin panel to send login OTP codes
+ * Called from: CrowdWave CRM Admin Panel
+ */
+exports.sendCrmLoginOTP = functions.https.onCall(async (data, context) => {
+  const { email, otp } = data;
+
+  // Validation
+  if (!email || !otp) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email and OTP are required');
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid email format');
+  }
+
+  // Validate OTP format (6 digits)
+  if (!/^\d{6}$/.test(otp)) {
+    throw new functions.https.HttpsError('invalid-argument', 'OTP must be a 6-digit number');
+  }
+
+  const expiryMinutes = 10;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your CRM Login OTP</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          background-color: #f5f5f5;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .email-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 30px;
+          text-align: center;
+        }
+        .email-logo {
+          color: #ffffff;
+          font-size: 36px;
+          font-weight: bold;
+          margin: 0;
+          letter-spacing: 1px;
+        }
+        .email-tagline {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 14px;
+          margin-top: 8px;
+        }
+        .email-tagline {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 14px;
+          margin-top: 8px;
+        }
+        .email-body {
+          padding: 40px 30px;
+        }
+        .email-title {
+          font-size: 24px;
+          font-weight: 600;
+          color: #333333;
+          margin: 0 0 20px 0;
+        }
+        .email-text {
+          font-size: 16px;
+          line-height: 24px;
+          color: #666666;
+          margin: 0 0 30px 0;
+        }
+        .otp-box {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: #ffffff;
+          font-size: 36px;
+          font-weight: bold;
+          letter-spacing: 10px;
+          padding: 20px;
+          text-align: center;
+          border-radius: 8px;
+          margin: 30px 0;
+        }
+        .email-footer {
+          background-color: #f9f9f9;
+          padding: 30px;
+          text-align: center;
+          font-size: 14px;
+          color: #999999;
+          border-top: 1px solid #eeeeee;
+        }
+        .warning {
+          background-color: #fff3cd;
+          color: #856404;
+          padding: 15px;
+          border-radius: 6px;
+          margin: 20px 0;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          <h1 style="color: #ffffff; font-size: 32px; font-weight: bold; margin: 0; letter-spacing: 2px;">CrowdWave</h1>
+          <p class="email-tagline">CRM Admin Panel</p>
+        </div>
+        <div class="email-body">
+          <h2 class="email-title">Your Login Verification Code</h2>
+          <p class="email-text">
+            Hello! You've requested to login to CrowdWave CRM. Please use the following One-Time Password (OTP) to complete your login:
+          </p>
+          <div class="otp-box">${otp}</div>
+          <p class="email-text">
+            This code will expire in <strong>${expiryMinutes} minutes</strong>.
+          </p>
+          <div class="warning">
+            ⚠️ <strong>Security Notice:</strong> Never share this code with anyone. CrowdWave staff will never ask for your OTP.
+          </div>
+          <p class="email-text">
+            If you didn't request this code, please ignore this email or contact support if you have concerns about your account security.
+          </p>
+        </div>
+        <div class="email-footer">
+          <p>© ${new Date().getFullYear()} CrowdWave. All rights reserved.</p>
+          <p>This is an automated message, please do not reply.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `Your CrowdWave CRM Login OTP: ${otp}\n\nThis code will expire in ${expiryMinutes} minutes.\n\nIf you didn't request this code, please ignore this email.`;
+
+  try {
+    const transporter = getEmailTransporter();
+    
+    const mailOptions = {
+      from: '"CrowdWave CRM" <nauman@crowdwave.eu>',
+      to: email,
+      subject: 'Your CRM Login OTP - CrowdWave',
+      html: html,
+      text: text
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    functions.logger.info('CRM OTP email sent successfully', { email });
+
+    return {
+      success: true,
+      message: 'OTP email sent successfully',
+      messageId: info.messageId
+    };
+  } catch (error) {
+    functions.logger.error('Failed to send CRM OTP email', {
+      error: error.message,
+      email,
+    });
+    throw new functions.https.HttpsError('internal', `Failed to send CRM OTP email: ${error.message}`);
+  }
+});
+
+/**
+ * ✅ NEW: Send Welcome Email to New Users
+ * Automatically triggered when a new user creates an account
+ */
+exports.sendWelcomeEmail = functions.https.onCall(async (data, context) => {
+  const { email, displayName, userId } = data;
+
+  if (!email) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email is required');
+  }
+
+  const transporter = getEmailTransporter();
+  const userName = displayName || 'there';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Welcome to CrowdWave</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          background-color: #f5f5f5;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .email-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          padding: 40px 30px;
+          text-align: center;
+        }
+        .email-logo {
+          color: #ffffff;
+          font-size: 36px;
+          font-weight: bold;
+          margin: 0;
+          letter-spacing: 1px;
+        }
+        .email-tagline {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 14px;
+          margin-top: 8px;
+        }
+        .email-body {
+          padding: 40px 30px;
+        }
+        .email-title {
+          font-size: 28px;
+          font-weight: 600;
+          color: #333333;
+          margin: 0 0 20px 0;
+        }
+        .email-text {
+          font-size: 16px;
+          line-height: 24px;
+          color: #666666;
+          margin: 0 0 20px 0;
+        }
+        .feature-box {
+          background-color: #f8f9fa;
+          border-left: 4px solid #667eea;
+          padding: 20px;
+          margin: 20px 0;
+          border-radius: 4px;
+        }
+        .feature-item {
+          display: flex;
+          align-items: center;
+          margin: 12px 0;
+        }
+        .feature-icon {
+          font-size: 24px;
+          margin-right: 12px;
+        }
+        .email-button {
+          display: inline-block;
+          padding: 16px 40px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 16px;
+          margin: 20px 0;
+        }
+        .email-footer {
+          background-color: #f9f9f9;
+          padding: 30px;
+          text-align: center;
+          border-top: 1px solid #eeeeee;
+        }
+        .footer-text {
+          font-size: 14px;
+          color: #999999;
+          margin: 5px 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          <h1 class="email-logo">CrowdWave</h1>
+          <p class="email-tagline">Crowd-Powered Package Delivery</p>
+        </div>
+        
+        <div class="email-body">
+          <h2 class="email-title">Welcome to CrowdWave! 🎉</h2>
+          
+          <p class="email-text">
+            Hi ${userName}!
+          </p>
+          
+          <p class="email-text">
+            We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+          </p>
+          
+          <div class="feature-box">
+            <h3 style="margin-top: 0; color: #333;">What you can do with CrowdWave:</h3>
+            
+            <div class="feature-item">
+              <span class="feature-icon">📦</span>
+              <span><strong>Send Packages</strong> - Ship items affordably with travelers going your way</span>
+            </div>
+            
+            <div class="feature-item">
+              <span class="feature-icon">✈️</span>
+              <span><strong>Earn While Traveling</strong> - Make money by delivering packages on your trips</span>
+            </div>
+            
+            <div class="feature-item">
+              <span class="feature-icon">🔒</span>
+              <span><strong>Secure Payments</strong> - Protected transactions with escrow system</span>
+            </div>
+            
+            <div class="feature-item">
+              <span class="feature-icon">📍</span>
+              <span><strong>Real-Time Tracking</strong> - Track your packages every step of the way</span>
+            </div>
+            
+            <div class="feature-item">
+              <span class="feature-icon">💬</span>
+              <span><strong>Chat & Negotiate</strong> - Communicate directly with travelers or senders</span>
+            </div>
+          </div>
+          
+          <p class="email-text">
+            <strong>Getting Started:</strong>
+          </p>
+          
+          <ol class="email-text">
+            <li>Complete your profile with a photo and bio</li>
+            <li>Verify your email address (check your inbox)</li>
+            <li>Add your first trip or package request</li>
+            <li>Start connecting with our community!</li>
+          </ol>
+          
+          <div style="text-align: center;">
+            <a href="https://crowdwave.eu" class="email-button">
+              🚀 Get Started Now
+            </a>
+          </div>
+          
+          <p class="email-text" style="margin-top: 30px;">
+            Need help? Our support team is here for you at 
+            <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+          </p>
+        </div>
+        
+        <div class="email-footer">
+          <p class="footer-text">
+            © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+          </p>
+          <p class="footer-text">
+            CrowdWave - Connecting couriers with packages worldwide
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Welcome to CrowdWave! 🎉
+
+Hi ${userName}!
+
+We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+
+What you can do with CrowdWave:
+📦 Send Packages - Ship items affordably with travelers going your way
+✈️ Earn While Traveling - Make money by delivering packages on your trips
+🔒 Secure Payments - Protected transactions with escrow system
+📍 Real-Time Tracking - Track your packages every step of the way
+💬 Chat & Negotiate - Communicate directly with travelers or senders
+
+Getting Started:
+1. Complete your profile with a photo and bio
+2. Verify your email address
+3. Add your first trip or package request
+4. Start connecting with our community!
+
+Visit: https://crowdwave.eu
+
+Need help? Contact us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+  `.trim();
+
+  const mailOptions = {
+    from: '"CrowdWave" <nauman@crowdwave.eu>',
+    to: email,
+    subject: 'Welcome to CrowdWave - Start Your Journey! 🎉',
+    html: html,
+    text: text
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Welcome email sent successfully:', {
+      messageId: info.messageId,
+      to: email,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+
+    return {
+      success: true,
+      message: 'Welcome email sent successfully',
+      messageId: info.messageId
+    };
+  } catch (error) {
+    console.error('❌ Error sending welcome email:', error);
+    throw new functions.https.HttpsError('internal', `Failed to send welcome email: ${error.message}`);
+  }
+});
+
+/**
+ * ✅ NEW: Send Promotional Email
+ * Content controlled from CRM dashboard
+ */
+exports.sendPromotionalEmail = functions.https.onCall(async (data, context) => {
+  // Verify admin authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  // Check if user is admin (you can add admin role checking here)
+  const db = admin.firestore();
+  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  
+  if (!userDoc.exists || userDoc.data().role !== 'admin') {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can send promotional emails');
+  }
+
+  const { recipients, subject, htmlContent, textContent, campaignId } = data;
+
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'Recipients array is required');
+  }
+
+  if (!subject || !htmlContent) {
+    throw new functions.https.HttpsError('invalid-argument', 'Subject and content are required');
+  }
+
+  // Remove duplicate recipients
+  const uniqueRecipients = [...new Set(recipients)];
+  
+  functions.logger.info('Promotional email campaign', {
+    campaignId: campaignId,
+    totalRecipients: recipients.length,
+    uniqueRecipients: uniqueRecipients.length,
+    duplicatesRemoved: recipients.length - uniqueRecipients.length
+  });
+
+  const transporter = getEmailTransporter();
+  const results = {
+    sent: 0,
+    failed: 0,
+    errors: []
+  };
+
+  // Send emails in batches to avoid overwhelming the SMTP server
+  for (const recipient of uniqueRecipients) {
+    try {
+      const mailOptions = {
+        from: '"CrowdWave" <nauman@crowdwave.eu>',
+        to: recipient,
+        subject: subject,
+        html: htmlContent,
+        text: textContent || 'Please view this email in HTML format'
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      results.sent++;
+
+      console.log(`✅ Promotional email sent to ${recipient}:`, {
+        messageId: info.messageId,
+        campaignId: campaignId,
+        timestamp: new Date().toISOString()
+      });
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+    } catch (error) {
+      results.failed++;
+      results.errors.push({
+        recipient: recipient,
+        error: error.message
+      });
+      console.error(`❌ Failed to send promotional email to ${recipient}:`, error);
+    }
+  }
+
+  // Log campaign results
+  if (campaignId) {
+    await db.collection('emailCampaigns').doc(campaignId).update({
+      status: 'completed',
+      sentCount: results.sent,
+      failedCount: results.failed,
+      completedAt: admin.firestore.FieldValue.serverTimestamp(),
+      results: results
+    });
+  }
+
+  return {
+    success: true,
+    sent: results.sent,
+    failed: results.failed,
+    errors: results.errors
+  };
+});
+
+/**
+ * ✅ NEW: Verify Email with OTP (marks email as verified in Firebase Auth)
+ */
+exports.verifyEmailWithOTP = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const { email, otp } = data;
+
+  if (!email || !otp) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email and OTP are required');
+  }
+
+  try {
+    const db = admin.firestore();
+    
+    // Verify OTP from Firestore
+    const otpDoc = await db.collection('otp_codes').doc(email).get();
+    
+    if (!otpDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'Invalid or expired verification code. Please request a new one.');
+    }
+
+    const otpData = otpDoc.data();
+    
+    // Check type
+    if (otpData.type !== 'email_verification') {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid verification code type');
+    }
+
+    // Check if OTP has been used
+    if (otpData.used === true) {
+      throw new functions.https.HttpsError('already-exists', 'This code has already been used. Please request a new one.');
+    }
+
+    // Check if OTP has expired
+    const expiresAt = otpData.expiresAt.toDate();
+    if (new Date() > expiresAt) {
+      await db.collection('otp_codes').doc(email).delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'Verification code has expired. Please request a new one.');
+    }
+
+    // Check if OTP matches
+    if (otpData.otp !== otp) {
+      throw new functions.https.HttpsError('permission-denied', 'Invalid verification code');
+    }
+
+    // OTP is valid, mark email as verified using Admin SDK
+    const userRecord = await admin.auth().getUserByEmail(email);
+    await admin.auth().updateUser(userRecord.uid, {
+      emailVerified: true
+    });
+
+    // Mark OTP as used
+    await db.collection('otp_codes').doc(email).update({
+      used: true,
+      usedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    functions.logger.info('Email verified successfully', {
+      email: email,
+      uid: userRecord.uid,
+    });
+
+    return {
+      success: true,
+      message: 'Email verified successfully'
+    };
+  } catch (error) {
+    functions.logger.error('Email verification failed:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    if (error.code === 'auth/user-not-found') {
+      throw new functions.https.HttpsError('not-found', 'User not found');
+    }
+    
+    throw new functions.https.HttpsError('internal', 'Failed to verify email');
+  }
+});
+
+/**
+ * ✅ NEW: Reset Password with OTP Verification (for CRM)
+ */
+exports.resetPasswordWithOTP = functions.https.onCall(async (data, context) => {
+  const { email, otp, newPassword } = data;
+
+  if (!email || !otp || !newPassword) {
+    throw new functions.https.HttpsError('invalid-argument', 'Email, OTP, and new password are required');
+  }
+
+  try {
+    const db = admin.firestore();
+    
+    // Verify OTP from Firestore
+    const otpDoc = await db.collection('otp_codes').doc(email).get();
+    
+    if (!otpDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'Invalid or expired OTP');
+    }
+
+    const otpData = otpDoc.data();
+    
+    // Check if OTP has expired
+    if (Date.now() > otpData.expiresAt) {
+      await db.collection('otp_codes').doc(email).delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'OTP has expired');
+    }
+
+    // Check if OTP matches
+    if (otpData.code !== otp) {
+      throw new functions.https.HttpsError('permission-denied', 'Invalid OTP');
+    }
+
+    // OTP is valid, update the password using Admin SDK
+    const userRecord = await admin.auth().getUserByEmail(email);
+    await admin.auth().updateUser(userRecord.uid, {
+      password: newPassword
+    });
+
+    // Delete the OTP after successful password reset
+    await db.collection('otp_codes').doc(email).delete();
+
+    console.log(`✅ Password reset successfully for: ${email}`);
+
+    return {
+      success: true,
+      message: 'Password has been reset successfully'
+    };
+  } catch (error) {
+    console.error('❌ Password reset failed:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    if (error.code === 'auth/user-not-found') {
+      throw new functions.https.HttpsError('not-found', 'User not found');
+    }
+    
+    throw new functions.https.HttpsError('internal', 'Failed to reset password');
+  }
+});
+
 module.exports = {
   // sendEmailVerification: exports.sendEmailVerification, // DISABLED - using OTP system instead
   sendPasswordResetEmail: exports.sendPasswordResetEmail,
@@ -1471,4 +2352,9 @@ module.exports = {
   sendOTPEmail: exports.sendOTPEmail,
   sendPasswordResetOTP: exports.sendPasswordResetOTP,
   verifyPasswordResetOTP: exports.verifyPasswordResetOTP,
+  verifyEmailWithOTP: exports.verifyEmailWithOTP,
+  sendCrmLoginOTP: exports.sendCrmLoginOTP,
+  sendWelcomeEmail: exports.sendWelcomeEmail,
+  sendPromotionalEmail: exports.sendPromotionalEmail,
+  resetPasswordWithOTP: exports.resetPasswordWithOTP,
 };

@@ -93,57 +93,27 @@ class OTPService {
   /// Verify OTP code for email verification (sign-up)
   Future<bool> verifyEmailVerificationOTP(String email, String otp) async {
     try {
-      final docSnapshot =
-          await _firestore.collection(_otpCollection).doc(email).get();
-
-      if (!docSnapshot.exists) {
-        throw Exception(
-            'No verification code found. Please request a new one.');
-      }
-
-      final data = docSnapshot.data()!;
-      final storedOTP = data['otp'] as String;
-      final expiresAt = (data['expiresAt'] as Timestamp).toDate();
-      final used = data['used'] as bool;
-      final type = data['type'] as String;
-
-      // Check type
-      if (type != 'email_verification') {
-        throw Exception('Invalid verification code type');
-      }
-
-      // Check if OTP has been used
-      if (used) {
-        throw Exception(
-            'This code has already been used. Please request a new one.');
-      }
-
-      // Check if OTP has expired
-      if (DateTime.now().isAfter(expiresAt)) {
-        throw Exception(
-            'Verification code has expired. Please request a new one.');
-      }
-
-      // Verify OTP
-      if (storedOTP != otp) {
-        throw Exception('Invalid verification code');
-      }
-
-      // Mark OTP as used
-      await _firestore.collection(_otpCollection).doc(email).update({
-        'used': true,
-        'usedAt': FieldValue.serverTimestamp(),
+      // Call Cloud Function to verify OTP and mark email as verified
+      final callable = _functions.httpsCallable('verifyEmailWithOTP');
+      final result = await callable.call({
+        'email': email,
+        'otp': otp,
       });
 
-      // Mark email as verified in Firebase Auth
-      // Note: This requires admin privileges, should be done via Cloud Function
-      // For now, we'll rely on the user being logged in and updating via client
-
-      if (kDebugMode) {
-        print('✅ OTP verified successfully for: $email');
+      if (result.data['success'] == true) {
+        if (kDebugMode) {
+          print('✅ OTP verified successfully for: $email');
+          print('✅ Email marked as verified in Firebase Auth');
+        }
+        return true;
+      } else {
+        throw Exception(result.data['message'] ?? 'Verification failed');
       }
-
-      return true;
+    } on FirebaseFunctionsException catch (e) {
+      if (kDebugMode) {
+        print('❌ Cloud Function error: ${e.code} - ${e.message}');
+      }
+      throw Exception(e.message ?? 'Failed to verify code');
     } catch (e) {
       if (kDebugMode) {
         print('❌ OTP verification error: $e');

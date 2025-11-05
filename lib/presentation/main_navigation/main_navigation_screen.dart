@@ -17,7 +17,7 @@ import '../../services/deal_negotiation_service.dart';
 import '../../routes/app_routes.dart';
 import '../../services/location_notification_service.dart';
 import '../../utils/black_screen_fix.dart';
-import '../../utils/debug_menu.dart';
+// import '../../utils/debug_menu.dart'; // File not found - commented out
 import '../../widgets/liquid_loading_indicator.dart';
 import '../../widgets/language_picker_sheet.dart';
 
@@ -448,7 +448,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     title: 'drawer.debug_menu'.tr(),
                     onTap: () {
                       Navigator.pop(context);
-                      DebugMenu.show(context);
+                      // DebugMenu.show(context); // File not found - commented out
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Debug menu not available')),
+                      );
                     },
                     textColor: Colors.orange,
                     iconColor: Colors.orange,
@@ -885,7 +889,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       e.toString().replaceFirst('Exception: ', '');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('auth.logout_failed'.tr(args: [errorMessage])),
+                      content:
+                          Text('auth.logout_failed'.tr(args: [errorMessage])),
                       backgroundColor: Colors.red,
                     ),
                   );

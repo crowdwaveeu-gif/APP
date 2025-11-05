@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Būkite pirmasis, paskelbdamas!",
     "add_images": "Pridėti Vaizdus",
     "tell_others_about_your_experience": "Papasakokite kitiems apie savo patirtį...",
-    "offer_price": "Pasiūlymo Kaina"
+    "offer_price": "Pasiūlymo Kaina",
+    "maybe_later": "Galbūt vėliau"
   },
   "home": {
     "title": "Pagrindinis",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Paėmimo būdas",
+    "pickup_method_subtitle": "Kaip keliautojas gaus jūsų siuntą?",
+    "self_pickup": "Aš pristatysiu keliautojui",
+    "self_pickup_desc": "Keliautojas paims nurodytoje vietoje",
+    "sender_delivers": "Keliautojas paima iš manęs",
+    "sender_delivers_desc": "Susitiks su keliautoju paėmimo vietoje"
   },
   "post_trip": {
     "title": "Paskelbti Kelionę",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Peržiūrėti Atsiliepimus",
     "recent_reviews": "Naujausi Atsiliepimai",
     "filter_reviews": "Filtruoti Atsiliepimus",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Ar tikrai norite pranešti šį atsiliepimą dėl netinkamo turinio?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Ar tikrai norite pranešti šį atsiliepimą dėl netinkamo turinio?",
+    "how_was_experience": "Koks buvo jūsų patyrimas?",
+    "help_community": "Padėkite bendruomenei peržiūrėdami {0}"
   },
   "onboarding": {
     "welcome": "Sveiki atvykę į CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mano Ginčai",
+    "report_issue": "Pranešti Apie Problemą",
+    "filed": "Ginčas Pateiktas",
+    "filed_message": "Jūsų ginčas sėkmingai pateiktas. Netrukus jį peržiūrėsime.",
+    "exists": "Ginčas Egzistuoja",
+    "exists_message": "Jau turite atvirą ginčą dėl šio užsakymo",
+    "error": "Klaida",
+    "error_message": "Nepavyko pateikti ginčo",
+    "load_error": "Nepavyko įkelti ginčų",
+    "info_message": "Prašome pateikti išsamią informaciją apie problemą. Mūsų palaikymo komanda peržiūrės ir atsakys per 24 valandas.",
+    "issue_type": "Problemos Tipas *",
+    "description": "Aprašymas *",
+    "description_hint": "Prašome išsamiai aprašyti problemą...",
+    "description_required": "Prašome aprašyti problemą",
+    "description_min_length": "Prašome pateikti daugiau detalių (min. 20 simbolių)",
+    "evidence": "Įrodymai (Pasirenkama)",
+    "submit": "Pateikti Ginčą",
+    "booking_info": "Užsakymo Informacija",
+    "add_photos": "Pridėti Nuotraukas",
+    "add_more_photos": "Pridėti Daugiau Nuotraukų",
+    "upload_hint": "Įkelkite problemos nuotraukas (pasirenkama)",
+    "open": "Atviras",
+    "resolved": "Išspręstas",
+    "all": "Visi",
+    "no_disputes": "Nėra Ginčų",
+    "no_disputes_message": "Neturite ginčų šioje kategorijoje",
+    "attachments": "priedas(-ai)",
+    "reason": {
+      "no_show": "Nepasirodymas",
+      "damaged_package": "Pažeistas Paketas",
+      "late_delivery": "Vėluojantis Pristatymas",
+      "inappropriate_behavior": "Netinkamas Elgesys",
+      "payment_issue": "Mokėjimo Problema",
+      "fraudulent_activity": "Apgaulinga Veikla",
+      "safety_concern": "Saugumo Problema",
+      "other": "Kitas"
+    },
+    "status": {
+      "pending": "Laukiama",
+      "under_review": "Peržiūrima",
+      "resolved": "Išspręstas",
+      "dismissed": "Atmestas",
+      "escalated": "Eskaluotas"
+    },
+    "notification": {
+      "title": "Ginčo Atnaujinimas",
+      "response": "Administratorius atsakė į jūsų ginčą",
+      "status_change": "Jūsų ginčo būsena pasikeitė į"
+    }
   }
 }

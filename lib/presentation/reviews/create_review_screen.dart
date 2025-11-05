@@ -13,6 +13,7 @@ class CreateReviewScreen extends StatefulWidget {
   final String targetName; // Trip title or package description
   final String? targetImageUrl;
   final bool isVerifiedBooking;
+  final String? bookingId; // Booking ID for verification
 
   const CreateReviewScreen({
     Key? key,
@@ -21,6 +22,7 @@ class CreateReviewScreen extends StatefulWidget {
     required this.targetName,
     this.targetImageUrl,
     this.isVerifiedBooking = false,
+    this.bookingId,
   }) : super(key: key);
 
   @override
@@ -128,6 +130,7 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
             : _commentController.text.trim(),
         photos: _selectedImages.isEmpty ? null : _selectedImages,
         isVerifiedBooking: widget.isVerifiedBooking,
+        bookingId: widget.bookingId,
       );
 
       if (mounted) {
@@ -200,7 +203,8 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text('tracking.rate_experience'.tr(),
+            Text(
+              'tracking.rate_experience'.tr(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -249,7 +253,7 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
               controller: _commentController,
               maxLines: 4,
               maxLength: 500,
-              decoration: InputDecoration (
+              decoration: InputDecoration(
                 hintText: 'common.tell_others_about_your_experience'.tr(),
                 border: OutlineInputBorder(),
                 counterText: '',
@@ -483,7 +487,8 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
                             color: Colors.green[100],
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text('profile.verified'.tr(),
+                          child: Text(
+                            'profile.verified'.tr(),
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.green[700],
@@ -567,7 +572,8 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : Text('reviews.submit_review'.tr(),
+                      : Text(
+                          'reviews.submit_review'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

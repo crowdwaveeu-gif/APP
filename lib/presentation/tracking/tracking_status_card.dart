@@ -87,7 +87,8 @@ class TrackingStatusCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('common.progress'.tr(),
+                Text(
+                  'common.progress'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -142,6 +143,17 @@ class TrackingStatusCard extends StatelessWidget {
               icon: Icons.location_on,
               label: 'tracking.current_location_label'.tr(),
               value: tracking.currentLocation!.address,
+            ),
+
+          if (packageRequest?.pickupMethod != null)
+            _buildDetailRow(
+              icon: packageRequest!.pickupMethod == 'self_pickup'
+                  ? Icons.person
+                  : Icons.meeting_room,
+              label: 'post_package.pickup_method'.tr(),
+              value: packageRequest!.pickupMethod == 'self_pickup'
+                  ? 'post_package.self_pickup'.tr()
+                  : 'post_package.sender_delivers'.tr(),
             ),
 
           if (tracking.notes != null) ...[

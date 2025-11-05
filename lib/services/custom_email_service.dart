@@ -69,6 +69,39 @@ class CustomEmailService {
     }
   }
 
+  /// Send delivery OTP email to receiver
+  /// Called when traveler generates OTP for delivery verification
+  Future<bool> sendDeliveryOTPEmail({
+    required String recipientEmail,
+    required Map<String, dynamic> packageDetails,
+    required String otpCode,
+  }) async {
+    try {
+      debugPrint('🔐 Sending delivery OTP email...');
+      debugPrint('📧 Recipient: $recipientEmail');
+      debugPrint('🔐 OTP Code: $otpCode');
+
+      final result =
+          await _functions.httpsCallable('sendDeliveryOTPEmail').call({
+        'recipientEmail': recipientEmail,
+        'packageDetails': packageDetails,
+        'otpCode': otpCode,
+      });
+
+      debugPrint('✅ Delivery OTP email sent successfully');
+
+      return result.data['success'] == true;
+    } on FirebaseFunctionsException catch (e) {
+      debugPrint('❌ Firebase Functions Exception: ${e.code} - ${e.message}');
+      debugPrint('Details: ${e.details}');
+
+      throw Exception(_getFriendlyError(e));
+    } catch (e) {
+      debugPrint('💥 General Exception in sendDeliveryOTPEmail: $e');
+      throw Exception('Failed to send delivery OTP email. Please try again.');
+    }
+  }
+
   /// Test email configuration
   /// Useful for debugging email setup
   Future<Map<String, dynamic>> testEmailConfig() async {

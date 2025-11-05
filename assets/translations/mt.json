@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Kun l-ewwel li jippostja!",
     "add_images": "Żid Immaġini",
     "tell_others_about_your_experience": "Għid lil ħaddieħor dwar l-esperjenza tiegħek...",
-    "offer_price": "Prezz tal-Offerta"
+    "offer_price": "Prezz tal-Offerta",
+    "maybe_later": "Forsi aktar tard"
   },
   "home": {
     "title": "Dar",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Metodu tal-ġbir",
+    "pickup_method_subtitle": "Kif se jirċievi l-vjaġġatur il-pakkett tiegħek?",
+    "self_pickup": "Jien se nwassal lill-vjaġġatur",
+    "self_pickup_desc": "Il-vjaġġatur se jiġbor mill-post speċifikat",
+    "sender_delivers": "Il-vjaġġatur jiġbor minn għandi",
+    "sender_delivers_desc": "Niltaqa' mal-vjaġġatur fil-post tal-ġbir"
   },
   "post_trip": {
     "title": "Ippostja Vjaġġ",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Ara r-Reviżjonijiet",
     "recent_reviews": "Reviżjonijiet Reċenti",
     "filter_reviews": "Filtra r-Reviżjonijiet",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Żgur li tixtieq tirrapporta din ir-reviżjoni għal kontenut mhux xieraq?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Żgur li tixtieq tirrapporta din ir-reviżjoni għal kontenut mhux xieraq?",
+    "how_was_experience": "Kif kienet l-esperienza tiegħek?",
+    "help_community": "Għin il-komunità billi tirrevedi {0}"
   },
   "onboarding": {
     "welcome": "Merħba f'CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Id-Disputi Tiegħi",
+    "report_issue": "Irrapporta Problema",
+    "filed": "Disputa Ippreżentata",
+    "filed_message": "Id-disputa tiegħek ġiet sottomessa b'suċċess. Se nirreveduha dalwaqt.",
+    "exists": "Disputa Teżisti",
+    "exists_message": "Diġà għandek disputa miftuħa għal din il-booking",
+    "error": "Żball",
+    "error_message": "Falla li tiġi ppreżentata disputa",
+    "load_error": "Falla li jitgħabbew id-disputi",
+    "info_message": "Jekk jogħġbok ipprovdi informazzjoni dettaljata dwar il-problema. It-tim ta' appoġġ tagħna se jirrevizjona u jwieġeb fi żmien 24 siegħa.",
+    "issue_type": "Tip ta' Problema *",
+    "description": "Deskrizzjoni *",
+    "description_hint": "Jekk jogħġbok iddeskrivi l-problema fid-dettall...",
+    "description_required": "Jekk jogħġbok iddeskrivi l-problema",
+    "description_min_length": "Jekk jogħġbok ipprovdi aktar dettalji (min 20 karattru)",
+    "evidence": "Evidenza (Mhux Obbligatorja)",
+    "submit": "Ibgħat Disputa",
+    "booking_info": "Informazzjoni dwar il-Booking",
+    "add_photos": "Żid Ritratti",
+    "add_more_photos": "Żid Aktar Ritratti",
+    "upload_hint": "Tella' ritratti tal-problema (mhux obbligatorju)",
+    "open": "Miftuħa",
+    "resolved": "Riżolta",
+    "all": "Kollha",
+    "no_disputes": "Ebda Disputa",
+    "no_disputes_message": "M'għandekx disputi f'din il-kategorija",
+    "attachments": "sekwestru(i)",
+    "reason": {
+      "no_show": "Mhux Preżenza",
+      "damaged_package": "Pakkett Iddannġjat",
+      "late_delivery": "Kunsinna Tard",
+      "inappropriate_behavior": "Imġieba Mhux Xierqa",
+      "payment_issue": "Problema ta' Ħlas",
+      "fraudulent_activity": "Attività Frodi",
+      "safety_concern": "Tħassib dwar is-Sigurtà",
+      "other": "Oħra"
+    },
+    "status": {
+      "pending": "Pending",
+      "under_review": "Taħt Reviżjoni",
+      "resolved": "Riżolta",
+      "dismissed": "Miċħuda",
+      "escalated": "Eskalata"
+    },
+    "notification": {
+      "title": "Aġġornament tad-Disputa",
+      "response": "L-amministratur wieġeb għad-disputa tiegħek",
+      "status_change": "L-istatus tad-disputa tiegħek inbidel għal"
+    }
   }
 }

@@ -12,6 +12,7 @@ import '../services/notification_service.dart';
 import '../services/geocoding_service.dart';
 import '../services/payment_service.dart';
 import '../services/custom_email_service.dart';
+import '../services/delivery_otp_service.dart';
 
 class TrackingService extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -20,6 +21,9 @@ class TrackingService extends GetxController {
   final NotificationService _notificationService =
       Get.find<NotificationService>();
   final CustomEmailService _emailService = CustomEmailService();
+
+  // Lazy-load DeliveryOTPService to avoid initialization issues
+  DeliveryOTPService get _otpService => Get.find<DeliveryOTPService>();
 
   // Collection names
   static const String _trackingCollection = 'deliveryTracking';
@@ -78,7 +82,8 @@ class TrackingService extends GetxController {
       await _notificationService.createNotification(
         userId: '', // Will be populated from package data when available
         title: 'notifications.tracking_started'.tr(),
-        body: 'post_package.your_package_delivery_tracking_has_been_activated'.tr(),
+        body: 'post_package.your_package_delivery_tracking_has_been_activated'
+            .tr(),
         type: NotificationType.packageUpdate,
         relatedEntityId: packageRequestId,
         data: {
@@ -533,7 +538,9 @@ class TrackingService extends GetxController {
         await _notificationService.createNotification(
           userId: tracking.senderId,
           title: '📦 Package Delivered!',
-          body: 'post_package.your_package_has_been_delivered_please_confirm_to_'.tr(),
+          body:
+              'post_package.your_package_has_been_delivered_please_confirm_to_'
+                  .tr(),
           type: NotificationType.packageUpdate,
           relatedEntityId: trackingId,
           data: {
@@ -633,7 +640,8 @@ class TrackingService extends GetxController {
         await _notificationService.createNotification(
           userId: tracking.travelerId,
           title: 'notifications.payment_released'.tr(),
-          body: 'common.the_sender_confirmed_delivery_payment_has_been_rel'.tr(),
+          body:
+              'common.the_sender_confirmed_delivery_payment_has_been_rel'.tr(),
           type: NotificationType.general,
           relatedEntityId: trackingId,
           data: {
@@ -652,6 +660,312 @@ class TrackingService extends GetxController {
       _isLoading.value = false;
     }
   }
+
+  // ==================== OTP VERIFICATION METHODS ====================
+
+  /// Generate OTP for delivery verification
+  /// Called by traveler when ready to deliver
+  Future<String> generateDeliveryOTP(String trackingId) async {
+    try {
+      _isLoading.value = true;
+
+      // Get tracking data
+      final tracking = await getTracking(trackingId);
+      if (tracking == null) {
+        throw Exception('Tracking record not found');
+      }
+
+      // Verify tracking status is appropriate for delivery
+      if (tracking.status != DeliveryStatus.in_transit &&
+          tracking.status != DeliveryStatus.picked_up) {
+        throw Exception(
+            'Cannot generate OTP. Package must be in transit or picked up.');
+      }
+
+      // Generate OTP using the service
+      final otpCode = await _otpService.generateDeliveryOTP(
+        trackingId: trackingId,
+        packageRequestId: tracking.packageRequestId,
+        senderId: tracking.senderId,
+        travelerId: tracking.travelerId,
+      );
+
+      // Send notification to receiver with OTP
+      await _notificationService.createNotification(
+        userId: tracking.senderId,
+        title: '🔐 Delivery OTP Generated',
+        body:
+            'Your delivery OTP is: $otpCode. Share this code with the traveler to complete delivery.',
+        type: NotificationType.packageUpdate,
+        relatedEntityId: trackingId,
+        data: {
+          'trackingId': trackingId,
+          'packageRequestId': tracking.packageRequestId,
+          'otpCode': otpCode,
+          'action': 'otp_generated',
+        },
+      );
+
+      // Send email notification with OTP
+      await _sendOTPEmailNotification(
+        tracking: tracking,
+        otpCode: otpCode,
+      );
+
+      print('✅ OTP generated and notifications sent: $otpCode');
+      return otpCode;
+    } catch (e) {
+      print('❌ Error generating delivery OTP: $e');
+      rethrow;
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  /// Verify OTP and complete delivery
+  /// Called by traveler when they enter the OTP from receiver
+  Future<void> verifyDeliveryOTP({
+    required String trackingId,
+    required String otpCode,
+    required String photoUrl,
+    String? notes,
+  }) async {
+    try {
+      _isLoading.value = true;
+
+      // Verify OTP
+      final isValid = await _otpService.verifyDeliveryOTP(
+        trackingId: trackingId,
+        enteredOTP: otpCode,
+      );
+
+      if (!isValid) {
+        throw Exception('Invalid OTP');
+      }
+
+      // Get tracking data
+      final tracking = await getTracking(trackingId);
+      if (tracking == null) {
+        throw Exception('Tracking record not found');
+      }
+
+      // Mark as delivered with photo proof
+      final trackingRef =
+          _firestore.collection(_trackingCollection).doc(trackingId);
+
+      // Get current location for delivery checkpoint
+      final locationData = await _locationService.getCurrentLocation();
+      final updateData = <String, dynamic>{
+        'status': DeliveryStatus.delivered.name,
+        'deliveryTime': FieldValue.serverTimestamp(),
+        'deliveryPhotoUrl': photoUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (notes != null) {
+        updateData['notes'] = notes;
+      }
+
+      // Add location if available
+      if (locationData != null) {
+        final geocodingService = Get.find<GeocodingService>();
+        final address = await geocodingService.getAddressFromCoordinates(
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+        );
+
+        final locationPoint = LocationPoint(
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          address: address,
+        );
+
+        updateData['currentLocation'] = locationPoint.toMap();
+
+        // Add to tracking points
+        final now = DateTime.now();
+        updateData['trackingPoints'] = FieldValue.arrayUnion([
+          {
+            ...locationPoint.toMap(),
+            'timestamp': Timestamp.fromDate(now),
+            'status': DeliveryStatus.delivered.name,
+          }
+        ]);
+      }
+
+      await trackingRef.update(updateData);
+
+      // Automatically release payment after OTP verification
+      await _releasePaymentAfterOTPVerification(tracking);
+
+      // Notify sender that delivery is complete
+      await _notificationService.createNotification(
+        userId: tracking.senderId,
+        title: '✅ Package Delivered Successfully!',
+        body:
+            'Your package has been delivered and verified. Payment has been released to the traveler.',
+        type: NotificationType.packageUpdate,
+        relatedEntityId: trackingId,
+        data: {
+          'trackingId': trackingId,
+          'packageRequestId': tracking.packageRequestId,
+          'photoUrl': photoUrl,
+          'action': 'delivery_verified',
+        },
+      );
+
+      // Send email notification
+      await _sendEmailNotification(
+        trackingId: trackingId,
+        tracking: tracking,
+        status: 'delivered',
+        title: '✅ Package Delivered & Verified',
+        body:
+            'Your package has been delivered and verified via OTP. Payment has been released.',
+      );
+
+      print('✅ Delivery verified and completed via OTP');
+    } catch (e) {
+      print('❌ Error verifying delivery OTP: $e');
+      rethrow;
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  /// Release payment after OTP verification
+  Future<void> _releasePaymentAfterOTPVerification(
+      DeliveryTracking tracking) async {
+    try {
+      // Find the booking associated with this package
+      final bookingsSnapshot = await _firestore
+          .collection('bookings')
+          .where('packageId', isEqualTo: tracking.packageRequestId)
+          .where('travelerId', isEqualTo: tracking.travelerId)
+          .limit(1)
+          .get();
+
+      if (bookingsSnapshot.docs.isNotEmpty) {
+        final bookingDoc = bookingsSnapshot.docs.first;
+        final bookingData = bookingDoc.data();
+
+        // Release payment to traveler
+        try {
+          final PaymentService paymentService = PaymentService();
+          await paymentService.releasePayment(
+            bookingId: bookingDoc.id,
+            travelerId: tracking.travelerId,
+            amount: (bookingData['travelerPayout'] ?? 0.0).toDouble(),
+            reason: 'delivery_otp_verified',
+          );
+
+          // Update booking payment status
+          await _firestore.collection('bookings').doc(bookingDoc.id).update({
+            'paymentHoldStatus': 'released',
+            'paymentReleasedAt': FieldValue.serverTimestamp(),
+            'paymentReleaseReason': 'OTP verified delivery',
+            'status': 'completed',
+            'completedAt': FieldValue.serverTimestamp(),
+          });
+
+          // Notify traveler that payment has been released
+          await _notificationService.createNotification(
+            userId: tracking.travelerId,
+            title: '💰 Payment Released!',
+            body:
+                'Delivery verified via OTP. Payment has been released to your account.',
+            type: NotificationType.general,
+            relatedEntityId: tracking.id,
+            data: {
+              'trackingId': tracking.id,
+              'packageRequestId': tracking.packageRequestId,
+              'action': 'payment_released',
+            },
+          );
+
+          print('✅ Payment released successfully after OTP verification');
+        } catch (paymentError) {
+          print('⚠️ Failed to release payment: $paymentError');
+          // Don't fail the delivery if payment release fails
+          // Payment can be released manually later
+        }
+      }
+    } catch (e) {
+      print('❌ Error releasing payment after OTP verification: $e');
+      // Don't throw - delivery is already marked as complete
+    }
+  }
+
+  /// Send OTP via email to receiver
+  Future<void> _sendOTPEmailNotification({
+    required DeliveryTracking tracking,
+    required String otpCode,
+  }) async {
+    try {
+      // Get sender's email from Firestore
+      final senderDoc =
+          await _firestore.collection('users').doc(tracking.senderId).get();
+
+      if (!senderDoc.exists) {
+        print('⚠️ Sender user document not found');
+        return;
+      }
+
+      final senderData = senderDoc.data();
+      final senderEmail = senderData?['email'] as String?;
+
+      if (senderEmail == null || senderEmail.isEmpty) {
+        print('⚠️ Sender email not found');
+        return;
+      }
+
+      // Get package details
+      final packageDoc = await _firestore
+          .collection(_packagesCollection)
+          .doc(tracking.packageRequestId)
+          .get();
+
+      if (!packageDoc.exists) {
+        print('⚠️ Package document not found');
+        return;
+      }
+
+      final packageData = packageDoc.data()!;
+
+      // Prepare email data
+      final packageDetails = {
+        'packageId': tracking.packageRequestId,
+        'trackingNumber': tracking.id,
+        'description': packageData['description'] ?? 'Package',
+        'otpCode': otpCode,
+      };
+
+      print('📧 Sending OTP email to: $senderEmail');
+
+      await _emailService.sendDeliveryOTPEmail(
+        recipientEmail: senderEmail,
+        packageDetails: packageDetails,
+        otpCode: otpCode,
+      );
+
+      print('✅ OTP email sent successfully to: $senderEmail');
+    } catch (e) {
+      print('❌ Error sending OTP email: $e');
+      // Don't throw - we don't want email failures to break the app
+    }
+  }
+
+  /// Check if OTP is required for this delivery
+  Future<bool> isOTPRequired(String trackingId) async {
+    return await _otpService.canGenerateOTP(trackingId);
+  }
+
+  /// Get OTP details for display
+  Future<Map<String, dynamic>?> getOTPDetails(String trackingId) async {
+    return await _otpService.getOTPDetails(trackingId);
+  }
+
+  // ==================== END OTP VERIFICATION METHODS ====================
 
   /// Send status notification
   Future<void> _sendStatusNotification(

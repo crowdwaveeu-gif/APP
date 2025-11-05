@@ -52,6 +52,10 @@ class NotificationService extends GetxController {
 
     // � FIXED: Enable in-app call UI so incoming calls show properly
     'voice_call': NotificationDisplayMode.inAppOnly,
+
+    // ⚖️ Dispute notifications - system-only for important updates
+    'dispute_update': NotificationDisplayMode.systemOnly,
+    'dispute_response': NotificationDisplayMode.systemOnly,
   };
 
   // Observable notifications

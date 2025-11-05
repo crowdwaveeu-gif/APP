@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Ole ensimmäinen postittaja!",
     "add_images": "Lisää kuvia",
     "tell_others_about_your_experience": "Kerro muille kokemuksestasi...",
-    "offer_price": "Tarjoushinta"
+    "offer_price": "Tarjoushinta",
+    "maybe_later": "Ehkä myöhemmin"
   },
   "home": {
     "title": "Koti",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Noutotapa",
+    "pickup_method_subtitle": "Miten matkustaja saa pakettisi?",
+    "self_pickup": "Toimitan matkustajalle",
+    "self_pickup_desc": "Matkustaja noutaa määritetystä paikasta",
+    "sender_delivers": "Matkustaja noutaa minulta",
+    "sender_delivers_desc": "Tapaan matkustajan noutopaikassa"
   },
   "post_trip": {
     "title": "Reis plaatsen",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Beoordelingen bekijken",
     "recent_reviews": "Recente beoordelingen",
     "filter_reviews": "Beoordelingen filteren",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Weet je zeker dat je deze beoordeling wilt rapporteren wegens ongepaste inhoud?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Weet je zeker dat je deze beoordeling wilt rapporteren wegens ongepaste inhoud?",
+    "how_was_experience": "Miten kokemuksesi oli?",
+    "help_community": "Auta yhteisöä arvioimalla {0}"
   },
   "onboarding": {
     "welcome": "Tere tulemast CrowdWave'i",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Omat Riidat",
+    "report_issue": "Ilmoita Ongelmasta",
+    "filed": "Riita Arkistoitu",
+    "filed_message": "Riitasi on lähetetty onnistuneesti. Tarkistamme sen pian.",
+    "exists": "Riita On Olemassa",
+    "exists_message": "Sinulla on jo avoin riita tähän varaukseen liittyen",
+    "error": "Virhe",
+    "error_message": "Riidan arkistointi epäonnistui",
+    "load_error": "Riitojen lataaminen epäonnistui",
+    "info_message": "Ole hyvä ja anna yksityiskohtaiset tiedot ongelmasta. Tukitiimimme tarkistaa ja vastaa 24 tunnin kuluessa.",
+    "issue_type": "Ongelmatyyppi *",
+    "description": "Kuvaus *",
+    "description_hint": "Ole hyvä ja kuvaile ongelma yksityiskohtaisesti...",
+    "description_required": "Ole hyvä ja kuvaile ongelma",
+    "description_min_length": "Ole hyvä ja anna lisätietoja (vähintään 20 merkkiä)",
+    "evidence": "Todisteet (Valinnainen)",
+    "submit": "Lähetä Riita",
+    "booking_info": "Varaustiedot",
+    "add_photos": "Lisää Kuvia",
+    "add_more_photos": "Lisää Lisää Kuvia",
+    "upload_hint": "Lataa kuvia ongelmasta (valinnainen)",
+    "open": "Avoin",
+    "resolved": "Ratkaistu",
+    "all": "Kaikki",
+    "no_disputes": "Ei Riitoja",
+    "no_disputes_message": "Sinulla ei ole riitoja tässä kategoriassa",
+    "attachments": "liite(ttä)",
+    "reason": {
+      "no_show": "Ei Saapunut",
+      "damaged_package": "Vahingoittunut Paketti",
+      "late_delivery": "Myöhästynyt Toimitus",
+      "inappropriate_behavior": "Epäasiallinen Käyttäytyminen",
+      "payment_issue": "Maksuongelma",
+      "fraudulent_activity": "Vilpillinen Toiminta",
+      "safety_concern": "Turvallisuusongelma",
+      "other": "Muu"
+    },
+    "status": {
+      "pending": "Odottaa",
+      "under_review": "Tarkistettavana",
+      "resolved": "Ratkaistu",
+      "dismissed": "Hylätty",
+      "escalated": "Eskaloitu"
+    },
+    "notification": {
+      "title": "Riidan Päivitys",
+      "response": "Ylläpitäjä vastasi riitaasi",
+      "status_change": "Riitasi tila muuttui tilaan"
+    }
   }
 }

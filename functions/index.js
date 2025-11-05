@@ -26,14 +26,279 @@ const emailFunctions = require('./email_functions');
 exports.sendPasswordResetEmail = emailFunctions.sendPasswordResetEmail;
 exports.sendPasswordResetOTP = emailFunctions.sendPasswordResetOTP;
 exports.verifyPasswordResetOTP = emailFunctions.verifyPasswordResetOTP;
+exports.verifyEmailWithOTP = emailFunctions.verifyEmailWithOTP;
 exports.sendDeliveryUpdateEmail = emailFunctions.sendDeliveryUpdateEmail;
 exports.testEmailConfig = emailFunctions.testEmailConfig;
 exports.sendOTPEmail = emailFunctions.sendOTPEmail;
+exports.sendCrmLoginOTP = emailFunctions.sendCrmLoginOTP;
+exports.sendWelcomeEmail = emailFunctions.sendWelcomeEmail;
+exports.sendPromotionalEmail = emailFunctions.sendPromotionalEmail;
+exports.resetPasswordWithOTP = emailFunctions.resetPasswordWithOTP;
 
 // Import Agora token functions
 const agoraFunctions = require('./agora_functions');
 exports.generateAgoraToken = agoraFunctions.generateAgoraToken;
 exports.renewAgoraToken = agoraFunctions.renewAgoraToken;
+
+/**
+ * ✅ NEW: Firebase Auth Trigger - Send Welcome Email on User Creation
+ * Automatically sends welcome email when a new user signs up
+ */
+exports.onUserCreated = functions.auth.user().onCreate(async (user) => {
+  try {
+    const email = user.email;
+    const displayName = user.displayName || user.email?.split('@')[0] || 'there';
+    const userId = user.uid;
+
+    if (!email) {
+      functions.logger.info('No email for user, skipping welcome email:', userId);
+      return null;
+    }
+
+    functions.logger.info('New user created, sending welcome email:', {
+      userId: userId,
+      email: email,
+      displayName: displayName
+    });
+
+    // Get email transporter from email_functions
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.eu',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER || functions.config().smtp?.user || 'nauman@crowdwave.eu',
+        pass: process.env.SMTP_PASSWORD || functions.config().smtp?.password,
+      },
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to CrowdWave</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+          }
+          .email-tagline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin-top: 8px;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 20px 0;
+          }
+          .feature-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+          }
+          .feature-icon {
+            font-size: 24px;
+            margin-right: 12px;
+          }
+          .email-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">Welcome to CrowdWave! 🎉</h2>
+            
+            <p class="email-text">
+              Hi ${displayName}!
+            </p>
+            
+            <p class="email-text">
+              We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+            </p>
+            
+            <div class="feature-box">
+              <h3 style="margin-top: 0; color: #333;">What you can do with CrowdWave:</h3>
+              
+              <div class="feature-item">
+                <span class="feature-icon">📦</span>
+                <span><strong>Send Packages</strong> - Ship items affordably with travelers going your way</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">✈️</span>
+                <span><strong>Earn While Traveling</strong> - Make money by delivering packages on your trips</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">🔒</span>
+                <span><strong>Secure Payments</strong> - Protected transactions with escrow system</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">📍</span>
+                <span><strong>Real-Time Tracking</strong> - Track your packages every step of the way</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">💬</span>
+                <span><strong>Chat & Negotiate</strong> - Communicate directly with travelers or senders</span>
+              </div>
+            </div>
+            
+            <p class="email-text">
+              <strong>Getting Started:</strong>
+            </p>
+            
+            <ol class="email-text">
+              <li>Complete your profile with a photo and bio</li>
+              <li>Verify your email address (check your inbox)</li>
+              <li>Add your first trip or package request</li>
+              <li>Start connecting with our community!</li>
+            </ol>
+            
+            <div style="text-align: center;">
+              <a href="https://crowdwave.eu" class="email-button">
+                🚀 Get Started Now
+              </a>
+            </div>
+            
+            <p class="email-text" style="margin-top: 30px;">
+              Need help? Our support team is here for you at 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+            <p class="footer-text">
+              CrowdWave - Connecting couriers with packages worldwide
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Welcome to CrowdWave! 🎉
+
+Hi ${displayName}!
+
+We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+
+What you can do with CrowdWave:
+📦 Send Packages - Ship items affordably with travelers going your way
+✈️ Earn While Traveling - Make money by delivering packages on your trips
+🔒 Secure Payments - Protected transactions with escrow system
+📍 Real-Time Tracking - Track your packages every step of the way
+💬 Chat & Negotiate - Communicate directly with travelers or senders
+
+Getting Started:
+1. Complete your profile with a photo and bio
+2. Verify your email address
+3. Add your first trip or package request
+4. Start connecting with our community!
+
+Visit: https://crowdwave.eu
+
+Need help? Contact us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+    `.trim();
+
+    const mailOptions = {
+      from: '"CrowdWave" <nauman@crowdwave.eu>',
+      to: email,
+      subject: 'Welcome to CrowdWave - Start Your Journey! 🎉',
+      html: html,
+      text: text
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    functions.logger.info('✅ Welcome email sent successfully:', {
+      userId: userId,
+      email: email
+    });
+
+    return null;
+  } catch (error) {
+    functions.logger.error('❌ Error sending welcome email:', error);
+    // Don't throw - we don't want to fail user creation if email fails
+    return null;
+  }
+});
 
 /**
  * Test Authentication

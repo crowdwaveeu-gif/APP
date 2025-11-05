@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Seien Sie der Erste, der postet!",
     "add_images": "Bilder hinzufügen",
     "tell_others_about_your_experience": "Erzählen Sie anderen von Ihrer Erfahrung...",
-    "offer_price": "Angebotspreis"
+    "offer_price": "Angebotspreis",
+    "maybe_later": "Vielleicht später"
   },
   "home": {
     "title": "Startseite",
@@ -795,6 +796,12 @@
     "your_posted_packages_will_appear_here": "Ihre geposteten Pakete werden hier erscheinen",
     "crowdwave_connects_senders_and_travelers_for_effic": "CrowdWave verbindet Absender und Reisende für effiziente Paketzustellung weltweit.",
     "package_photos": "Paketfotos",
+    "pickup_method": "Abholmethode",
+    "pickup_method_subtitle": "Wie erhält der Reisende Ihr Paket?",
+    "self_pickup": "Ich liefere an Reisende",
+    "self_pickup_desc": "Reisende holt am angegebenen Ort ab",
+    "sender_delivers": "Reisende holt bei mir ab",
+    "sender_delivers_desc": "Ich treffe den Reisenden am Abholort",
     "step_receiver_details": "Empfänger-Details",
     "subtitle_receiver_details": "Wer wird dieses Paket am Zielort empfangen?",
     "receiver_details_title": "Empfängerinformationen",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Bewertungen anzeigen",
     "recent_reviews": "Letzte Bewertungen",
     "filter_reviews": "Bewertungen filtern",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Sind Sie sicher, dass Sie diese Bewertung wegen unangemessenen Inhalts melden möchten?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Sind Sie sicher, dass Sie diese Bewertung wegen unangemessenen Inhalts melden möchten?",
+    "how_was_experience": "Wie war Ihre Erfahrung?",
+    "help_community": "Helfen Sie der Community, indem Sie {0} bewerten"
   },
   "onboarding": {
     "welcome": "Willkommen bei CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Meine Streitigkeiten",
+    "report_issue": "Problem Melden",
+    "filed": "Streitigkeit Eingereicht",
+    "filed_message": "Ihre Streitigkeit wurde erfolgreich eingereicht. Wir werden sie in Kürze überprüfen.",
+    "exists": "Streitigkeit Existiert",
+    "exists_message": "Sie haben bereits eine offene Streitigkeit für diese Buchung",
+    "error": "Fehler",
+    "error_message": "Fehler beim Einreichen der Streitigkeit",
+    "load_error": "Fehler beim Laden der Streitigkeiten",
+    "info_message": "Bitte geben Sie detaillierte Informationen zum Problem an. Unser Support-Team wird es überprüfen und innerhalb von 24 Stunden antworten.",
+    "issue_type": "Problemtyp *",
+    "description": "Beschreibung *",
+    "description_hint": "Bitte beschreiben Sie das Problem detailliert...",
+    "description_required": "Bitte beschreiben Sie das Problem",
+    "description_min_length": "Bitte geben Sie mehr Details an (mind. 20 Zeichen)",
+    "evidence": "Beweismittel (Optional)",
+    "submit": "Streitigkeit Einreichen",
+    "booking_info": "Buchungsinformationen",
+    "add_photos": "Fotos hinzufügen",
+    "add_more_photos": "Weitere Fotos hinzufügen",
+    "upload_hint": "Fotos des Problems hochladen (optional)",
+    "open": "Offen",
+    "resolved": "Gelöst",
+    "all": "Alle",
+    "no_disputes": "Keine Streitigkeiten",
+    "no_disputes_message": "Sie haben keine Streitigkeiten in dieser Kategorie",
+    "attachments": "Anhang/Anhänge",
+    "reason": {
+      "no_show": "Nichterscheinen",
+      "damaged_package": "Beschädigtes Paket",
+      "late_delivery": "Verspätete Lieferung",
+      "inappropriate_behavior": "Unangemessenes Verhalten",
+      "payment_issue": "Zahlungsproblem",
+      "fraudulent_activity": "Betrügerische Aktivität",
+      "safety_concern": "Sicherheitsbedenken",
+      "other": "Andere"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "under_review": "Wird Überprüft",
+      "resolved": "Gelöst",
+      "dismissed": "Abgewiesen",
+      "escalated": "Eskaliert"
+    },
+    "notification": {
+      "title": "Streitigkeits-Update",
+      "response": "Admin hat auf Ihre Streitigkeit geantwortet",
+      "status_change": "Ihr Streitigkeitsstatus hat sich geändert zu"
+    }
   }
 }

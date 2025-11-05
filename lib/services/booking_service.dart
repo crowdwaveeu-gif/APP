@@ -11,6 +11,7 @@ import '../core/models/cancellation.dart';
 import '../core/models/payment_details.dart';
 import '../core/models/wallet.dart';
 import 'wallet_service.dart';
+import 'platform_config_service.dart';
 
 /// 🚀 PRODUCTION-READY Booking Service - CrowdWave
 /// Handles all booking operations, confirmations, and lifecycle management
@@ -28,6 +29,9 @@ class BookingService {
     _walletService ??= Get.find<WalletService>();
     return _walletService!;
   }
+
+  // Platform configuration service
+  final PlatformConfigService _platformConfigService = PlatformConfigService();
 
   // Collection references
   final String _bookingsCollection = 'bookings';
@@ -90,12 +94,24 @@ class BookingService {
         }
       }
 
-      // Calculate fees
-      final platformFeePercent = 0.1; // 10% platform fee
+      // Calculate fees - fetch dynamic platform fee from Firestore
+      final platformFeePercent =
+          await _platformConfigService.getPlatformFeePercent();
       final platformFee = acceptedDeal.offeredPrice * platformFeePercent;
       final travelerPayout = acceptedDeal.offeredPrice - platformFee;
       final totalAmount = acceptedDeal.offeredPrice +
           platformFee; // Customer pays service fee + platform fee
+
+      if (kDebugMode) {
+        print('💰 Fee Calculation:');
+        print(
+            '   Platform Fee: ${(platformFeePercent * 100).toStringAsFixed(1)}%');
+        print(
+            '   Service Fee: €${acceptedDeal.offeredPrice.toStringAsFixed(2)}');
+        print('   Platform Fee Amount: €${platformFee.toStringAsFixed(2)}');
+        print('   Total Amount: €${totalAmount.toStringAsFixed(2)}');
+        print('   Traveler Payout: €${travelerPayout.toStringAsFixed(2)}');
+      }
 
       // 💰 WALLET INTEGRATION: Check sender's balance before creating booking
       if (kDebugMode) {

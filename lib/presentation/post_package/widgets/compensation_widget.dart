@@ -221,7 +221,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
               ),
               SizedBox(width: 3.w),
               Expanded(
-                child: Text('common.pricing_insights'.tr(),
+                child: Text(
+                  'common.pricing_insights'.tr(),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -380,7 +381,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text('common.popular'.tr(),
+                          child: Text(
+                            'common.popular'.tr(),
                             style: TextStyle(
                               fontSize: 8.sp,
                               fontWeight: FontWeight.w700,
@@ -446,7 +448,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('common.set_your_amount'.tr(),
+              Text(
+                'common.set_your_amount'.tr(),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
@@ -536,7 +539,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('booking.your_offer'.tr(),
+                Text(
+                  'booking.your_offer'.tr(),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -571,6 +575,10 @@ class _CompensationWidgetState extends State<CompensationWidget>
   }
 
   Widget _buildInsuranceSection() {
+    // Insurance section is hidden but functionality is preserved
+    return SizedBox.shrink();
+
+    // ignore: dead_code
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
@@ -588,14 +596,17 @@ class _CompensationWidgetState extends State<CompensationWidget>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('post_package.package_insurance'.tr(),
+                    Text(
+                      'post_package.package_insurance'.tr(),
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     SizedBox(height: 0.5.h),
-                    Text('post_package.protect_your_package_against_loss_or_damage'.tr(),
+                    Text(
+                      'post_package.protect_your_package_against_loss_or_damage'
+                          .tr(),
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: AppTheme.lightTheme.colorScheme.onSurface
@@ -612,7 +623,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
               ),
             ],
           ),
-          if (widget.insuranceRequired) ...[
+          // Insurance section hidden but keeping the functionality
+          if (false && widget.insuranceRequired) ...[
             SizedBox(height: 3.h),
             Divider(),
             SizedBox(height: 2.h),
@@ -622,7 +634,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('post_package.insurance_value'.tr(),
+                      Text(
+                        'post_package.insurance_value'.tr(),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
@@ -655,7 +668,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('booking.insurance_fee'.tr(),
+                      Text(
+                        'booking.insurance_fee'.tr(),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
@@ -711,7 +725,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('common.cost_breakdown'.tr(),
+          Text(
+            'common.cost_breakdown'.tr(),
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -726,7 +741,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('common.total_cost'.tr(),
+              Text(
+                'common.total_cost'.tr(),
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -790,7 +806,8 @@ class _CompensationWidgetState extends State<CompensationWidget>
             children: [
               Icon(Icons.lightbulb, color: Color(0xFF008080), size: 20),
               SizedBox(width: 2.w),
-              Text('common.tips_for_better_matching'.tr(),
+              Text(
+                'common.tips_for_better_matching'.tr(),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,

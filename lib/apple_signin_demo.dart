@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -7,19 +9,34 @@ class AppleSignInDemo extends StatelessWidget {
   const AppleSignInDemo({Key? key}) : super(key: key);
 
   Future<UserCredential> signInWithApple() async {
-    // Step 1: Get Apple credentials (browser flow on Android)
-    final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-      webAuthenticationOptions: WebAuthenticationOptions(
-        clientId: "com.crowdwave.courier.service", // ✅ Your Apple Service ID
-        redirectUri: Uri.parse(
-          "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler", // ✅ Firebase redirect URI
+    // Step 1: Get Apple credentials (browser flow on Web, native on iOS)
+    final AuthorizationCredentialAppleID appleCredential;
+
+    // ✅ FIX: webAuthenticationOptions required for web AND Android
+    // Only iOS uses native Apple Sign-In (no webAuthenticationOptions needed)
+    if (kIsWeb || (!kIsWeb && Platform.isAndroid)) {
+      // Web and Android both use web-based Apple Sign-In
+      appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: "com.crowdwave.courier.service",
+          redirectUri: Uri.parse(
+            "https://crowdwave-93d4d.firebaseapp.com/__/auth/handler",
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // iOS only - native Apple Sign-In (no webAuthenticationOptions)
+      appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+    }
 
     // Step 2: Convert Apple credentials into Firebase credentials
     final oauthCredential = OAuthProvider("apple.com").credential(

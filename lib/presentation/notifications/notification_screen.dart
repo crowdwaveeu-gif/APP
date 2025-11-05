@@ -3,6 +3,7 @@ import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/notification_model.dart';
 import '../../services/notification_service.dart';
+import '../../services/dispute_service.dart';
 import '../../core/repositories/trip_repository.dart';
 import '../../core/repositories/package_repository.dart';
 import '../trip_detail/trip_detail_screen.dart';
@@ -268,6 +269,10 @@ class NotificationScreen extends StatelessWidget {
         return Icons.phone;
       case NotificationType.general:
         return Icons.location_on; // Enhanced for location-based notifications
+      case NotificationType.disputeUpdate:
+        return Icons.gavel;
+      case NotificationType.disputeResponse:
+        return Icons.report_problem;
     }
   }
 
@@ -289,6 +294,10 @@ class NotificationScreen extends StatelessWidget {
         return const Color(0xFF10B981); // Green for voice calls
       case NotificationType.general:
         return const Color(0xFF6B7280);
+      case NotificationType.disputeUpdate:
+        return const Color(0xFFFF9800); // Orange for dispute updates
+      case NotificationType.disputeResponse:
+        return const Color(0xFFFF5722); // Deep orange for dispute responses
     }
   }
 
@@ -375,12 +384,57 @@ class NotificationScreen extends StatelessWidget {
           // Get.toNamed('/chat', arguments: notification.relatedEntityId);
           break;
         case NotificationType.voiceCall:
-          // Navigate to incoming call screen or show call dialog
-          // TODO: Implement call handling
+          // Navigate to incoming call screen
+          if (notification.data != null) {
+            _handleIncomingCall(context, notification.data!);
+          }
           break;
-        default:
+        case NotificationType.disputeUpdate:
+        case NotificationType.disputeResponse:
+          // Navigate to dispute details
+          if (notification.data != null &&
+              notification.data!['disputeId'] != null) {
+            _navigateToDisputeDetails(context, notification.data!['disputeId']);
+          } else {
+            // Navigate to my disputes list
+            Get.toNamed('/my-disputes');
+          }
+          break;
+        case NotificationType.general:
+          // General notifications don't have specific navigation
           break;
       }
+    }
+  }
+
+  /// Navigate to dispute details page
+  Future<void> _navigateToDisputeDetails(
+      BuildContext context, String disputeId) async {
+    try {
+      // Import the dispute service to fetch dispute details
+      final disputeService = Get.find<DisputeService>();
+      final dispute = await disputeService.getDispute(disputeId);
+
+      if (dispute != null) {
+        Navigator.of(context).pushNamed(
+          '/dispute-details',
+          arguments: {'dispute': dispute},
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Dispute not found',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load dispute details',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -470,6 +524,48 @@ class NotificationScreen extends StatelessWidget {
         'Info',
         'Opportunities feature coming soon!',
         backgroundColor: Color(0xFF008080),
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Handle incoming voice call notification
+  void _handleIncomingCall(
+      BuildContext context, Map<String, dynamic> callData) {
+    try {
+      final callId = callData['callId'] as String?;
+      final roomId = callData['roomId'] as String?;
+      final callerName = callData['callerName'] as String?;
+      final callerId = callData['callerId'] as String?;
+
+      if (callId == null ||
+          roomId == null ||
+          callerName == null ||
+          callerId == null) {
+        Get.snackbar(
+          'Error',
+          'Invalid call data',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Navigate to incoming call screen
+      Get.toNamed('/incoming-call', arguments: {
+        'callId': callId,
+        'roomId': roomId,
+        'callerName': callerName,
+        'callerId': callerId,
+      });
+
+      print('📞 Opening incoming call screen for: $callerName');
+    } catch (e) {
+      print('❌ Error handling incoming call: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to open call: $e',
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
     }

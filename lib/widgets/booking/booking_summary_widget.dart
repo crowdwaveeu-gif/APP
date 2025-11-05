@@ -5,9 +5,10 @@ import '../../core/models/package_request.dart';
 import '../../core/models/travel_trip.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../services/platform_config_service.dart';
 
 /// 📋 Booking Summary Widget - Shows complete booking details
-class BookingSummaryWidget extends StatelessWidget {
+class BookingSummaryWidget extends StatefulWidget {
   final DealOffer deal;
   final PackageRequest package;
   final TravelTrip trip;
@@ -18,6 +19,29 @@ class BookingSummaryWidget extends StatelessWidget {
     required this.package,
     required this.trip,
   }) : super(key: key);
+
+  @override
+  State<BookingSummaryWidget> createState() => _BookingSummaryWidgetState();
+}
+
+class _BookingSummaryWidgetState extends State<BookingSummaryWidget> {
+  final PlatformConfigService _configService = PlatformConfigService();
+  double _platformFeePercent = 0.1; // Default 10%
+  bool _isLoadingFee = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlatformFee();
+  }
+
+  Future<void> _loadPlatformFee() async {
+    final feePercent = await _configService.getPlatformFeePercent();
+    setState(() {
+      _platformFeePercent = feePercent;
+      _isLoadingFee = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +61,8 @@ class BookingSummaryWidget extends StatelessWidget {
               Icon(Icons.receipt_long_outlined,
                   color: AppColors.primary, size: 24),
               const SizedBox(width: 8),
-              Text('booking.booking_summary'.tr(),
+              Text(
+                'booking.booking_summary'.tr(),
                 style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
               ),
             ],
@@ -49,11 +74,13 @@ class BookingSummaryWidget extends StatelessWidget {
             title: 'booking.deal_details'.tr(),
             icon: Icons.handshake_outlined,
             children: [
+              _buildDetailRow('Offered Price',
+                  '€${widget.deal.offeredPrice.toStringAsFixed(2)}'),
               _buildDetailRow(
-                  'Offered Price', '€${deal.offeredPrice.toStringAsFixed(2)}'),
-              _buildDetailRow('Deal Status', deal.status.name.toUpperCase()),
-              if (deal.message?.isNotEmpty ?? false)
-                _buildDetailRow('Message', deal.message!, isMultiline: true),
+                  'Deal Status', widget.deal.status.name.toUpperCase()),
+              if (widget.deal.message?.isNotEmpty ?? false)
+                _buildDetailRow('Message', widget.deal.message!,
+                    isMultiline: true),
             ],
           ),
 
@@ -64,17 +91,19 @@ class BookingSummaryWidget extends StatelessWidget {
             title: 'detail.package_detail_title'.tr(),
             icon: Icons.inventory_2_outlined,
             children: [
-              _buildDetailRow('From', package.pickupLocation.address),
-              _buildDetailRow('To', package.destinationLocation.address),
-              _buildDetailRow('Package Type', package.packageDetails.type.name),
+              _buildDetailRow('From', widget.package.pickupLocation.address),
+              _buildDetailRow('To', widget.package.destinationLocation.address),
               _buildDetailRow(
-                  'Weight', '${package.packageDetails.weightKg} kg'),
-              _buildDetailRow('Size', package.packageDetails.size.name),
-              if (package.specialInstructions?.isNotEmpty ?? false)
-                _buildDetailRow('Instructions', package.specialInstructions!,
+                  'Package Type', widget.package.packageDetails.type.name),
+              _buildDetailRow(
+                  'Weight', '${widget.package.packageDetails.weightKg} kg'),
+              _buildDetailRow('Size', widget.package.packageDetails.size.name),
+              if (widget.package.specialInstructions?.isNotEmpty ?? false)
+                _buildDetailRow(
+                    'Instructions', widget.package.specialInstructions!,
                     isMultiline: true),
               _buildDetailRow('Preferred Delivery',
-                  _formatDate(package.preferredDeliveryDate)),
+                  _formatDate(widget.package.preferredDeliveryDate)),
             ],
           ),
 
@@ -86,14 +115,17 @@ class BookingSummaryWidget extends StatelessWidget {
             icon: Icons.flight_outlined,
             children: [
               _buildDetailRow('Route',
-                  '${trip.departureLocation.city ?? trip.departureLocation.country} → ${trip.destinationLocation.city ?? trip.destinationLocation.country}'),
-              _buildDetailRow('Departure', _formatDateTime(trip.departureDate)),
-              if (trip.arrivalDate != null)
-                _buildDetailRow('Arrival', _formatDateTime(trip.arrivalDate!)),
+                  '${widget.trip.departureLocation.city ?? widget.trip.departureLocation.country} → ${widget.trip.destinationLocation.city ?? widget.trip.destinationLocation.country}'),
               _buildDetailRow(
-                  'Available Space', '${trip.capacity.maxWeightKg} kg'),
-              if (trip.notes?.isNotEmpty ?? false)
-                _buildDetailRow('Trip Notes', trip.notes!, isMultiline: true),
+                  'Departure', _formatDateTime(widget.trip.departureDate)),
+              if (widget.trip.arrivalDate != null)
+                _buildDetailRow(
+                    'Arrival', _formatDateTime(widget.trip.arrivalDate!)),
+              _buildDetailRow(
+                  'Available Space', '${widget.trip.capacity.maxWeightKg} kg'),
+              if (widget.trip.notes?.isNotEmpty ?? false)
+                _buildDetailRow('Trip Notes', widget.trip.notes!,
+                    isMultiline: true),
             ],
           ),
 
@@ -103,23 +135,37 @@ class BookingSummaryWidget extends StatelessWidget {
           _buildSection(
             title: 'booking.price_breakdown'.tr(),
             icon: Icons.calculate_outlined,
-            children: [
-              _buildDetailRow(
-                  'Service Fee', '€${deal.offeredPrice.toStringAsFixed(2)}'),
-              _buildDetailRow('Platform Fee (10%)',
-                  '€${(deal.offeredPrice * 0.1).toStringAsFixed(2)}'),
-              const Divider(),
-              _buildDetailRow(
-                'Total Amount',
-                '€${(deal.offeredPrice + (deal.offeredPrice * 0.1)).toStringAsFixed(2)}',
-                isTotal: true,
-              ),
-              _buildDetailRow(
-                'Traveler Receives',
-                '€${(deal.offeredPrice * 0.9).toStringAsFixed(2)}',
-                textColor: AppColors.success,
-              ),
-            ],
+            children: _isLoadingFee
+                ? [
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        ),
+                      ),
+                    ),
+                  ]
+                : [
+                    _buildDetailRow('Service Fee',
+                        '€${widget.deal.offeredPrice.toStringAsFixed(2)}'),
+                    _buildDetailRow(
+                        'Platform Fee (${(_platformFeePercent * 100).toStringAsFixed(1)}%)',
+                        '€${(widget.deal.offeredPrice * _platformFeePercent).toStringAsFixed(2)}'),
+                    const Divider(),
+                    _buildDetailRow(
+                      'Total Amount',
+                      '€${(widget.deal.offeredPrice + (widget.deal.offeredPrice * _platformFeePercent)).toStringAsFixed(2)}',
+                      isTotal: true,
+                    ),
+                    _buildDetailRow(
+                      'Traveler Receives',
+                      '€${(widget.deal.offeredPrice - (widget.deal.offeredPrice * _platformFeePercent)).toStringAsFixed(2)}',
+                      textColor: AppColors.success,
+                    ),
+                  ],
           ),
 
           const SizedBox(height: 16),
@@ -139,7 +185,8 @@ class BookingSummaryWidget extends StatelessWidget {
                   children: [
                     Icon(Icons.info_outline, color: AppColors.info, size: 16),
                     const SizedBox(width: 8),
-                    Text('common.important_information'.tr(),
+                    Text(
+                      'common.important_information'.tr(),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.info,
                         fontWeight: FontWeight.w600,

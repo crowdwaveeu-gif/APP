@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
@@ -11,10 +12,12 @@ import '../../../controllers/simple_ui_controller.dart';
 import '../../../services/enhanced_firebase_auth_service.dart';
 import '../../../services/username_service.dart';
 import '../../../services/user_profile_service.dart';
+import '../../../services/static_content_service.dart';
 import '../../../core/models/user_profile.dart';
 import '../../../core/validation_messages.dart';
 import '../../../core/error_handler.dart';
 import '../../../routes/app_routes.dart';
+import '../../widgets/static_content_viewer.dart';
 
 class SignUpView extends StatefulWidget {
   const SignUpView({Key? key}) : super(key: key);
@@ -314,11 +317,7 @@ class _SignUpViewState extends State<SignUpView> {
                 SizedBox(
                   height: size.height * 0.02,
                 ),
-                Text(
-                  'Creating an account means you\'re okay with our Terms of Services and our Privacy Policy',
-                  style: kLoginTermsAndPrivacyStyle(size),
-                  textAlign: TextAlign.center,
-                ),
+                _buildTermsAndPrivacyText(size),
                 SizedBox(
                   height: size.height * 0.02,
                 ),
@@ -498,11 +497,7 @@ class _SignUpViewState extends State<SignUpView> {
                 SizedBox(
                   height: size.height * 0.02,
                 ),
-                Text(
-                  'Creating an account means you\'re okay with our Terms of Services and our Privacy Policy',
-                  style: kLoginTermsAndPrivacyStyle(size),
-                  textAlign: TextAlign.center,
-                ),
+                _buildTermsAndPrivacyText(size),
                 SizedBox(
                   height: size.height * 0.02,
                 ),
@@ -614,18 +609,9 @@ class _SignUpViewState extends State<SignUpView> {
                       await _usernameService.reserveUsername(
                           username, user.uid);
 
-                      // Send verification email BEFORE creating profile and signing out
-                      try {
-                        await _authService.sendEmailVerification();
-                        print(
-                            '✅ Email verification sent successfully to: ${user.email}');
-                        debugPrint('Email verification sent successfully');
-                      } catch (e) {
-                        // Don't block signup if email verification fails
-                        print('❌ Email verification failed: $e');
-                        debugPrint('Email verification failed: $e');
-                        // User will be taken to verification screen where they can resend if needed
-                      }
+                      // NOTE: Email verification is now handled via OTP system
+                      // No need to send Firebase's default verification email
+                      // User will verify email on the next screen via OTP
 
                       // Create user profile with username
                       final userProfile = UserProfile(
@@ -978,6 +964,57 @@ class _SignUpViewState extends State<SignUpView> {
           offset: const Offset(0, 3),
         ),
       ],
+    );
+  }
+
+  /// Build Terms and Privacy Policy Text with clickable links
+  Widget _buildTermsAndPrivacyText(Size size) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: kLoginTermsAndPrivacyStyle(size),
+          children: [
+            const TextSpan(
+              text: 'Creating an account means you\'re okay with our ',
+            ),
+            TextSpan(
+              text: 'Terms of Service',
+              style: kLoginTermsAndPrivacyStyle(size).copyWith(
+                decoration: TextDecoration.underline,
+                color: const Color(0xFF008080),
+                fontWeight: FontWeight.w600,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  showStaticContentSheet(
+                    context,
+                    StaticContentType.termsOfService,
+                  );
+                },
+            ),
+            const TextSpan(
+              text: ' and our ',
+            ),
+            TextSpan(
+              text: 'Privacy Policy',
+              style: kLoginTermsAndPrivacyStyle(size).copyWith(
+                decoration: TextDecoration.underline,
+                color: const Color(0xFF008080),
+                fontWeight: FontWeight.w600,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  showStaticContentSheet(
+                    context,
+                    StaticContentType.privacyPolicy,
+                  );
+                },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

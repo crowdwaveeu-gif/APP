@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Soyez le premier à poster !",
     "add_images": "Ajouter des images",
     "tell_others_about_your_experience": "Racontez votre expérience aux autres...",
-    "offer_price": "Prix de l'offre"
+    "offer_price": "Prix de l'offre",
+    "maybe_later": "Peut-être plus tard"
   },
   "home": {
     "title": "Accueil",
@@ -795,6 +796,12 @@
     "your_posted_packages_will_appear_here": "Vos paquets postés apparaîtront ici",
     "crowdwave_connects_senders_and_travelers_for_effic": "CrowdWave connecte les expéditeurs et les voyageurs pour une livraison de paquets efficace dans le monde entier.",
     "package_photos": "Photos du paquet",
+    "pickup_method": "Méthode de ramassage",
+    "pickup_method_subtitle": "Comment le voyageur obtiendra-t-il votre colis ?",
+    "self_pickup": "Je livrerai au voyageur",
+    "self_pickup_desc": "Le voyageur récupérera à l'endroit spécifié",
+    "sender_delivers": "Le voyageur récupère chez moi",
+    "sender_delivers_desc": "Je rencontrerai le voyageur au lieu de ramassage",
     "step_receiver_details": "Détails du Destinataire",
     "subtitle_receiver_details": "Qui recevra ce colis à destination ?",
     "receiver_details_title": "Informations sur le Destinataire",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Voir les avis",
     "recent_reviews": "Avis récents",
     "filter_reviews": "Filtrer les avis",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Êtes-vous sûr de vouloir signaler cet avis pour contenu inapproprié ?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Êtes-vous sûr de vouloir signaler cet avis pour contenu inapproprié ?",
+    "how_was_experience": "Comment s'est passée votre expérience ?",
+    "help_community": "Aidez la communauté en évaluant {0}"
   },
   "onboarding": {
     "welcome": "Bienvenue sur CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mes Litiges",
+    "report_issue": "Signaler un Problème",
+    "filed": "Litige Déposé",
+    "filed_message": "Votre litige a été soumis avec succès. Nous l'examinerons bientôt.",
+    "exists": "Le Litige Existe",
+    "exists_message": "Vous avez déjà un litige ouvert pour cette réservation",
+    "error": "Erreur",
+    "error_message": "Échec du dépôt du litige",
+    "load_error": "Échec du chargement des litiges",
+    "info_message": "Veuillez fournir des informations détaillées sur le problème. Notre équipe d'assistance examinera et répondra dans les 24 heures.",
+    "issue_type": "Type de Problème *",
+    "description": "Description *",
+    "description_hint": "Veuillez décrire le problème en détail...",
+    "description_required": "Veuillez décrire le problème",
+    "description_min_length": "Veuillez fournir plus de détails (min 20 caractères)",
+    "evidence": "Preuve (Facultatif)",
+    "submit": "Soumettre le Litige",
+    "booking_info": "Informations de Réservation",
+    "add_photos": "Ajouter des Photos",
+    "add_more_photos": "Ajouter Plus de Photos",
+    "upload_hint": "Télécharger des photos du problème (facultatif)",
+    "open": "Ouvert",
+    "resolved": "Résolu",
+    "all": "Tous",
+    "no_disputes": "Aucun Litige",
+    "no_disputes_message": "Vous n'avez aucun litige dans cette catégorie",
+    "attachments": "pièce(s) jointe(s)",
+    "reason": {
+      "no_show": "Non-présentation",
+      "damaged_package": "Colis Endommagé",
+      "late_delivery": "Livraison Tardive",
+      "inappropriate_behavior": "Comportement Inapproprié",
+      "payment_issue": "Problème de Paiement",
+      "fraudulent_activity": "Activité Frauduleuse",
+      "safety_concern": "Problème de Sécurité",
+      "other": "Autre"
+    },
+    "status": {
+      "pending": "En Attente",
+      "under_review": "En Cours d'Examen",
+      "resolved": "Résolu",
+      "dismissed": "Rejeté",
+      "escalated": "Escaladé"
+    },
+    "notification": {
+      "title": "Mise à Jour de Litige",
+      "response": "L'administrateur a répondu à votre litige",
+      "status_change": "Le statut de votre litige est passé à"
+    }
   }
 }

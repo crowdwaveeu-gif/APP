@@ -283,4 +283,20 @@ class UserProfileService {
       throw Exception('Failed to update email verification status: $e');
     }
   }
+
+  /// Check if user is blocked
+  Future<bool> isUserBlocked(String userId) async {
+    try {
+      final doc =
+          await _firestore.collection(_usersCollection).doc(userId).get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        return data?['isBlocked'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('Failed to check user blocked status: $e');
+    }
+  }
 }

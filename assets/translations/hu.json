@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Legyen az első bejegyző!",
     "add_images": "Képek Hozzáadása",
     "tell_others_about_your_experience": "Mondja el másoknak tapasztalatát...",
-    "offer_price": "Ajánlati Ár"
+    "offer_price": "Ajánlati Ár",
+    "maybe_later": "Talán később"
   },
   "home": {
     "title": "Kezdőlap",
@@ -814,7 +815,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Átvételi mód",
+    "pickup_method_subtitle": "Hogyan kapja meg az utazó a csomagodat?",
+    "self_pickup": "Átadom az utazónak",
+    "self_pickup_desc": "Az utazó átveszi a megadott helyen",
+    "sender_delivers": "Az utazó átveszi tőlem",
+    "sender_delivers_desc": "Találkozom az utazóval az átvételi helyen"
   },
   "post_trip": {
     "title": "Utazás Közzététele",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Értékelések Megtekintése",
     "recent_reviews": "Legutóbbi Értékelések",
     "filter_reviews": "Értékelések Szűrése",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Biztosan jelenteni szeretné ezt az értékelést nem megfelelő tartalom miatt?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Biztosan jelenteni szeretné ezt az értékelést nem megfelelő tartalom miatt?",
+    "how_was_experience": "Milyen volt a tapasztalatod?",
+    "help_community": "Segítsen a közösségnek a {0} értékelésével"
   },
   "onboarding": {
     "welcome": "Üdvözöljük a CrowdWave-ben",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Vitáim",
+    "report_issue": "Probléma Jelentése",
+    "filed": "Vita Benyújtva",
+    "filed_message": "Vitája sikeresen elküldve. Hamarosan felülvizsgáljuk.",
+    "exists": "Vita Létezik",
+    "exists_message": "Már van egy nyitott vitája ehhez a foglaláshoz",
+    "error": "Hiba",
+    "error_message": "A vita benyújtása sikertelen",
+    "load_error": "Viták betöltése sikertelen",
+    "info_message": "Kérjük, adjon meg részletes információkat a problémáról. Támogató csapatunk 24 órán belül felülvizsgálja és válaszol.",
+    "issue_type": "Probléma Típusa *",
+    "description": "Leírás *",
+    "description_hint": "Kérjük, írja le a problémát részletesen...",
+    "description_required": "Kérjük, írja le a problémát",
+    "description_min_length": "Kérjük, adjon meg további részleteket (min. 20 karakter)",
+    "evidence": "Bizonyíték (Opcionális)",
+    "submit": "Vita Benyújtása",
+    "booking_info": "Foglalási Információ",
+    "add_photos": "Fényképek Hozzáadása",
+    "add_more_photos": "További Fényképek Hozzáadása",
+    "upload_hint": "Töltse fel a probléma fotóit (opcionális)",
+    "open": "Nyitott",
+    "resolved": "Megoldott",
+    "all": "Összes",
+    "no_disputes": "Nincsenek Viták",
+    "no_disputes_message": "Nincsenek vitái ebben a kategóriában",
+    "attachments": "melléklet(ek)",
+    "reason": {
+      "no_show": "Meg nem jelenés",
+      "damaged_package": "Sérült Csomag",
+      "late_delivery": "Késedelmes Szállítás",
+      "inappropriate_behavior": "Nem Megfelelő Viselkedés",
+      "payment_issue": "Fizetési Probléma",
+      "fraudulent_activity": "Csalárd Tevékenység",
+      "safety_concern": "Biztonsági Aggály",
+      "other": "Egyéb"
+    },
+    "status": {
+      "pending": "Függőben",
+      "under_review": "Felülvizsgálat Alatt",
+      "resolved": "Megoldott",
+      "dismissed": "Elutasítva",
+      "escalated": "Eszkalálva"
+    },
+    "notification": {
+      "title": "Vita Frissítés",
+      "response": "Admin válaszolt a vitájára",
+      "status_change": "Vitája státusza megváltozott erre"
+    }
   }
 }

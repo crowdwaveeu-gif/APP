@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Vær den første til at poste!",
     "add_images": "Tilføj billeder",
     "tell_others_about_your_experience": "Fortæl andre om din oplevelse...",
-    "offer_price": "Tilbudspris"
+    "offer_price": "Tilbudspris",
+    "maybe_later": "Måske senere"
   },
   "home": {
     "title": "Hjem",
@@ -339,7 +340,8 @@
     "email_verification_required": "E-mail-verifikation kræves",
     "click_the_verification_link_in_the_email_to_verify": "Klik på verifikationslinket i e-mailen for at verificere din konto",
     "kyc_verifikation_progress": "KYC-verifikationsfremgang",
-    "waiting_for_verification": "Venter på verifikation..."
+    "waiting_for_verification": "Venter på verifikation...",
+    "kyc_verification_progress": "KYC Verifikationsforløb"
   },
   "orders": {
     "title": "Mine ordrer",
@@ -814,7 +816,13 @@
     "receiver_notes": "Delivery Notes for Receiver",
     "receiver_notes_hint": "e.g., Ring doorbell, call upon arrival, leave with neighbor...",
     "receiver_details_info": "💡 The receiver doesn't need a CrowdWave account. We'll contact them when the package is ready for delivery.",
-    "validation_receiver_required": "Please provide receiver details"
+    "validation_receiver_required": "Please provide receiver details",
+    "pickup_method": "Afhentningsmetode",
+    "pickup_method_subtitle": "Hvordan får rejsende din pakke?",
+    "self_pickup": "Jeg leverer til rejsende",
+    "self_pickup_desc": "Rejsende afhenter på angivet sted",
+    "sender_delivers": "Rejsende afhenter fra mig",
+    "sender_delivers_desc": "Jeg møder den rejsende på afhentningsstedet"
   },
   "post_trip": {
     "title": "Post rejse",
@@ -1235,7 +1243,9 @@
     "view_reviews": "Vis anmeldelser",
     "recent_reviews": "Nylige anmeldelser",
     "filter_reviews": "Filtrer anmeldelser",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Er du sikker på, at du vil rapportere denne anmeldelse for upassende indhold?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Er du sikker på, at du vil rapportere denne anmeldelse for upassende indhold?",
+    "how_was_experience": "Hvordan var din oplevelse?",
+    "help_community": "Hjælp fællesskabet ved at anmelde {0}"
   },
   "onboarding": {
     "welcome": "Velkommen til CrowdWave",
@@ -1480,5 +1490,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Mine Tvister",
+    "report_issue": "Rapporter Problem",
+    "filed": "Tvist Indsendt",
+    "filed_message": "Din tvist er blevet indsendt. Vi gennemgår den snart.",
+    "exists": "Tvist Eksisterer",
+    "exists_message": "Du har allerede en åben tvist for denne booking",
+    "error": "Fejl",
+    "error_message": "Det lykkedes ikke at indsende tvist",
+    "load_error": "Det lykkedes ikke at indlæse tvister",
+    "info_message": "Angiv venligst detaljerede oplysninger om problemet. Vores supportteam gennemgår og svarer inden for 24 timer.",
+    "issue_type": "Problemtype *",
+    "description": "Beskrivelse *",
+    "description_hint": "Beskriv venligst problemet detaljeret...",
+    "description_required": "Angiv venligst problemets beskrivelse",
+    "description_min_length": "Angiv venligst flere detaljer (min. 20 tegn)",
+    "evidence": "Bevismateriale (Valgfrit)",
+    "submit": "Indsend Tvist",
+    "booking_info": "Bookinginformation",
+    "add_photos": "Tilføj billeder",
+    "add_more_photos": "Tilføj flere billeder",
+    "upload_hint": "Upload billeder af problemet (valgfrit)",
+    "open": "Åben",
+    "resolved": "Løst",
+    "all": "Alle",
+    "no_disputes": "Ingen Tvister",
+    "no_disputes_message": "Du har ingen tvister i denne kategori",
+    "attachments": "vedhæftning(er)",
+    "reason": {
+      "no_show": "Udeblivelse",
+      "damaged_package": "Beskadiget Pakke",
+      "late_delivery": "Sen Levering",
+      "inappropriate_behavior": "Upassende Adfærd",
+      "payment_issue": "Betalingsproblem",
+      "fraudulent_activity": "Svindelaktivitet",
+      "safety_concern": "Sikkerhedsproblem",
+      "other": "Andet"
+    },
+    "status": {
+      "pending": "Afventer",
+      "under_review": "Under Gennemgang",
+      "resolved": "Løst",
+      "dismissed": "Afvist",
+      "escalated": "Eskaleret"
+    },
+    "notification": {
+      "title": "Tvistopdatering",
+      "response": "Administrator svarede på din tvist",
+      "status_change": "Din tviststatus ændret til"
+    }
   }
 }

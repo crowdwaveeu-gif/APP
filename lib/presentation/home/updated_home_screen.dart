@@ -656,6 +656,41 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
+                    // Check authentication before allowing navigation
+                    if (_authService.currentUser == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please log in to post a package'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      // Navigate to login
+                      Navigator.pushNamed(context, AppRoutes.onboardingFlow);
+                      return;
+                    }
+
+                    // Check KYC verification before allowing navigation
+                    if (!_hasSubmittedKyc) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Please complete KYC verification to post a package'),
+                          backgroundColor: Colors.orange,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      // Navigate to KYC completion and refresh status when returning
+                      Navigator.pushNamed(context, AppRoutes.kycCompletion)
+                          .then((_) {
+                        // Refresh KYC status when user returns
+                        _checkKycStatus();
+                      });
+                      return;
+                    }
+
                     Navigator.pushNamed(context, AppRoutes.postPackage);
                   },
                   style: ElevatedButton.styleFrom(
@@ -681,6 +716,41 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
+                    // Check authentication before allowing navigation
+                    if (_authService.currentUser == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please log in to create a trip'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      // Navigate to login
+                      Navigator.pushNamed(context, AppRoutes.onboardingFlow);
+                      return;
+                    }
+
+                    // Check KYC verification before allowing navigation
+                    if (!_hasSubmittedKyc) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Please complete KYC verification to create a trip'),
+                          backgroundColor: Colors.orange,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                      // Navigate to KYC completion and refresh status when returning
+                      Navigator.pushNamed(context, AppRoutes.kycCompletion)
+                          .then((_) {
+                        // Refresh KYC status when user returns
+                        _checkKycStatus();
+                      });
+                      return;
+                    }
+
                     // Navigate to travel screen
                     Navigator.pushNamed(context, AppRoutes.travel);
                   },
@@ -1432,9 +1502,43 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
+                        // Check authentication
+                        if (_authService.currentUser == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please log in to chat'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                          Navigator.pushNamed(
+                              context, AppRoutes.onboardingFlow);
+                          return;
+                        }
+
+                        // Check KYC approval
+                        if (!_hasSubmittedKyc) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Please complete KYC verification to chat'),
+                              backgroundColor: Colors.orange,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                          // Navigate to KYC completion and refresh status when returning
+                          Navigator.pushNamed(context, AppRoutes.kycCompletion)
+                              .then((_) {
+                            // Refresh KYC status when user returns
+                            _checkKycStatus();
+                          });
+                          return;
+                        }
+
                         // Navigate to chat with the package sender
-                        final currentUserId =
-                            _authService.currentUser?.uid ?? '';
+                        final currentUserId = _authService.currentUser!.uid;
                         final conversationId = _generateConversationId(
                             currentUserId, package.senderId);
 
@@ -1462,6 +1566,41 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
+                        // Check authentication
+                        if (_authService.currentUser == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please log in to make an offer'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                          Navigator.pushNamed(
+                              context, AppRoutes.onboardingFlow);
+                          return;
+                        }
+
+                        // Check KYC approval
+                        if (!_hasSubmittedKyc) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Please complete KYC verification to make an offer'),
+                              backgroundColor: Colors.orange,
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                          // Navigate to KYC completion and refresh status when returning
+                          Navigator.pushNamed(context, AppRoutes.kycCompletion)
+                              .then((_) {
+                            // Refresh KYC status when user returns
+                            _checkKycStatus();
+                          });
+                          return;
+                        }
+
                         // Navigate to make offer screen
                         Get.to(() => MakeOfferScreen(
                               package: package,
@@ -1837,10 +1976,8 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
       final capitalizedName =
           emailName[0].toUpperCase() + emailName.substring(1);
       return 'Hi, $capitalizedName';
-    } else {
-      // Fallback
-      return 'Hi, User';
     }
+    return 'Hi';
   }
 
   String _getUserInitials() {

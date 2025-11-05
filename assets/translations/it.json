@@ -225,7 +225,8 @@
     "be_the_first_to_post": "Sii il primo a postare!",
     "add_images": "Aggiungi Immagini",
     "tell_others_about_your_experience": "Racconta agli altri della tua esperienza...",
-    "offer_price": "Prezzo Offerta"
+    "offer_price": "Prezzo Offerta",
+    "maybe_later": "Forse più tardi"
   },
   "home": {
     "title": "Home",
@@ -795,6 +796,12 @@
     "your_posted_packages_will_appear_here": "I tuoi pacchetti pubblicati appariranno qui",
     "crowdwave_connects_senders_and_travelers_for_effic": "CrowdWave collega mittenti e viaggiatori per consegne efficienti in tutto il mondo.",
     "package_photos": "Foto Pacchetto",
+    "pickup_method": "Metodo di ritiro",
+    "pickup_method_subtitle": "Come riceverà il viaggiatore il tuo pacco?",
+    "self_pickup": "Consegnerò al viaggiatore",
+    "self_pickup_desc": "Il viaggiatore ritirerà nel luogo specificato",
+    "sender_delivers": "Il viaggiatore ritira da me",
+    "sender_delivers_desc": "Incontrerò il viaggiatore nel luogo di ritiro",
     "step_receiver_details": "Dettagli del Destinatario",
     "subtitle_receiver_details": "Chi riceverà questo pacco a destinazione?",
     "receiver_details_title": "Informazioni sul Destinatario",
@@ -1235,7 +1242,9 @@
     "view_reviews": "Visualizza Recensioni",
     "recent_reviews": "Recensioni Recenti",
     "filter_reviews": "Filtra Recensioni",
-    "are_you_sure_you_want_to_report_this_review_for_in": "Sei sicuro di voler segnalare questa recensione per contenuto inappropriato?"
+    "are_you_sure_you_want_to_report_this_review_for_in": "Sei sicuro di voler segnalare questa recensione per contenuto inappropriato?",
+    "how_was_experience": "Com'è stata la tua esperienza?",
+    "help_community": "Aiuta la comunità recensendo {0}"
   },
   "onboarding": {
     "welcome": "Benvenuto su CrowdWave",
@@ -1480,5 +1489,56 @@
   "details": {
     "title": "Details",
     "viewing": "Viewing details for {0}"
+  },
+  "disputes": {
+    "my_disputes": "Le Mie Contestazioni",
+    "report_issue": "Segnala un Problema",
+    "filed": "Contestazione Presentata",
+    "filed_message": "La tua contestazione è stata inviata con successo. La esamineremo a breve.",
+    "exists": "Contestazione Esistente",
+    "exists_message": "Hai già una contestazione aperta per questa prenotazione",
+    "error": "Errore",
+    "error_message": "Impossibile presentare la contestazione",
+    "load_error": "Impossibile caricare le contestazioni",
+    "info_message": "Si prega di fornire informazioni dettagliate sul problema. Il nostro team di supporto esaminerà e risponderà entro 24 ore.",
+    "issue_type": "Tipo di Problema *",
+    "description": "Descrizione *",
+    "description_hint": "Si prega di descrivere il problema in dettaglio...",
+    "description_required": "Si prega di descrivere il problema",
+    "description_min_length": "Si prega di fornire maggiori dettagli (min 20 caratteri)",
+    "evidence": "Prove (Opzionale)",
+    "submit": "Invia Contestazione",
+    "booking_info": "Informazioni sulla Prenotazione",
+    "add_photos": "Aggiungi Foto",
+    "add_more_photos": "Aggiungi Altre Foto",
+    "upload_hint": "Carica foto del problema (opzionale)",
+    "open": "Aperta",
+    "resolved": "Risolta",
+    "all": "Tutte",
+    "no_disputes": "Nessuna Contestazione",
+    "no_disputes_message": "Non hai contestazioni in questa categoria",
+    "attachments": "allegato(i)",
+    "reason": {
+      "no_show": "Mancata Presentazione",
+      "damaged_package": "Pacco Danneggiato",
+      "late_delivery": "Consegna in Ritardo",
+      "inappropriate_behavior": "Comportamento Inappropriato",
+      "payment_issue": "Problema di Pagamento",
+      "fraudulent_activity": "Attività Fraudolenta",
+      "safety_concern": "Problema di Sicurezza",
+      "other": "Altro"
+    },
+    "status": {
+      "pending": "In Sospeso",
+      "under_review": "In Revisione",
+      "resolved": "Risolta",
+      "dismissed": "Respinta",
+      "escalated": "Escalata"
+    },
+    "notification": {
+      "title": "Aggiornamento Contestazione",
+      "response": "L'amministratore ha risposto alla tua contestazione",
+      "status_change": "Lo stato della tua contestazione è cambiato in"
+    }
   }
 }
