@@ -40,13 +40,13 @@ const TotalDisputesCard = () => {
 
   return (
     <div className="card cta-card" onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <p>Total Disputes</p>
+      <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>Total Disputes</p>
       <div className="d-flex align-items-center justify-content-between flex-wrap">
         <h4 className="mb-0 me-4">{stats?.totalDisputes.toLocaleString() || 0}</h4>
         <span className="badge bg-warning">{stats?.openDisputes || 0} Open</span>
       </div>
-      <small className="text-muted mt-2">
-        {stats?.inProgressDisputes || 0} in progress • {stats?.resolvedDisputes || 0} resolved
+      <small className="text-muted mt-2" style={{ display: 'block' }}>
+        <strong>{stats?.inProgressDisputes || 0}</strong> in progress • <strong>{stats?.resolvedDisputes || 0}</strong> resolved
       </small>
     </div>
   );

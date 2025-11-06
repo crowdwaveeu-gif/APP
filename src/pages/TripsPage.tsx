@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import { getAllTravelTrips, TravelTripData, updateTravelTrip, deleteTravelTrip } from '../services/dataService';
+import { toast } from 'react-toastify';
 
 const TripsPage = () => {
   const [trips, setTrips] = useState<TravelTripData[]>([]);
@@ -58,6 +59,23 @@ const TripsPage = () => {
     currentPage * itemsPerPage
   );
 
+  // Initialize Bootstrap tooltips
+  useEffect(() => {
+    // Check if bootstrap is available
+    if (typeof (window as any).bootstrap === 'undefined' || typeof (window as any).bootstrap.Tooltip === 'undefined') {
+      return;
+    }
+
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = Array.from(tooltipTriggerList).map(tooltipTriggerEl => {
+      return new (window as any).bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    return () => {
+      tooltipList.forEach(tooltip => tooltip.dispose());
+    };
+  }, [currentPage, trips]);
+
   const handleViewTrip = (trip: TravelTripData) => {
     setSelectedTrip(trip);
     setShowViewModal(true);
@@ -97,10 +115,10 @@ const TripsPage = () => {
       
       setShowEditModal(false);
       setSelectedTrip(null);
-      alert('Trip updated successfully!');
+      toast.success('Trip updated successfully!');
     } catch (error) {
       console.error('Error updating trip:', error);
-      alert('Failed to update trip. Please try again.');
+      toast.error('Failed to update trip. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -124,10 +142,10 @@ const TripsPage = () => {
       
       setShowDeleteModal(false);
       setSelectedTrip(null);
-      alert('Trip deleted successfully!');
+      toast.success('Trip deleted successfully!');
     } catch (error) {
       console.error('Error deleting trip:', error);
-      alert('Failed to delete trip. Please try again.');
+      toast.error('Failed to delete trip. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -196,9 +214,19 @@ const TripsPage = () => {
       <div className="col-12">
         <div className="panel">
           <div className="panel-header">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center w-100">
               <h5>Trips Management</h5>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center">
+                <div className="search-box position-relative" style={{ minWidth: '250px' }}>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    placeholder="Search trips..."
+                    value={searchTerm}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
+                </div>
                 <select 
                   className="form-select form-select-sm"
                   value={statusFilter}
@@ -221,20 +249,6 @@ const TripsPage = () => {
           </div>
           
           <div className="panel-body">
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <div className="search-box position-relative">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search trips..."
-                    value={searchTerm}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                  />
-                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
-                </div>
-              </div>
-            </div>
 
             {loading ? (
               <div className="text-center py-5">
@@ -254,7 +268,7 @@ const TripsPage = () => {
                       <th>Destination</th>
                       <th>Departure Date</th>
                       <th>Transport Mode</th>
-                      <th>Actions</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -281,12 +295,14 @@ const TripsPage = () => {
                           <td>
                             <span>{getTransportModeIcon(trip.transportMode)} {trip.transportMode.charAt(0).toUpperCase() + trip.transportMode.slice(1)}</span>
                           </td>
-                          <td>
-                            <div className="d-flex gap-1">
+                          <td className="text-center">
+                            <div className="d-flex gap-1 justify-content-center">
                               <button 
                                 className="btn btn-sm btn-outline-primary"
                                 onClick={() => handleViewTrip(trip)}
                                 title="View Details"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-eye"></i>
                               </button>
@@ -294,6 +310,8 @@ const TripsPage = () => {
                                 className="btn btn-sm btn-outline-warning"
                                 onClick={() => handleEditTrip(trip)}
                                 title="Edit Trip"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-edit"></i>
                               </button>
@@ -301,6 +319,8 @@ const TripsPage = () => {
                                 className="btn btn-sm btn-outline-danger"
                                 onClick={() => handleDeleteTrip(trip)}
                                 title="Delete Trip"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-trash"></i>
                               </button>
@@ -322,7 +342,7 @@ const TripsPage = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center mt-3">
+              <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
                 <div className="text-muted">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTrips.length)} of {filteredTrips.length} entries
                 </div>

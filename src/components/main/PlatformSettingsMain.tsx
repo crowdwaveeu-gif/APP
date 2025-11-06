@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { toast } from 'react-toastify';
 
@@ -8,7 +8,7 @@ interface PlatformSettings {
   minFee?: number;
   maxFee?: number;
   lastUpdatedBy?: string;
-  lastUpdatedAt?: Date;
+  lastUpdatedAt?: Timestamp | Date;
 }
 
 const PlatformSettingsMain = () => {
@@ -115,17 +115,11 @@ const PlatformSettingsMain = () => {
               {/* Platform Fee Configuration */}
               <div className="col-12">
                 <div className="mb-4">
-                  <h6 className="mb-3">Platform Fee Configuration</h6>
-                  <p className="text-muted mb-4">
-                    Configure the platform fee percentage charged on each transaction. 
-                    This fee is deducted from the traveler's payout.
-                  </p>
-
                   <div className="card bg-light border-0 mb-4">
                     <div className="card-body">
                       <div className="d-flex align-items-center mb-3">
-                        <i className="ti ti-info-circle text-primary me-2"></i>
-                        <strong>Current Platform Fee</strong>
+                        <i className="ti ti-currency-euro text-primary me-2"></i>
+                        <strong>Platform Fee</strong>
                       </div>
                       <div className="d-flex align-items-baseline">
                         <h2 className="mb-0 text-primary">{settings.platformFeePercent}%</h2>
@@ -133,7 +127,11 @@ const PlatformSettingsMain = () => {
                       </div>
                       {settings.lastUpdatedAt && (
                         <small className="text-muted d-block mt-2">
-                          Last updated: {new Date(settings.lastUpdatedAt).toLocaleString()}
+                          Last updated: {
+                            settings.lastUpdatedAt instanceof Timestamp 
+                              ? settings.lastUpdatedAt.toDate().toLocaleString()
+                              : new Date(settings.lastUpdatedAt).toLocaleString()
+                          }
                         </small>
                       )}
                     </div>
@@ -145,6 +143,7 @@ const PlatformSettingsMain = () => {
                       <span className="text-danger">*</span>
                     </label>
                     <div className="input-group">
+                      <span className="input-group-text">%</span>
                       <input
                         type="number"
                         className="form-control"
@@ -156,51 +155,10 @@ const PlatformSettingsMain = () => {
                         step="0.1"
                         placeholder="10"
                       />
-                      <span className="input-group-text">%</span>
                     </div>
                     <small className="form-text text-muted">
                       Enter a value between 0 and 100
                     </small>
-                  </div>
-
-                  <div className="mb-4">
-                    <h6 className="mb-3">Fee Calculation Example</h6>
-                    <div className="card border">
-                      <div className="card-body">
-                        <div className="mb-2">
-                          <strong>Example Transaction:</strong>
-                        </div>
-                        {(() => {
-                          const serviceFee = 100;
-                          const feePercent = parseFloat(tempFeePercent) || 0;
-                          const platformFee = serviceFee * (feePercent / 100);
-                          const totalAmount = serviceFee + platformFee;
-                          const travelerPayout = serviceFee - platformFee;
-
-                          return (
-                            <>
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Service Fee (offered price):</span>
-                                <strong>€{serviceFee.toFixed(2)}</strong>
-                              </div>
-                              <div className="d-flex justify-content-between mb-2 text-primary">
-                                <span>Platform Fee ({feePercent}%):</span>
-                                <strong>€{platformFee.toFixed(2)}</strong>
-                              </div>
-                              <hr />
-                              <div className="d-flex justify-content-between mb-2">
-                                <span>Total Amount (sender pays):</span>
-                                <strong className="text-danger">€{totalAmount.toFixed(2)}</strong>
-                              </div>
-                              <div className="d-flex justify-content-between">
-                                <span>Traveler Receives:</span>
-                                <strong className="text-success">€{travelerPayout.toFixed(2)}</strong>
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
                   </div>
 
                   <div className="d-flex gap-2">

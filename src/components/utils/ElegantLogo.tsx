@@ -16,7 +16,7 @@ const ElegantLogo: React.FC<ElegantLogoProps> = ({
   return (
     <div className={`elegant-logo ${sizeClass} ${className}`}>
       <img 
-        src="/logo.png" 
+        src="/colored-logo.png?v=2" 
         alt={alt}
         loading="lazy"
       />

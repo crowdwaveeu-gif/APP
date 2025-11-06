@@ -5,6 +5,7 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { toggleEditTaskModalClose } from "../../redux/features/editTaskModalSlice";
+import { toast } from 'react-toastify';
 
 const EditTaskModal = () => {
   const darkMode = useAppSelector((state) => state.theme.isDark);
@@ -22,7 +23,7 @@ const EditTaskModal = () => {
     const { selection } = ranges;
     if (selection.endDate && joiningDate && selection.endDate > joiningDate) {
       // Prevent setting joining date later than leaving date
-      alert("Joining date cannot be later than leaving date.");
+      toast.error("Joining date cannot be later than leaving date.");
       return;
     }
     // Here you may want to extract the start or end date from the ranges object

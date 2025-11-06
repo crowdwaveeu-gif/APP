@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, addDoc, updateDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db, auth, functions } from "../services/firebase";
 import { httpsCallable } from "firebase/functions";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { toast } from 'react-toastify';
 
 interface EmailCampaign {
   id?: string;
@@ -177,7 +178,7 @@ const PromotionalEmailPage = () => {
       }));
     } catch (error) {
       console.error('Error fetching campaigns:', error);
-      alert('Failed to load campaigns');
+      toast.error('Failed to load campaigns');
     } finally {
       setLoading(false);
     }
@@ -185,7 +186,7 @@ const PromotionalEmailPage = () => {
 
   const saveCampaign = async () => {
     if (!currentCampaign.subject || !currentCampaign.htmlContent) {
-      alert('Please fill in subject and content');
+      toast.error('Please fill in subject and content');
       return;
     }
 
@@ -201,11 +202,11 @@ const PromotionalEmailPage = () => {
       if (currentCampaign.id) {
         // Update existing campaign
         await updateDoc(doc(db, 'emailCampaigns', currentCampaign.id), campaignData);
-        alert('Campaign updated successfully!');
+        toast.success('Campaign updated successfully!');
       } else {
         // Create new campaign
         await addDoc(collection(db, 'emailCampaigns'), campaignData);
-        alert('Campaign saved as draft!');
+        toast.success('Campaign saved as draft!');
       }
 
       setShowEditor(false);
@@ -219,7 +220,7 @@ const PromotionalEmailPage = () => {
       fetchCampaigns();
     } catch (error) {
       console.error('Error saving campaign:', error);
-      alert('Failed to save campaign');
+      toast.error('Failed to save campaign');
     } finally {
       setLoading(false);
     }
@@ -230,7 +231,7 @@ const PromotionalEmailPage = () => {
 
     // Check if user is authenticated
     if (!auth.currentUser) {
-      alert('You must be logged in to send campaigns. Please refresh the page and log in again.');
+      toast.error('You must be logged in to send campaigns. Please refresh the page and log in again.');
       return;
     }
 
@@ -280,7 +281,7 @@ const PromotionalEmailPage = () => {
       recipients = [...new Set(recipients)];
 
       if (recipients.length === 0) {
-        alert('No recipients found for this audience');
+        toast.error('No recipients found for this audience');
         await updateDoc(doc(db, 'emailCampaigns', campaign.id), {
           status: 'draft'
         });
@@ -305,12 +306,12 @@ const PromotionalEmailPage = () => {
       // Refresh campaigns to show completed status
       await fetchCampaigns();
       
-      alert(
-        `Campaign sent!\nSuccessfully sent: ${resultData.sent}\nFailed: ${resultData.failed}`
+      toast.success(
+        `Campaign sent! Successfully sent: ${resultData.sent}, Failed: ${resultData.failed}`
       );
     } catch (error: any) {
       console.error('Error sending campaign:', error);
-      alert(`Failed to send campaign: ${error.message}`);
+      toast.error(`Failed to send campaign: ${error.message}`);
       
       // Revert status to draft on error
       if (campaign.id) {
@@ -328,6 +329,25 @@ const PromotionalEmailPage = () => {
     setShowEditor(true);
   };
 
+  const deleteCampaign = async (campaign: EmailCampaign) => {
+    if (!campaign.id) return;
+    
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the campaign "${campaign.subject}"? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc(doc(db, 'emailCampaigns', campaign.id));
+      toast.success('Campaign deleted successfully!');
+      fetchCampaigns();
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      toast.error('Failed to delete campaign');
+    }
+  };
+
   const newCampaign = () => {
     setCurrentCampaign({
       subject: '',
@@ -337,6 +357,11 @@ const PromotionalEmailPage = () => {
       status: 'draft'
     });
     setShowTemplates(true);
+  };
+
+  const truncateSubject = (subject: string, maxLength: number = 45) => {
+    if (subject.length <= maxLength) return subject;
+    return subject.substring(0, maxLength) + '..';
   };
 
   const useTemplate = (templateKey: keyof typeof campaignTemplates) => {
@@ -555,7 +580,7 @@ const PromotionalEmailPage = () => {
                       {campaigns.map((campaign) => (
                         <tr key={campaign.id}>
                           <td>
-                            <strong>{campaign.subject}</strong>
+                            <strong title={campaign.subject}>{truncateSubject(campaign.subject)}</strong>
                           </td>
                           <td>
                             <span className="badge bg-info">
@@ -619,17 +644,36 @@ const PromotionalEmailPage = () => {
                                       </>
                                     )}
                                   </button>
+                                  <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => deleteCampaign(campaign)}
+                                    disabled={sending}
+                                    title="Delete campaign"
+                                  >
+                                    <i className="bi bi-trash me-1"></i>
+                                    Delete
+                                  </button>
                                 </>
                               )}
                               {campaign.status === 'completed' && (
-                                <button
-                                  className="btn btn-sm btn-info"
-                                  onClick={() => editCampaign(campaign)}
-                                  title="View campaign"
-                                >
-                                  <i className="bi bi-eye me-1"></i>
-                                  View
-                                </button>
+                                <>
+                                  <button
+                                    className="btn btn-sm btn-info"
+                                    onClick={() => editCampaign(campaign)}
+                                    title="View campaign"
+                                  >
+                                    <i className="bi bi-eye me-1"></i>
+                                    View
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => deleteCampaign(campaign)}
+                                    title="Delete campaign"
+                                  >
+                                    <i className="bi bi-trash me-1"></i>
+                                    Delete
+                                  </button>
+                                </>
                               )}
                               {campaign.status === 'sending' && (
                                 <span className="badge bg-warning text-dark">

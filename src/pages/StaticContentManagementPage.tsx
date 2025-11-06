@@ -3,6 +3,7 @@ import { useAppSelector } from '../redux/hooks';
 import { StaticContentService } from '../services/staticContentService';
 import { StaticContent, StaticContentType } from '../types/staticContent';
 import { authService } from '../services/authService';
+import { toast } from 'react-toastify';
 
 const StaticContentManagementPage = () => {
   const darkMode = useAppSelector((state) => state.theme.isDark);
@@ -34,7 +35,7 @@ const StaticContentManagementPage = () => {
       setContents(data);
     } catch (error) {
       console.error('Error loading content:', error);
-      alert('Failed to load static content');
+      toast.error('Failed to load static content');
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ const StaticContentManagementPage = () => {
     try {
       const user = authService.getCurrentUser();
       if (!user) {
-        alert('You must be logged in');
+        toast.error('You must be logged in');
         return;
       }
 
@@ -88,17 +89,17 @@ const StaticContentManagementPage = () => {
           formData,
           user.uid
         );
-        alert('Content updated successfully');
+        toast.success('Content updated successfully');
       } else {
         await StaticContentService.createContent(formData, user.uid);
-        alert('Content created successfully');
+        toast.success('Content created successfully');
       }
 
       handleCloseModal();
       loadContents();
     } catch (error: any) {
       console.error('Error saving content:', error);
-      alert(error.message || 'Failed to save content');
+      toast.error(error.message || 'Failed to save content');
     }
   };
 
@@ -109,11 +110,11 @@ const StaticContentManagementPage = () => {
 
     try {
       await StaticContentService.deleteContent(id);
-      alert('Content deleted successfully');
+      toast.success('Content deleted successfully');
       loadContents();
     } catch (error) {
       console.error('Error deleting content:', error);
-      alert('Failed to delete content');
+      toast.error('Failed to delete content');
     }
   };
 
@@ -121,7 +122,7 @@ const StaticContentManagementPage = () => {
     try {
       const user = authService.getCurrentUser();
       if (!user) {
-        alert('You must be logged in');
+        toast.error('You must be logged in');
         return;
       }
 
@@ -129,7 +130,7 @@ const StaticContentManagementPage = () => {
       loadContents();
     } catch (error) {
       console.error('Error toggling publish status:', error);
-      alert('Failed to toggle publish status');
+      toast.error('Failed to toggle publish status');
     }
   };
 
@@ -189,7 +190,6 @@ const StaticContentManagementPage = () => {
                           <th>Title</th>
                           <th>Status</th>
                           <th>Last Updated</th>
-                          <th>Version</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -216,7 +216,6 @@ const StaticContentManagementPage = () => {
                                 ? new Date(content.lastUpdated).toLocaleDateString()
                                 : 'N/A'}
                             </td>
-                            <td>v{content.version}</td>
                             <td>
                               <div className="btn-group btn-group-sm">
                                 <button

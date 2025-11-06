@@ -9,6 +9,7 @@ import kycService, {
   TravelTrip, 
   Booking 
 } from "@/services/kycService";
+import { toast } from 'react-toastify';
 
 const UserDetailsPage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -40,7 +41,7 @@ const UserDetailsPage = () => {
       const foundUser = allUsers.find(u => u.id === userId);
       
       if (!foundUser) {
-        alert("User not found");
+        toast.error("User not found");
         navigate("/users-management");
         return;
       }
@@ -70,7 +71,7 @@ const UserDetailsPage = () => {
       setBookings(userBookings);
     } catch (error) {
       console.error("Error loading user details:", error);
-      alert("Failed to load user details");
+      toast.error("Failed to load user details");
     } finally {
       setLoading(false);
     }
@@ -84,11 +85,11 @@ const UserDetailsPage = () => {
     
     try {
       await kycService.toggleUserBlock(user.id, !user.isBlocked);
-      alert(`User ${action}ed successfully!`);
+      toast.success(`User ${action}ed successfully!`);
       loadUserDetails();
     } catch (error) {
       console.error(`Error ${action}ing user:`, error);
-      alert(`Failed to ${action} user`);
+      toast.error(`Failed to ${action} user`);
     }
   };
 
@@ -156,47 +157,18 @@ const UserDetailsPage = () => {
 
   return (
     <div className="container-fluid">
-      {/* Header */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div className="d-flex align-items-center">
-                  <button 
-                    className="btn btn-sm btn-outline-secondary me-3"
-                    onClick={() => navigate("/users-management")}
-                  >
-                    <i className="ti ti-arrow-left me-1"></i>Back
-                  </button>
-                  <div>
-                    <h4 className="mb-1"><i className="ti ti-user me-2"></i>User Details</h4>
-                    <p className="text-muted mb-0">Complete user information and verification status</p>
-                  </div>
-                </div>
-                <button onClick={loadUserDetails} className="btn btn-sm btn-primary">
-                  <i className="ti ti-refresh me-1"></i>Refresh
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Stats Cards */}
       <div className="row mb-4">
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-primary bg-soft text-primary">
-                    <i className="ti ti-package" style={{ fontSize: "24px" }}></i>
-                  </div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">{packageRequests.length}</h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Package Requests</p>
                 </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">{packageRequests.length}</h5>
-                  <p className="text-muted mb-0 small">Package Requests</p>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  📦
                 </div>
               </div>
             </div>
@@ -206,15 +178,13 @@ const UserDetailsPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-success bg-soft text-success">
-                    <i className="ti ti-plane" style={{ fontSize: "24px" }}></i>
-                  </div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">{travelTrips.length}</h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Travel Trips</p>
                 </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">{travelTrips.length}</h5>
-                  <p className="text-muted mb-0 small">Travel Trips</p>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  ✈️
                 </div>
               </div>
             </div>
@@ -224,15 +194,13 @@ const UserDetailsPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-warning bg-soft text-warning">
-                    <i className="ti ti-calendar-check" style={{ fontSize: "24px" }}></i>
-                  </div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">{bookings.length}</h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Bookings</p>
                 </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">{bookings.length}</h5>
-                  <p className="text-muted mb-0 small">Bookings</p>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  📅
                 </div>
               </div>
             </div>
@@ -242,15 +210,13 @@ const UserDetailsPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-info bg-soft text-info">
-                    <i className="ti ti-wallet" style={{ fontSize: "24px" }}></i>
-                  </div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">${wallet?.balance.toFixed(2) || '0.00'}</h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Wallet Balance</p>
                 </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">${wallet?.balance.toFixed(2) || '0.00'}</h5>
-                  <p className="text-muted mb-0 small">Wallet Balance</p>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  💰
                 </div>
               </div>
             </div>
@@ -260,10 +226,11 @@ const UserDetailsPage = () => {
 
       {/* User Information */}
       <div className="row">
-        {/* Profile Card */}
-        <div className="col-md-4 mb-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
+        {/* Left Column - Profile and Verification */}
+        <div className="col-md-4 mb-4 d-flex flex-column">
+          {/* Profile Card */}
+          <div className="card shadow-sm mb-3">
+            <div className="card-body text-center py-3">
               {(() => {
                 const avatarUrl = user.avatar || user.photoUrl;
                 const hasAvatar = avatarUrl && avatarUrl !== 'null' && avatarUrl.trim() !== '';
@@ -272,31 +239,31 @@ const UserDetailsPage = () => {
                   <img 
                     src={avatarUrl}
                     alt={user.fullName}
-                    className="rounded-circle mb-3"
-                    style={{ width: "150px", height: "150px", objectFit: "cover" }}
+                    className="rounded-circle mb-2"
+                    style={{ width: "120px", height: "120px", objectFit: "cover" }}
                     onError={(e) => {
                       // Hide broken image and show fallback
                       (e.target as HTMLImageElement).style.display = 'none';
                       const parent = (e.target as HTMLImageElement).parentElement;
                       if (parent) {
-                        parent.innerHTML = `<div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; font-size: 64px;">${user.fullName?.charAt(0) || "U"}</div>`;
+                        parent.innerHTML = `<div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2" style="width: 120px; height: 120px; font-size: 48px;">${user.fullName?.charAt(0) || "U"}</div>`;
                       }
                     }}
                   />
                 ) : (
                   <div 
-                    className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
-                    style={{ width: "150px", height: "150px", fontSize: "64px" }}
+                    className="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2"
+                    style={{ width: "120px", height: "120px", fontSize: "48px" }}
                   >
                     {user.fullName?.charAt(0) || "U"}
                   </div>
                 );
               })()}
               
-              <h4 className="mb-1">{user.fullName}</h4>
-              <p className="text-muted mb-3">{user.email}</p>
+              <h5 className="mb-1">{user.fullName}</h5>
+              <p className="text-muted mb-2 small">{user.email}</p>
               
-              <div className="mb-3">
+              <div className="mb-2">
                 <span className="badge bg-secondary me-2">{user.role}</span>
                 {user.isBlocked && (
                   <span className="badge bg-danger">Blocked</span>
@@ -305,7 +272,7 @@ const UserDetailsPage = () => {
 
               <div className="d-grid gap-2">
                 <button 
-                  className={`btn ${user.isBlocked ? 'btn-success' : 'btn-danger'}`}
+                  className={`btn btn-sm ${user.isBlocked ? 'btn-success' : 'btn-danger'}`}
                   onClick={handleToggleBlock}
                 >
                   <i className={`ti ${user.isBlocked ? 'ti-lock-open' : 'ti-ban'} me-1`}></i>
@@ -314,7 +281,7 @@ const UserDetailsPage = () => {
                 
                 {kycApplication && (
                   <button 
-                    className="btn btn-outline-primary"
+                    className="btn btn-sm btn-outline-primary"
                     onClick={() => navigate("/kyc-applications")}
                   >
                     <i className="ti ti-file-text me-1"></i>View KYC Application
@@ -323,9 +290,56 @@ const UserDetailsPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Verification Status Card */}
+          <div className="card shadow-sm flex-grow-1">
+            <div className="card-header">
+              <h5 className="mb-0"><i className="ti ti-shield-check me-2"></i>Verification Status</h5>
+            </div>
+            <div className="card-body">
+              <table className="table table-borderless mb-0">
+                <tbody>
+                  <tr>
+                    <th style={{ width: "50%" }}>Email Verified:</th>
+                    <td>
+                      {user.verificationStatus?.emailVerified ? (
+                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
+                      ) : (
+                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Phone Verified:</th>
+                    <td>
+                      {user.verificationStatus?.phoneVerified ? (
+                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
+                      ) : (
+                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Identity Verified:</th>
+                    <td>
+                      {user.verificationStatus?.identityVerified ? (
+                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
+                      ) : (
+                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>KYC Status:</th>
+                    <td>{getKycStatusBadge()}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        {/* Details Cards */}
+        {/* Right Column - Personal Information and KYC Application */}
         <div className="col-md-8">
           {/* Personal Information */}
           <div className="card shadow-sm mb-4">
@@ -362,53 +376,6 @@ const UserDetailsPage = () => {
                   <tr>
                     <th>Joined:</th>
                     <td>{formatDate(user.createdAt, true)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Verification Status */}
-          <div className="card shadow-sm mb-4">
-            <div className="card-header">
-              <h5 className="mb-0"><i className="ti ti-shield-check me-2"></i>Verification Status</h5>
-            </div>
-            <div className="card-body">
-              <table className="table table-borderless mb-0">
-                <tbody>
-                  <tr>
-                    <th style={{ width: "30%" }}>Email Verified:</th>
-                    <td>
-                      {user.verificationStatus?.emailVerified ? (
-                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
-                      ) : (
-                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Phone Verified:</th>
-                    <td>
-                      {user.verificationStatus?.phoneVerified ? (
-                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
-                      ) : (
-                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Identity Verified:</th>
-                    <td>
-                      {user.verificationStatus?.identityVerified ? (
-                        <span className="badge bg-success"><i className="ti ti-check me-1"></i>Verified</span>
-                      ) : (
-                        <span className="badge bg-secondary"><i className="ti ti-x me-1"></i>Not Verified</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>KYC Status:</th>
-                    <td>{getKycStatusBadge()}</td>
                   </tr>
                 </tbody>
               </table>

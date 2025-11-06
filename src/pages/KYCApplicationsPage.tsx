@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import kycService, { KYCApplication, User } from "@/services/kycService";
 import { Tooltip } from "react-tooltip";
+import { toast } from 'react-toastify';
 
 const KYCApplicationsPage = () => {
   const [applications, setApplications] = useState<KYCApplication[]>([]);
@@ -12,6 +13,8 @@ const KYCApplicationsPage = () => {
   const [showRejectForm, setShowRejectForm] = useState<string | null>(null);
   const [viewDocument, setViewDocument] = useState<{ type: string; url: string } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadData();
@@ -45,7 +48,7 @@ const KYCApplicationsPage = () => {
       setUsers(userMap);
     } catch (error) {
       console.error("Error loading KYC data:", error);
-      alert("Failed to load KYC applications");
+      toast.error("Failed to load KYC applications");
     } finally {
       setLoading(false);
     }
@@ -56,31 +59,31 @@ const KYCApplicationsPage = () => {
     
     try {
       await kycService.approveKYC(userId, "Admin"); // Replace with actual admin name
-      alert("KYC application approved successfully!");
+      toast.success("KYC application approved successfully!");
       loadData();
       setExpandedAppId(null);
     } catch (error) {
       console.error("Error approving KYC:", error);
-      alert("Failed to approve KYC application");
+      toast.error("Failed to approve KYC application");
     }
   };
 
   const handleReject = async (userId: string) => {
     if (!rejectionReason.trim()) {
-      alert("Please provide a rejection reason");
+      toast.error("Please provide a rejection reason");
       return;
     }
     
     try {
       await kycService.rejectKYC(userId, rejectionReason, "Admin");
-      alert("KYC application rejected");
+      toast.success("KYC application rejected");
       setRejectionReason("");
       setShowRejectForm(null);
       setExpandedAppId(null);
       loadData();
     } catch (error) {
       console.error("Error rejecting KYC:", error);
-      alert("Failed to reject KYC application");
+      toast.error("Failed to reject KYC application");
     }
   };
 
@@ -116,6 +119,13 @@ const KYCApplicationsPage = () => {
     if (status === "all") return allApplications.length;
     return allApplications.filter(app => app.status === status).length;
   };
+
+  // Pagination
+  const totalPages = Math.ceil(applications.length / itemsPerPage);
+  const paginatedApplications = applications.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (loading) {
     return (
@@ -215,7 +225,7 @@ const KYCApplicationsPage = () => {
                     </tr>
                   ) : (
                     <>
-                      {applications.map((app) => {
+                      {paginatedApplications.map((app) => {
                         const user = users.get(app.userId);
                         const isExpanded = expandedAppId === app.userId;
                         
@@ -522,6 +532,31 @@ const KYCApplicationsPage = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
+                <div className="text-muted">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, applications.length)} of {applications.length} entries
+                </div>
+                <div className="d-flex gap-1">
+                  <button 
+                    className="btn btn-sm btn-outline-primary"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                  >
+                    Previous
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-primary"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

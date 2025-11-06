@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { getAllPackageRequests, PackageRequestData, updatePackageRequest, deletePackageRequest } from '../services/dataService';
+import { toast } from 'react-toastify';
 
 const PackagesPage = () => {
   // Helper function to round weight to avoid floating point precision issues
@@ -64,6 +65,23 @@ const PackagesPage = () => {
     currentPage * itemsPerPage
   );
 
+  // Initialize Bootstrap tooltips
+  useEffect(() => {
+    // Check if bootstrap is available
+    if (typeof (window as any).bootstrap === 'undefined' || typeof (window as any).bootstrap.Tooltip === 'undefined') {
+      return;
+    }
+
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = Array.from(tooltipTriggerList).map(tooltipTriggerEl => {
+      return new (window as any).bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    return () => {
+      tooltipList.forEach(tooltip => tooltip.dispose());
+    };
+  }, [currentPage, packages]);
+
   const handleViewPackage = (pkg: PackageRequestData) => {
     setSelectedPackage(pkg);
     setShowViewModal(true);
@@ -103,10 +121,10 @@ const PackagesPage = () => {
       
       setShowEditModal(false);
       setSelectedPackage(null);
-      alert('Package updated successfully!');
+      toast.success('Package updated successfully!');
     } catch (error) {
       console.error('Error updating package:', error);
-      alert('Failed to update package. Please try again.');
+      toast.error('Failed to update package. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -130,10 +148,10 @@ const PackagesPage = () => {
       
       setShowDeleteModal(false);
       setSelectedPackage(null);
-      alert('Package deleted successfully!');
+      toast.success('Package deleted successfully!');
     } catch (error) {
       console.error('Error deleting package:', error);
-      alert('Failed to delete package. Please try again.');
+      toast.error('Failed to delete package. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -189,9 +207,19 @@ const PackagesPage = () => {
       <div className="col-12">
         <div className="panel">
           <div className="panel-header">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center w-100">
               <h5>Packages Management</h5>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center">
+                <div className="search-box position-relative" style={{ minWidth: '250px' }}>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    placeholder="Search packages..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
+                </div>
                 <select 
                   className="form-select form-select-sm"
                   value={statusFilter}
@@ -214,21 +242,6 @@ const PackagesPage = () => {
           </div>
           
           <div className="panel-body">
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <div className="search-box position-relative">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search packages..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
-                </div>
-              </div>
-            </div>
-
             <div className="table-responsive">
               {loading ? (
                 <div className="text-center py-5">
@@ -249,7 +262,7 @@ const PackagesPage = () => {
                       <th>Status</th>
                       <th>Transport</th>
                       <th>Created</th>
-                      <th>Actions</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -277,12 +290,14 @@ const PackagesPage = () => {
                               : 'N/A'}
                           </td>
                           <td>{pkg.createdAt.toLocaleDateString()}</td>
-                        <td>
-                          <div className="d-flex gap-1">
+                        <td className="text-center">
+                          <div className="d-flex gap-1 justify-content-center">
                             <button 
                               className="btn btn-sm btn-outline-primary"
                               onClick={() => handleViewPackage(pkg)}
                               title="View Details"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
                             >
                               <i className="fas fa-eye"></i>
                             </button>
@@ -290,6 +305,8 @@ const PackagesPage = () => {
                               className="btn btn-sm btn-outline-warning"
                               onClick={() => handleEditPackage(pkg)}
                               title="Edit Package"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
@@ -297,6 +314,8 @@ const PackagesPage = () => {
                               className="btn btn-sm btn-outline-danger"
                               onClick={() => handleDeletePackage(pkg)}
                               title="Delete Package"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
                             >
                               <i className="fas fa-trash"></i>
                             </button>
@@ -318,7 +337,7 @@ const PackagesPage = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center mt-3">
+              <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
                 <div className="text-muted">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredPackages.length)} of {filteredPackages.length} entries
                 </div>

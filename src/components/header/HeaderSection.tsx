@@ -17,7 +17,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/kyc-applications': { title: 'KYC Applications', subtitle: 'Verification Management' },
   '/platform-settings': { title: 'Platform Fee', subtitle: 'Settings Management' },
   '/static-content-management': { title: 'Static Content', subtitle: 'Content Management' },
-  '/promotional-emails': { title: 'Campaign', subtitle: 'Email Marketing' },
+  '/promotional-emails': { title: 'Emails', subtitle: 'Email Marketing' },
 };
 
 const HeaderSection = ({ toggleSidebarOpen }: Props) => {

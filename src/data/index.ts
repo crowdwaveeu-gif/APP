@@ -97,19 +97,16 @@ const navData = [
     category: "dashboard",
     links: [
       {
+        url: "/dashboard",
         title: "Dashboard",
-        hasSub: true,
         icon: "ti ti-layout-dashboard",
+      },
+      {
+        title: "Management",
+        hasSub: true,
+        icon: "ti ti-layout-grid",
         url: "#",
         subLinks: [
-          // {
-          //   subTitle: "Courier System",
-          //   subUrl: "/",
-          // },
-          // {
-          //   subTitle: "Delivery",
-          //   subUrl: "/delivery",
-          // },
           {
             subTitle: "Overview",
             subUrl: "/logistics",
@@ -395,7 +392,7 @@ const navData = [
       },
       {
         url: "/promotional-emails",
-        title: "Campaign",
+        title: "Emails",
         icon: "ti ti-mail",
       },
       // {

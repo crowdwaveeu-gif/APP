@@ -18,7 +18,7 @@ const CrowdWaveLogo: React.FC<CrowdWaveLogoProps> = ({
       {showIcon && (
         <div className="crowdwave-icon">
           <img 
-            src="/logo.png" 
+            src="/colored-logo.png?v=2" 
             alt="CrowdWave Logo"
             className="logo-image"
           />

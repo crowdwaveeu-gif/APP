@@ -1,6 +1,15 @@
 import { db, auth } from './firebase';
 import { collection, getDocs, query, where, orderBy, Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
+// Logger utility - only logs in development mode
+const isDevelopment = import.meta.env.DEV;
+const logger = {
+  log: (...args: any[]) => { if (isDevelopment) console.log(...args); },
+  error: (...args: any[]) => { if (isDevelopment) console.error(...args); },
+  warn: (...args: any[]) => { if (isDevelopment) console.warn(...args); },
+  info: (...args: any[]) => { if (isDevelopment) console.info(...args); }
+};
+
 // Type definitions for Firebase data
 interface Booking {
   id: string;
@@ -156,33 +165,33 @@ export interface TransportModeStats {
 // Get order statistics from real Firebase collections
 export const getOrderStats = async (): Promise<OrderStats> => {
   try {
-    console.log('🔍 Fetching order stats from Firebase...');
+    logger.log('🔍 Fetching order stats from Firebase...');
 
     // Get all bookings (no date filter to see total counts)
     const bookingsRef = collection(db, 'bookings');
     const bookingsQuery = query(bookingsRef);
 
-    console.log('📦 Fetching all bookings...');
+    logger.log('📦 Fetching all bookings...');
     const bookingsSnapshot = await getDocs(bookingsQuery);
     const bookings: Booking[] = bookingsSnapshot.docs.map(doc => ({ 
       id: doc.id, 
       ...doc.data() 
     } as Booking));
     
-    console.log(`✅ Total bookings fetched: ${bookings.length}`);
+    logger.log(`✅ Total bookings fetched: ${bookings.length}`);
 
     // Get delivery tracking data for active/completed deliveries
     const deliveryTrackingRef = collection(db, 'deliveryTracking');
     const deliveryQuery = query(deliveryTrackingRef);
     
-    console.log('🚚 Fetching delivery tracking...');
+    logger.log('🚚 Fetching delivery tracking...');
     const deliverySnapshot = await getDocs(deliveryQuery);
     const deliveries: DeliveryTracking[] = deliverySnapshot.docs.map(doc => ({ 
       id: doc.id, 
       ...doc.data() 
     } as DeliveryTracking));
     
-    console.log(`✅ Total deliveries fetched: ${deliveries.length}`);
+    logger.log(`✅ Total deliveries fetched: ${deliveries.length}`);
 
     // Calculate stats based on actual Firebase data structure
     const totalBookings = bookings.length;
@@ -207,7 +216,7 @@ export const getOrderStats = async (): Promise<OrderStats> => {
       .filter(booking => booking.status === 'completed' || booking.status === 'paymentCompleted')
       .reduce((sum, booking) => sum + (booking.amount || booking.totalAmount || 0), 0);
     
-    console.log(`💰 Total revenue calculated: ${totalRevenue}`);
+    logger.log(`💰 Total revenue calculated: ${totalRevenue}`);
     
     // Calculate monthly growth (simplified - comparing current bookings to baseline)
     const monthlyGrowth = totalBookings > 0 ? 12.5 : 0;
@@ -221,10 +230,10 @@ export const getOrderStats = async (): Promise<OrderStats> => {
       monthlyGrowth
     };
     
-    console.log('📊 Order stats result:', result);
+    logger.log('📊 Order stats result:', result);
     return result;
   } catch (error) {
-    console.error('❌ Error fetching order stats:', error);
+    logger.error('❌ Error fetching order stats:', error);
     // Return fallback data instead of throwing
     return {
       totalBookings: 0,
@@ -243,7 +252,7 @@ export const getDeliveryStats = async (): Promise<DeliveryStats> => {
     if (!user) {
       throw new Error('User not authenticated');
     }
-    console.log('Fetching delivery stats for user:', user.email);
+    logger.log('Fetching delivery stats for user:', user.email);
 
     const deliveryTrackingRef = collection(db, 'deliveryTracking');
     const today = new Date();
@@ -255,14 +264,14 @@ export const getDeliveryStats = async (): Promise<DeliveryStats> => {
       orderBy('updatedAt', 'desc')
     );
     
-    console.log('Fetching delivery tracking...');
+    logger.log('Fetching delivery tracking...');
     const deliverySnapshot = await getDocs(deliveryQuery);
     const deliveries: DeliveryTracking[] = deliverySnapshot.docs.map(doc => ({ 
       id: doc.id, 
       ...doc.data() 
     } as DeliveryTracking));
     
-    console.log('Deliveries fetched:', deliveries.length);
+    logger.log('Deliveries fetched:', deliveries.length);
     
     const activeDeliveries = deliveries.filter(d => 
       d.status === 'picked_up' || d.status === 'in_transit'
@@ -282,10 +291,10 @@ export const getDeliveryStats = async (): Promise<DeliveryStats> => {
       inTransit
     };
     
-    console.log('Delivery stats result:', result);
+    logger.log('Delivery stats result:', result);
     return result;
   } catch (error) {
-    console.error('Error fetching delivery stats:', error);
+    logger.error('Error fetching delivery stats:', error);
     // Return fallback data instead of throwing
     return {
       activeDeliveries: 0,
@@ -336,7 +345,7 @@ export const getTransportationChartData = async (): Promise<ChartData> => {
       ],
     };
   } catch (error) {
-    console.error('Error fetching transportation chart data:', error);
+    logger.error('Error fetching transportation chart data:', error);
     // Return empty data on error
     return {
       labels: [],
@@ -360,7 +369,7 @@ export const getTransportationChartData = async (): Promise<ChartData> => {
 //
 export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trips'): Promise<TransportModeStats> => {
   try {
-    console.log(`🚢 Fetching transport mode statistics from Firebase (${source})...`);
+    logger.log(`🚢 Fetching transport mode statistics from Firebase (${source})...`);
 
     if (source === 'packages') {
       return await getPackageTransportStats();
@@ -370,9 +379,9 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
     const tripsRef = collection(db, 'travelTrips');
     
     // First, let's get ALL trips to see what we have
-    console.log('🔍 Fetching all trips to check data...');
+    logger.log('🔍 Fetching all trips to check data...');
     const allTripsSnapshot = await getDocs(tripsRef);
-    console.log(`✅ Found ${allTripsSnapshot.size} total trips in database`);
+    logger.log(`✅ Found ${allTripsSnapshot.size} total trips in database`);
     
     // Log a few samples to see the data structure
     if (allTripsSnapshot.size > 0) {
@@ -386,7 +395,7 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
           hasTransportMode: !!data.transportMode,
         };
       });
-      console.log('📋 Sample trips:', samples);
+      logger.log('📋 Sample trips:', samples);
     }
     
     const allTrips = allTripsSnapshot.docs.map(doc => ({
@@ -394,7 +403,7 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
       ...doc.data()
     }));
     
-    console.log(`📊 Analyzing ${allTrips.length} trips for transport modes by month...`);
+    logger.log(`📊 Analyzing ${allTrips.length} trips for transport modes by month...`);
     
     // Get data for the last 7 months
     const months: string[] = [];
@@ -464,7 +473,7 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
       shipData.push(monthShip);
     }
     
-    console.log('📊 Transport mode stats:', {
+    logger.log('📊 Transport mode stats:', {
       labels: months,
       flight: flightData,
       train: trainData,
@@ -485,7 +494,7 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
       dataSource: 'trips',
     };
   } catch (error) {
-    console.error('❌ Error fetching transport mode stats:', error);
+    logger.error('❌ Error fetching transport mode stats:', error);
     // Return empty data on error
     return {
       flight: [0, 0, 0, 0, 0, 0, 0],
@@ -504,11 +513,11 @@ export const getTransportModeStats = async (source: 'trips' | 'packages' = 'trip
 // Packages only support: Flight, Train, Bus, Car (4 modes)
 const getPackageTransportStats = async (): Promise<TransportModeStats> => {
   try {
-    console.log('📦 Fetching package transport preferences from Firebase...');
+    logger.log('📦 Fetching package transport preferences from Firebase...');
 
     const packagesRef = collection(db, 'packageRequests');
     const allPackagesSnapshot = await getDocs(packagesRef);
-    console.log(`✅ Found ${allPackagesSnapshot.size} total packages in database`);
+    logger.log(`✅ Found ${allPackagesSnapshot.size} total packages in database`);
     
     const allPackages = allPackagesSnapshot.docs.map(doc => ({
       id: doc.id,
@@ -581,7 +590,7 @@ const getPackageTransportStats = async (): Promise<TransportModeStats> => {
       shipData.push(0); // Not available for packages
     }
     
-    console.log('📊 Package transport preferences:', {
+    logger.log('📊 Package transport preferences:', {
       labels: months,
       flight: flightData,
       train: trainData,
@@ -602,7 +611,7 @@ const getPackageTransportStats = async (): Promise<TransportModeStats> => {
       dataSource: 'packages',
     };
   } catch (error) {
-    console.error('❌ Error fetching package transport preferences:', error);
+    logger.error('❌ Error fetching package transport preferences:', error);
     return {
       flight: [0, 0, 0, 0, 0, 0, 0],
       train: [0, 0, 0, 0, 0, 0, 0],
@@ -618,72 +627,72 @@ const getPackageTransportStats = async (): Promise<TransportModeStats> => {
 
 // 🔧 DEBUG FUNCTION - Call this from browser console to inspect Firestore data
 export const debugFirestoreData = async () => {
-  console.log('\n🔍 ========== DEBUGGING FIRESTORE DATA ==========\n');
+  logger.log('\n🔍 ========== DEBUGGING FIRESTORE DATA ==========\n');
   
   try {
     // Query packages
-    console.log('📦 QUERYING PACKAGES...\n');
+    logger.log('📦 QUERYING PACKAGES...\n');
     const packagesRef = collection(db, 'packageRequests');
     const packagesQuery = query(packagesRef, orderBy('createdAt', 'desc'));
     const packagesSnapshot = await getDocs(packagesQuery);
     
-    console.log(`✅ Total packages found: ${packagesSnapshot.size}\n`);
+    logger.log(`✅ Total packages found: ${packagesSnapshot.size}\n`);
     
     // Show first 5 packages
     const packageDocs = packagesSnapshot.docs.slice(0, 5);
     packageDocs.forEach((doc, index) => {
       const data = doc.data();
-      console.log(`\n📦 Package ${index + 1}:`);
-      console.log(`   ID: ${doc.id}`);
-      console.log(`   All Fields: [${Object.keys(data).join(', ')}]`);
-      console.log(`   createdAt:`, data.createdAt);
-      console.log(`   createdAt type: ${typeof data.createdAt} (${data.createdAt?.constructor?.name})`);
-      console.log(`   createdAt RAW VALUE:`, JSON.stringify(data.createdAt));
+      logger.log(`\n📦 Package ${index + 1}:`);
+      logger.log(`   ID: ${doc.id}`);
+      logger.log(`   All Fields: [${Object.keys(data).join(', ')}]`);
+      logger.log(`   createdAt:`, data.createdAt);
+      logger.log(`   createdAt type: ${typeof data.createdAt} (${data.createdAt?.constructor?.name})`);
+      logger.log(`   createdAt RAW VALUE:`, JSON.stringify(data.createdAt));
       
       // Check if it's a string (ISO format)
       if (typeof data.createdAt === 'string') {
-        console.log(`   ⚠️ createdAt is a STRING (ISO format)`);
-        console.log(`   Parsed as Date: ${new Date(data.createdAt)}`);
+        logger.log(`   ⚠️ createdAt is a STRING (ISO format)`);
+        logger.log(`   Parsed as Date: ${new Date(data.createdAt)}`);
       }
       // Check if it's a Timestamp
       else if (data.createdAt?.toDate) {
-        console.log(`   ✅ createdAt is a Timestamp`);
-        console.log(`   As Date: ${data.createdAt.toDate()}`);
+        logger.log(`   ✅ createdAt is a Timestamp`);
+        logger.log(`   As Date: ${data.createdAt.toDate()}`);
       }
       // Check other date fields
-      console.log(`   updatedAt:`, data.updatedAt, `(type: ${typeof data.updatedAt})`);
-      console.log(`   preferredDeliveryDate:`, data.preferredDeliveryDate);
+      logger.log(`   updatedAt:`, data.updatedAt, `(type: ${typeof data.updatedAt})`);
+      logger.log(`   preferredDeliveryDate:`, data.preferredDeliveryDate);
       
-      console.log(`   preferredTransportModes:`, data.preferredTransportModes);
-      console.log(`   status: ${data.status}`);
+      logger.log(`   preferredTransportModes:`, data.preferredTransportModes);
+      logger.log(`   status: ${data.status}`);
     });
     
     // Query trips
-    console.log('\n\n🚗 QUERYING TRIPS...\n');
+    logger.log('\n\n🚗 QUERYING TRIPS...\n');
     const tripsRef = collection(db, 'trips');
     const tripsQuery = query(tripsRef, orderBy('createdAt', 'desc'));
     const tripsSnapshot = await getDocs(tripsQuery);
     
-    console.log(`✅ Total trips found: ${tripsSnapshot.size}\n`);
+    logger.log(`✅ Total trips found: ${tripsSnapshot.size}\n`);
     
     // Show first 5 trips
     const tripDocs = tripsSnapshot.docs.slice(0, 5);
     tripDocs.forEach((doc, index) => {
       const data = doc.data();
-      console.log(`\n🚗 Trip ${index + 1}:`);
-      console.log(`   ID: ${doc.id}`);
-      console.log(`   All Fields: [${Object.keys(data).join(', ')}]`);
-      console.log(`   createdAt:`, data.createdAt);
-      console.log(`   createdAt type: ${typeof data.createdAt} (${data.createdAt?.constructor?.name})`);
+      logger.log(`\n🚗 Trip ${index + 1}:`);
+      logger.log(`   ID: ${doc.id}`);
+      logger.log(`   All Fields: [${Object.keys(data).join(', ')}]`);
+      logger.log(`   createdAt:`, data.createdAt);
+      logger.log(`   createdAt type: ${typeof data.createdAt} (${data.createdAt?.constructor?.name})`);
       if (data.createdAt?.toDate) {
-        console.log(`   createdAt as Date: ${data.createdAt.toDate()}`);
+        logger.log(`   createdAt as Date: ${data.createdAt.toDate()}`);
       }
-      console.log(`   transportMode: ${data.transportMode}`);
-      console.log(`   status: ${data.status}`);
+      logger.log(`   transportMode: ${data.transportMode}`);
+      logger.log(`   status: ${data.status}`);
     });
     
     // Count by month for packages - MANUAL COUNTING (not using where queries)
-    console.log('\n\n📊 PACKAGE COUNT BY MONTH (Last 7 months) - MANUAL COUNT:\n');
+    logger.log('\n\n📊 PACKAGE COUNT BY MONTH (Last 7 months) - MANUAL COUNT:\n');
     
     const now = new Date();
     const monthData: any[] = [];
@@ -734,7 +743,7 @@ export const debugFirestoreData = async () => {
         }
       });
       
-      console.log(`${monthName}: ${monthCount} packages - Flight: ${modeCount.flight}, Train: ${modeCount.train}, Bus: ${modeCount.bus}, Car: ${modeCount.car}`);
+      logger.log(`${monthName}: ${monthCount} packages - Flight: ${modeCount.flight}, Train: ${modeCount.train}, Bus: ${modeCount.bus}, Car: ${modeCount.car}`);
       
       monthData.push({
         month: monthName,
@@ -743,29 +752,23 @@ export const debugFirestoreData = async () => {
       });
     }
     
-    console.log('\n📊 SUMMARY TABLE:');
+    logger.log('\n📊 SUMMARY TABLE:');
     console.table(monthData);
     
-    console.log('\n✅ Debug complete! Check the data above to understand the structure.\n');
+    logger.log('\n✅ Debug complete! Check the data above to understand the structure.\n');
     
     return { packages: packagesSnapshot.size, trips: tripsSnapshot.size, monthData };
     
   } catch (error) {
-    console.error('❌ Error debugging Firestore:', error);
+    logger.error('❌ Error debugging Firestore:', error);
     throw error;
   }
 };
 
-// Make it available globally for console access
-if (typeof window !== 'undefined') {
-  (window as any).debugFirestoreData = debugFirestoreData;
-  console.log('💡 Debug function available! Run: window.debugFirestoreData()');
-}
-
 // Get shipments from deliveryTracking collection
 export const getShipments = async (): Promise<ShipmentData[]> => {
   try {
-    console.log('🚚 Fetching shipments from Firebase...');
+    logger.log('🚚 Fetching shipments from Firebase...');
 
     // Step 1: Fetch all delivery tracking records
     const deliveryTrackingRef = collection(db, 'deliveryTracking');
@@ -775,14 +778,14 @@ export const getShipments = async (): Promise<ShipmentData[]> => {
     );
     
     const deliverySnapshot = await getDocs(deliveryQuery);
-    console.log(`✅ Found ${deliverySnapshot.size} delivery tracking records`);
+    logger.log(`✅ Found ${deliverySnapshot.size} delivery tracking records`);
 
     // Step 2: Get all packageRequestIds to fetch in one go
     const packageRequestIds = deliverySnapshot.docs
       .map(doc => doc.data().packageRequestId)
       .filter(Boolean);
 
-    console.log(`� Fetching ${packageRequestIds.length} package requests for location data...`);
+    logger.log(`� Fetching ${packageRequestIds.length} package requests for location data...`);
 
     // Step 3: Fetch all related package requests
     const packageRequestsRef = collection(db, 'packageRequests');
@@ -794,7 +797,7 @@ export const getShipments = async (): Promise<ShipmentData[]> => {
       packageRequestsMap.set(doc.data().id, doc.data());
     });
 
-    console.log(`✅ Loaded ${packageRequestsMap.size} package requests into lookup map`);
+    logger.log(`✅ Loaded ${packageRequestsMap.size} package requests into lookup map`);
     
     // Step 4: Merge delivery tracking with package request data
     const shipments: ShipmentData[] = deliverySnapshot.docs
@@ -804,7 +807,7 @@ export const getShipments = async (): Promise<ShipmentData[]> => {
         
         // 🔍 DEBUG: Log join failures
         if (!packageRequest) {
-          console.warn(`⚠️ No packageRequest found for deliveryTracking ${doc.id}`, {
+          logger.warn(`⚠️ No packageRequest found for deliveryTracking ${doc.id}`, {
             packageRequestId: deliveryData.packageRequestId,
             availablePackageIds: Array.from(packageRequestsMap.keys()).slice(0, 5)
           });
@@ -844,7 +847,7 @@ export const getShipments = async (): Promise<ShipmentData[]> => {
 
         // Get locations from packageRequest - NO FALLBACKS, must have real data
         if (!packageRequest.pickupLocation || !packageRequest.destinationLocation) {
-          console.warn(`⚠️ Incomplete location data for package ${deliveryData.packageRequestId}`);
+          logger.warn(`⚠️ Incomplete location data for package ${deliveryData.packageRequestId}`);
           return null; // Skip shipments without complete location data
         }
 
@@ -876,10 +879,10 @@ export const getShipments = async (): Promise<ShipmentData[]> => {
       })
       .filter((shipment) => shipment !== null) as ShipmentData[]; // Remove null entries
 
-    console.log('📊 Shipments with locations loaded:', shipments.length);
+    logger.log('📊 Shipments with locations loaded:', shipments.length);
     return shipments;
   } catch (error) {
-    console.error('❌ Error fetching shipments:', error);
+    logger.error('❌ Error fetching shipments:', error);
     return [];
   }
 };
@@ -913,7 +916,7 @@ export const getShipmentsByStatus = async (statusFilter: 'notable' | 'delivered'
 // Get all package requests with delivery status
 export const getAllPackageRequests = async (): Promise<PackageRequestData[]> => {
   try {
-    console.log('📦 Fetching all package requests from Firebase...');
+    logger.log('📦 Fetching all package requests from Firebase...');
 
     // Fetch package requests
     const packageRequestsRef = collection(db, 'packageRequests');
@@ -933,7 +936,7 @@ export const getAllPackageRequests = async (): Promise<PackageRequestData[]> => 
       }
     });
 
-    console.log(`✅ Found ${packageSnapshot.size} package requests`);
+    logger.log(`✅ Found ${packageSnapshot.size} package requests`);
     
     const packages: PackageRequestData[] = packageSnapshot.docs.map(doc => {
       const data = doc.data();
@@ -996,10 +999,10 @@ export const getAllPackageRequests = async (): Promise<PackageRequestData[]> => 
       };
     });
 
-    console.log('📊 Package requests loaded:', packages.length);
+    logger.log('📊 Package requests loaded:', packages.length);
     return packages;
   } catch (error) {
-    console.error('❌ Error fetching package requests:', error);
+    logger.error('❌ Error fetching package requests:', error);
     return [];
   }
 };
@@ -1007,14 +1010,14 @@ export const getAllPackageRequests = async (): Promise<PackageRequestData[]> => 
 // Get all travel trips from Firebase
 export const getAllTravelTrips = async (): Promise<TravelTripData[]> => {
   try {
-    console.log('✈️ Fetching all travel trips from Firebase...');
+    logger.log('✈️ Fetching all travel trips from Firebase...');
 
     // Fetch travel trips
     const tripsRef = collection(db, 'travelTrips');
     const tripsQuery = query(tripsRef, orderBy('createdAt', 'desc'));
     const tripsSnapshot = await getDocs(tripsQuery);
 
-    console.log(`✅ Found ${tripsSnapshot.size} travel trips`);
+    logger.log(`✅ Found ${tripsSnapshot.size} travel trips`);
     
     const trips: TravelTripData[] = tripsSnapshot.docs.map(doc => {
       const data = doc.data();
@@ -1081,10 +1084,10 @@ export const getAllTravelTrips = async (): Promise<TravelTripData[]> => {
       };
     });
 
-    console.log('📊 Travel trips loaded:', trips.length);
+    logger.log('📊 Travel trips loaded:', trips.length);
     return trips;
   } catch (error) {
-    console.error('❌ Error fetching travel trips:', error);
+    logger.error('❌ Error fetching travel trips:', error);
     return [];
   }
 };
@@ -1092,7 +1095,7 @@ export const getAllTravelTrips = async (): Promise<TravelTripData[]> => {
 // Get all transactions
 export const getAllTransactions = async (): Promise<TransactionData[]> => {
   try {
-    console.log('💰 Fetching all transactions from Firebase...');
+    logger.log('💰 Fetching all transactions from Firebase...');
 
     // Fetch transactions - try without orderBy first in case timestamp index doesn't exist
     const transactionsRef = collection(db, 'transactions');
@@ -1103,12 +1106,12 @@ export const getAllTransactions = async (): Promise<TransactionData[]> => {
       const transactionsQuery = query(transactionsRef, orderBy('timestamp', 'desc'));
       transactionsSnapshot = await getDocs(transactionsQuery);
     } catch (orderError) {
-      console.warn('⚠️ Could not order by timestamp, fetching without order:', orderError);
+      logger.warn('⚠️ Could not order by timestamp, fetching without order:', orderError);
       // If orderBy fails (missing index), just get all documents
       transactionsSnapshot = await getDocs(transactionsRef);
     }
 
-    console.log(`✅ Found ${transactionsSnapshot.size} transactions`);
+    logger.log(`✅ Found ${transactionsSnapshot.size} transactions`);
     
     // Fetch all user data for lookups
     const usersRef = collection(db, 'users');
@@ -1172,12 +1175,12 @@ export const getAllTransactions = async (): Promise<TransactionData[]> => {
     // Sort by date in memory if we couldn't sort in query
     transactions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    console.log('📊 Transactions loaded:', transactions.length);
-    console.log('📊 Sample transaction:', transactions[0]);
+    logger.log('📊 Transactions loaded:', transactions.length);
+    logger.log('📊 Sample transaction:', transactions[0]);
     return transactions;
   } catch (error) {
-    console.error('❌ Error fetching transactions:', error);
-    console.error('❌ Error details:', error);
+    logger.error('❌ Error fetching transactions:', error);
+    logger.error('❌ Error details:', error);
     return [];
   }
 };
@@ -1185,7 +1188,7 @@ export const getAllTransactions = async (): Promise<TransactionData[]> => {
 // Update a transaction
 export const updateTransaction = async (transactionId: string, updates: Partial<TransactionData>): Promise<void> => {
   try {
-    console.log(`📝 Updating transaction ${transactionId}...`);
+    logger.log(`📝 Updating transaction ${transactionId}...`);
     
     const transactionRef = doc(db, 'transactions', transactionId);
     
@@ -1196,9 +1199,9 @@ export const updateTransaction = async (transactionId: string, updates: Partial<
     updateData.updatedAt = new Date().toISOString();
     
     await updateDoc(transactionRef, updateData);
-    console.log(`✅ Transaction ${transactionId} updated successfully`);
+    logger.log(`✅ Transaction ${transactionId} updated successfully`);
   } catch (error) {
-    console.error(`❌ Error updating transaction ${transactionId}:`, error);
+    logger.error(`❌ Error updating transaction ${transactionId}:`, error);
     throw error;
   }
 };
@@ -1206,14 +1209,14 @@ export const updateTransaction = async (transactionId: string, updates: Partial<
 // Delete a transaction
 export const deleteTransaction = async (transactionId: string): Promise<void> => {
   try {
-    console.log(`🗑️ Deleting transaction ${transactionId}...`);
+    logger.log(`🗑️ Deleting transaction ${transactionId}...`);
     
     const transactionRef = doc(db, 'transactions', transactionId);
     await deleteDoc(transactionRef);
     
-    console.log(`✅ Transaction ${transactionId} deleted successfully`);
+    logger.log(`✅ Transaction ${transactionId} deleted successfully`);
   } catch (error) {
-    console.error(`❌ Error deleting transaction ${transactionId}:`, error);
+    logger.error(`❌ Error deleting transaction ${transactionId}:`, error);
     throw error;
   }
 };
@@ -1221,7 +1224,7 @@ export const deleteTransaction = async (transactionId: string): Promise<void> =>
 // Update a package request
 export const updatePackageRequest = async (packageId: string, updates: Partial<PackageRequestData>): Promise<void> => {
   try {
-    console.log(`📝 Updating package ${packageId}...`);
+    logger.log(`📝 Updating package ${packageId}...`);
     
     // Verify the document exists first
     const packageRef = doc(db, 'packageRequests', packageId);
@@ -1251,9 +1254,9 @@ export const updatePackageRequest = async (packageId: string, updates: Partial<P
     });
     
     await updateDoc(packageRef, updateData);
-    console.log('✅ Package updated successfully');
+    logger.log('✅ Package updated successfully');
   } catch (error: any) {
-    console.error('❌ Error updating package:', error);
+    logger.error('❌ Error updating package:', error);
     if (error.code === 'not-found') {
       throw new Error(`Package with ID ${packageId} not found in Firebase. It may have been deleted.`);
     }
@@ -1264,12 +1267,12 @@ export const updatePackageRequest = async (packageId: string, updates: Partial<P
 // Delete a package request
 export const deletePackageRequest = async (packageId: string): Promise<void> => {
   try {
-    console.log(`🗑️ Deleting package ${packageId}...`);
+    logger.log(`🗑️ Deleting package ${packageId}...`);
     const packageRef = doc(db, 'packageRequests', packageId);
     await deleteDoc(packageRef);
-    console.log('✅ Package deleted successfully');
+    logger.log('✅ Package deleted successfully');
   } catch (error) {
-    console.error('❌ Error deleting package:', error);
+    logger.error('❌ Error deleting package:', error);
     throw error;
   }
 };
@@ -1277,7 +1280,7 @@ export const deletePackageRequest = async (packageId: string): Promise<void> => 
 // Update a travel trip
 export const updateTravelTrip = async (tripId: string, updates: Partial<TravelTripData>): Promise<void> => {
   try {
-    console.log(`📝 Updating trip ${tripId}...`);
+    logger.log(`📝 Updating trip ${tripId}...`);
     const tripRef = doc(db, 'travelTrips', tripId);
     
     // Prepare update data - convert dates to ISO strings
@@ -1307,9 +1310,9 @@ export const updateTravelTrip = async (tripId: string, updates: Partial<TravelTr
     });
     
     await updateDoc(tripRef, updateData);
-    console.log('✅ Trip updated successfully');
+    logger.log('✅ Trip updated successfully');
   } catch (error: any) {
-    console.error('❌ Error updating trip:', error);
+    logger.error('❌ Error updating trip:', error);
     if (error.code === 'not-found') {
       throw new Error(`Trip with ID ${tripId} not found in Firebase. It may have been deleted.`);
     }
@@ -1320,12 +1323,12 @@ export const updateTravelTrip = async (tripId: string, updates: Partial<TravelTr
 // Delete a travel trip
 export const deleteTravelTrip = async (tripId: string): Promise<void> => {
   try {
-    console.log(`🗑️ Deleting trip ${tripId}...`);
+    logger.log(`🗑️ Deleting trip ${tripId}...`);
     const tripRef = doc(db, 'travelTrips', tripId);
     await deleteDoc(tripRef);
-    console.log('✅ Trip deleted successfully');
+    logger.log('✅ Trip deleted successfully');
   } catch (error) {
-    console.error('❌ Error deleting trip:', error);
+    logger.error('❌ Error deleting trip:', error);
     throw error;
   }
 };
@@ -1346,7 +1349,7 @@ export interface UserGrowthStats {
 
 export const getUserGrowthStats = async (): Promise<UserGrowthStats> => {
   try {
-    console.log('📊 Fetching user growth statistics...');
+    logger.log('📊 Fetching user growth statistics...');
     
     const usersRef = collection(db, 'users');
     const usersSnapshot = await getDocs(usersRef);
@@ -1427,7 +1430,7 @@ export const getUserGrowthStats = async (): Promise<UserGrowthStats> => {
       ? ((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) * 100 
       : newUsersThisMonth > 0 ? 100 : 0;
     
-    console.log('✅ User growth stats fetched:', { totalUsers, newUsersThisMonth, newUsersLastMonth, growthPercentage });
+    logger.log('✅ User growth stats fetched:', { totalUsers, newUsersThisMonth, newUsersLastMonth, growthPercentage });
     
     return {
       totalUsers,
@@ -1437,7 +1440,7 @@ export const getUserGrowthStats = async (): Promise<UserGrowthStats> => {
       monthlyData
     };
   } catch (error) {
-    console.error('❌ Error fetching user growth stats:', error);
+    logger.error('❌ Error fetching user growth stats:', error);
     return {
       totalUsers: 0,
       newUsersThisMonth: 0,
@@ -1462,7 +1465,7 @@ export interface RevenueStats {
 
 export const getRevenueStats = async (): Promise<RevenueStats> => {
   try {
-    console.log('💰 Fetching revenue statistics...');
+    logger.log('💰 Fetching revenue statistics...');
     
     const bookingsRef = collection(db, 'bookings');
     const bookingsSnapshot = await getDocs(bookingsRef);
@@ -1550,7 +1553,7 @@ export const getRevenueStats = async (): Promise<RevenueStats> => {
       ? ((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100 
       : revenueThisMonth > 0 ? 100 : 0;
     
-    console.log('✅ Revenue stats fetched:', { totalRevenue, revenueThisMonth, revenueLastMonth, growthPercentage });
+    logger.log('✅ Revenue stats fetched:', { totalRevenue, revenueThisMonth, revenueLastMonth, growthPercentage });
     
     return {
       totalRevenue,
@@ -1560,7 +1563,7 @@ export const getRevenueStats = async (): Promise<RevenueStats> => {
       monthlyData
     };
   } catch (error) {
-    console.error('❌ Error fetching revenue stats:', error);
+    logger.error('❌ Error fetching revenue stats:', error);
     return {
       totalRevenue: 0,
       revenueThisMonth: 0,
@@ -1586,7 +1589,7 @@ export interface PackageStats {
 
 export const getPackageStats = async (): Promise<PackageStats> => {
   try {
-    console.log('📦 Fetching package statistics...');
+    logger.log('📦 Fetching package statistics...');
     
     // Fetch package requests
     const packagesRef = collection(db, 'packageRequests');
@@ -1604,7 +1607,7 @@ export const getPackageStats = async (): Promise<PackageStats> => {
       ...doc.data()
     }));
     
-    console.log(`📊 Found ${allPackages.length} packages and ${allDeliveries.length} delivery records`);
+    logger.log(`📊 Found ${allPackages.length} packages and ${allDeliveries.length} delivery records`);
     
     const totalPackages = allPackages.length;
     
@@ -1660,7 +1663,7 @@ export const getPackageStats = async (): Promise<PackageStats> => {
       monthlyData.push({ month: monthName, count });
     }
     
-    console.log('✅ Package stats fetched:', { 
+    logger.log('✅ Package stats fetched:', { 
       totalPackages, 
       pendingPackages, 
       inTransitPackages, 
@@ -1678,7 +1681,7 @@ export const getPackageStats = async (): Promise<PackageStats> => {
       monthlyData
     };
   } catch (error) {
-    console.error('❌ Error fetching package stats:', error);
+    logger.error('❌ Error fetching package stats:', error);
     return {
       totalPackages: 0,
       pendingPackages: 0,
@@ -1704,7 +1707,7 @@ export interface TripStats {
 
 export const getTripStats = async (): Promise<TripStats> => {
   try {
-    console.log('🚗 Fetching trip statistics...');
+    logger.log('🚗 Fetching trip statistics...');
     
     const tripsRef = collection(db, 'travelTrips');
     const tripsSnapshot = await getDocs(tripsRef);
@@ -1746,7 +1749,7 @@ export const getTripStats = async (): Promise<TripStats> => {
       monthlyData.push({ month: monthName, count });
     }
     
-    console.log('✅ Trip stats fetched:', { totalTrips, activeTrips, completedTrips, cancelledTrips });
+    logger.log('✅ Trip stats fetched:', { totalTrips, activeTrips, completedTrips, cancelledTrips });
     
     return {
       totalTrips,
@@ -1756,7 +1759,7 @@ export const getTripStats = async (): Promise<TripStats> => {
       monthlyData
     };
   } catch (error) {
-    console.error('❌ Error fetching trip stats:', error);
+    logger.error('❌ Error fetching trip stats:', error);
     return {
       totalTrips: 0,
       activeTrips: 0,
@@ -1781,7 +1784,7 @@ export interface DisputeStats {
 
 export const getDisputeStats = async (): Promise<DisputeStats> => {
   try {
-    console.log('⚖️ Fetching dispute statistics...');
+    logger.log('⚖️ Fetching dispute statistics...');
     
     const disputesRef = collection(db, 'disputes');
     const disputesSnapshot = await getDocs(disputesRef);
@@ -1823,7 +1826,7 @@ export const getDisputeStats = async (): Promise<DisputeStats> => {
       monthlyData.push({ month: monthName, count });
     }
     
-    console.log('✅ Dispute stats fetched:', { totalDisputes, openDisputes, inProgressDisputes, resolvedDisputes });
+    logger.log('✅ Dispute stats fetched:', { totalDisputes, openDisputes, inProgressDisputes, resolvedDisputes });
     
     return {
       totalDisputes,
@@ -1833,7 +1836,7 @@ export const getDisputeStats = async (): Promise<DisputeStats> => {
       monthlyData
     };
   } catch (error) {
-    console.error('❌ Error fetching dispute stats:', error);
+    logger.error('❌ Error fetching dispute stats:', error);
     return {
       totalDisputes: 0,
       openDisputes: 0,

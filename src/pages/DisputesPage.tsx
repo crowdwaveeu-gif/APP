@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { DisputeData } from '../data/disputes';
 import disputesService, { Dispute } from '../services/disputesService';
 import conversationsService, { ChatMessage } from '../services/conversationsService';
+import { toast } from 'react-toastify';
 
 const DisputesPage = () => {
   const [disputes, setDisputes] = useState<DisputeData[]>([]);
@@ -57,7 +58,7 @@ const DisputesPage = () => {
       setDisputes(formattedDisputes);
     } catch (error) {
       console.error('Error loading disputes:', error);
-      alert('Failed to load disputes from Firebase.');
+      toast.error('Failed to load disputes from Firebase.');
     } finally {
       setLoading(false);
     }
@@ -200,13 +201,13 @@ const DisputesPage = () => {
           assignedTo: editingDispute.assignedTo,
           description: editingDispute.description,
         });
-        alert('Dispute updated successfully!');
+        toast.success('Dispute updated successfully!');
         setShowEditModal(false);
         setEditingDispute(null);
         loadDisputes(); // Reload data
       } catch (error) {
         console.error('Error saving dispute:', error);
-        alert('Failed to save dispute');
+        toast.error('Failed to save dispute');
       }
     }
   };
@@ -265,9 +266,19 @@ const DisputesPage = () => {
       <div className="col-12">
         <div className="panel">
           <div className="panel-header">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center w-100">
               <h5>Disputes Management</h5>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center">
+                <div className="search-box position-relative" style={{ minWidth: '250px' }}>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    placeholder="Search disputes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
+                </div>
                 <select 
                   className="form-select form-select-sm"
                   value={statusFilter}
@@ -302,20 +313,6 @@ const DisputesPage = () => {
           </div>
           
           <div className="panel-body">
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <div className="search-box position-relative">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search disputes..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
-                </div>
-              </div>
-            </div>
 
             <div className="table-responsive">
               <table className="table table-striped">
@@ -329,7 +326,7 @@ const DisputesPage = () => {
                     <th>Priority</th>
                     <th>Date Created</th>
                     <th>Assigned To</th>
-                    <th>Actions</th>
+                    <th className="text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -365,8 +362,8 @@ const DisputesPage = () => {
                         </td>
                         <td>{new Date(dispute.dateCreated).toLocaleDateString()}</td>
                         <td>{dispute.assignedTo}</td>
-                        <td>
-                          <div className="d-flex gap-1">
+                        <td className="text-center">
+                          <div className="d-flex gap-1 justify-content-center">
                             <button 
                               className="btn btn-sm btn-outline-primary"
                               onClick={() => handleViewDispute(dispute)}
@@ -398,7 +395,7 @@ const DisputesPage = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center mt-3">
+              <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
                 <div className="text-muted">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredDisputes.length)} of {filteredDisputes.length} entries
                 </div>

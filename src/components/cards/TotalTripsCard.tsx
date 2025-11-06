@@ -40,13 +40,13 @@ const TotalTripsCard = () => {
 
   return (
     <div className="card cta-card" onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <p>Total Trips</p>
+      <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>Total Trips</p>
       <div className="d-flex align-items-center justify-content-between flex-wrap">
         <h4 className="mb-0 me-4">{stats?.totalTrips.toLocaleString() || 0}</h4>
         <span className="badge bg-success">{stats?.activeTrips || 0} Active</span>
       </div>
-      <small className="text-muted mt-2">
-        {stats?.completedTrips || 0} completed • {stats?.cancelledTrips || 0} cancelled
+      <small className="text-muted mt-2" style={{ display: 'block' }}>
+        <strong>{stats?.completedTrips || 0}</strong> completed • <strong>{stats?.cancelledTrips || 0}</strong> cancelled
       </small>
     </div>
   );

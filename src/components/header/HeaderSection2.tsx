@@ -72,7 +72,15 @@ const HeaderSection2 = ({ showLogo, toggleSidebar }: Props) => {
           </div>
           {showLogo && (
             <a href="/" className="d-none d-md-block">
-              <img src="/logo.png" alt="CrowdWave Logo" />
+              <img 
+                src="/colored-logo.png?v=2" 
+                alt="CrowdWave Logo" 
+                className="logo-image"
+                style={{
+                  transform: 'scale(1.2)',
+                  transformOrigin: 'left center'
+                }}
+              />
             </a>
           )}
           <div className="me-2 classy-nav-container">

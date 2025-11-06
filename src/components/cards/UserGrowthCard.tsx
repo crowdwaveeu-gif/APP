@@ -42,15 +42,24 @@ const UserGrowthCard = () => {
 
   return (
     <div className="card cta-card" onClick={handleClick} style={{ cursor: 'pointer' }}>
-      <p>Total Users</p>
-      <div className="d-flex align-items-center justify-content-between flex-wrap">
-        <h4 className="mb-0 me-4">{stats?.totalUsers.toLocaleString() || 0}</h4>
-        <span className={isPositiveGrowth ? 'text-success' : 'text-danger'}>
-          {isPositiveGrowth ? '+' : ''}{stats?.growthPercentage.toFixed(2)}% 
-          <i className={`ti ti-trending-${isPositiveGrowth ? 'up' : 'down'}`}></i>
-        </span>
+      <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>Total Users</p>
+      <div className="d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+          <h4 className="mb-0">{stats?.totalUsers.toLocaleString() || 0}</h4>
+          <small className="text-muted mt-2" style={{ display: 'block' }}>
+            <strong>{stats?.newUsersThisMonth || 0}</strong> new this month
+          </small>
+        </div>
+        <div className="text-end">
+          <span className={`badge ${isPositiveGrowth ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+            {isPositiveGrowth ? '+' : ''}{stats?.growthPercentage.toFixed(2)}% 
+            <i className={`ti ti-trending-${isPositiveGrowth ? 'up' : 'down'} ms-1`}></i>
+          </span>
+          <small className="text-muted mt-1" style={{ display: 'block' }}>
+            Growth this month
+          </small>
+        </div>
       </div>
-      <small className="text-muted mt-2">{stats?.newUsersThisMonth || 0} new this month</small>
     </div>
   );
 };

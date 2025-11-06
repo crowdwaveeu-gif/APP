@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import kycService, { User, KYCApplication, OTPCode } from "@/services/kycService";
 import { Tooltip } from "react-tooltip";
 import UserModal from "@/components/modal/UserModal";
+import { toast } from 'react-toastify';
 
 const UsersManagementPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const UsersManagementPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadData();
@@ -41,7 +44,7 @@ const UsersManagementPage = () => {
       setKycApplications(kycMap);
     } catch (error) {
       console.error("Error loading users:", error);
-      alert("Failed to load users");
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -62,7 +65,7 @@ const UsersManagementPage = () => {
         setSelectedUserOTPs(otps);
       } catch (error) {
         console.error("Error loading OTPs:", error);
-        alert("Failed to load OTPs");
+        toast.error("Failed to load OTPs");
       } finally {
         setLoadingOTPs(false);
       }
@@ -91,11 +94,11 @@ const UsersManagementPage = () => {
 
     try {
       await kycService.deleteUser(userId);
-      alert("User deleted successfully!");
+      toast.success("User deleted successfully!");
       loadData();
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user");
+      toast.error("Failed to delete user");
     }
   };
 
@@ -104,10 +107,10 @@ const UsersManagementPage = () => {
     try {
       if (modalMode === "create") {
         await kycService.createUser(userData);
-        alert("User created successfully!");
+        toast.success("User created successfully!");
       } else if (selectedUser) {
         await kycService.updateUser(selectedUser.id, userData);
-        alert("User updated successfully!");
+        toast.success("User updated successfully!");
       }
       loadData();
     } catch (error) {
@@ -138,6 +141,13 @@ const UsersManagementPage = () => {
     
     return searchMatch && verificationMatch;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const getKycStatusBadge = (userId: string) => {
     const kyc = kycApplications.get(userId);
@@ -192,44 +202,18 @@ const UsersManagementPage = () => {
     <div className="container-fluid">
       <Tooltip id="user-tooltip" />
       
-      {/* Header */}
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                  <h4 className="mb-1"><i className="ti ti-user-star me-2"></i>Users Management</h4>
-                  <p className="text-muted mb-0">Manage all users and their KYC verification status</p>
-                </div>
-                <div className="d-flex gap-2">
-                  <button onClick={handleCreateUser} className="btn btn-sm btn-success">
-                    <i className="ti ti-user-plus me-1"></i>Create User
-                  </button>
-                  <button onClick={loadData} className="btn btn-sm btn-primary">
-                    <i className="ti ti-refresh me-1"></i>Refresh
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Stats Cards */}
       <div className="row mb-4">
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-primary bg-soft text-primary">
-                    <i className="ti ti-users" style={{ fontSize: "24px" }}></i>
-                  </div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">{users.length}</h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Total Users</p>
                 </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">{users.length}</h5>
-                  <p className="text-muted mb-0 small">Total Users</p>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  👥
                 </div>
               </div>
             </div>
@@ -239,17 +223,15 @@ const UsersManagementPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-success bg-soft text-success">
-                    <i className="ti ti-circle-check" style={{ fontSize: "24px" }}></i>
-                  </div>
-                </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">
                     {Array.from(kycApplications.values()).filter(k => k.status === "approved").length}
-                  </h5>
-                  <p className="text-muted mb-0 small">Verified</p>
+                  </h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Approved</p>
+                </div>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  ✅
                 </div>
               </div>
             </div>
@@ -259,17 +241,15 @@ const UsersManagementPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-warning bg-soft text-warning">
-                    <i className="ti ti-clock" style={{ fontSize: "24px" }}></i>
-                  </div>
-                </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">
                     {Array.from(kycApplications.values()).filter(k => k.status === "pending" || k.status === "submitted").length}
-                  </h5>
-                  <p className="text-muted mb-0 small">Pending KYC</p>
+                  </h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Pending Approval</p>
+                </div>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  ⏳
                 </div>
               </div>
             </div>
@@ -279,17 +259,15 @@ const UsersManagementPage = () => {
         <div className="col-md-3 col-sm-6 mb-3">
           <div className="card shadow-sm">
             <div className="card-body">
-              <div className="d-flex align-items-center">
-                <div className="flex-shrink-0">
-                  <div className="avatar-sm rounded-circle bg-danger bg-soft text-danger">
-                    <i className="ti ti-ban" style={{ fontSize: "24px" }}></i>
-                  </div>
-                </div>
-                <div className="flex-grow-1 ms-3">
-                  <h5 className="mb-0">
+              <div className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 className="mb-1 fw-bold">
                     {users.filter(u => u.isBlocked).length}
-                  </h5>
-                  <p className="text-muted mb-0 small">Rejected Users</p>
+                  </h3>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.75rem" }}>Rejected Users</p>
+                </div>
+                <div className="fs-1" style={{ fontSize: "3rem" }}>
+                  🚫
                 </div>
               </div>
             </div>
@@ -346,20 +324,19 @@ const UsersManagementPage = () => {
                       <th>Email</th>
                       <th>Location</th>
                       <th>KYC Status</th>
-                      <th>Joined</th>
-                      <th>Actions</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="text-center py-4">
+                        <td colSpan={5} className="text-center py-4">
                           <i className="ti ti-users-off" style={{ fontSize: "3rem", opacity: 0.3 }}></i>
                           <p className="text-muted mt-2 mb-0">No users found</p>
                         </td>
                       </tr>
                     ) : (
-                      filteredUsers.map((user) => (
+                      paginatedUsers.map((user) => (
                         <>
                           <tr key={user.id}>
                             <td>
@@ -409,9 +386,6 @@ const UsersManagementPage = () => {
                               )}
                             </td>
                             <td>{getKycStatusBadge(user.id)}</td>
-                            <td>
-                              <small>{formatDate(user.createdAt)}</small>
-                            </td>
                             <td>
                               <div className="d-flex gap-1">
                                 <button 
@@ -540,6 +514,31 @@ const UsersManagementPage = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
+                  <div className="text-muted">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} entries
+                  </div>
+                  <div className="d-flex gap-1">
+                    <button 
+                      className="btn btn-sm btn-outline-primary"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                      Previous
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-outline-primary"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

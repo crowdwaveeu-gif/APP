@@ -31,11 +31,11 @@ const LeftSidebarSection = ({
     >
       <div className="webdesh-logo">
         {customLogo ? (
-          <Link to="/">
+          <Link to="/dashboard">
             <img className="white-logo" src={customLogo} alt="logo" />
           </Link>
         ) : (
-          <Link to="/">
+          <Link to="/dashboard">
             <CrowdWaveLogo size="medium" variant="white" />
           </Link>
         )}

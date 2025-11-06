@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { getAllTransactions, TransactionData, updateTransaction, deleteTransaction } from '../services/dataService';
+import { toast } from 'react-toastify';
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
@@ -57,6 +58,23 @@ const TransactionsPage = () => {
     currentPage * itemsPerPage
   );
 
+  // Initialize Bootstrap tooltips
+  useEffect(() => {
+    // Check if bootstrap is available
+    if (typeof (window as any).bootstrap === 'undefined' || typeof (window as any).bootstrap.Tooltip === 'undefined') {
+      return;
+    }
+
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = Array.from(tooltipTriggerList).map(tooltipTriggerEl => {
+      return new (window as any).bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    return () => {
+      tooltipList.forEach(tooltip => tooltip.dispose());
+    };
+  }, [currentPage, transactions]);
+
   const handleViewTransaction = (txn: TransactionData) => {
     setSelectedTransaction(txn);
     setShowViewModal(true);
@@ -89,10 +107,10 @@ const TransactionsPage = () => {
       
       setShowEditModal(false);
       setSelectedTransaction(null);
-      alert('Transaction updated successfully!');
+      toast.success('Transaction updated successfully!');
     } catch (error) {
       console.error('Error updating transaction:', error);
-      alert('Failed to update transaction. Please try again.');
+      toast.error('Failed to update transaction. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -116,10 +134,10 @@ const TransactionsPage = () => {
       
       setShowDeleteModal(false);
       setSelectedTransaction(null);
-      alert('Transaction deleted successfully!');
+      toast.success('Transaction deleted successfully!');
     } catch (error) {
       console.error('Error deleting transaction:', error);
-      alert('Failed to delete transaction. Please try again.');
+      toast.error('Failed to delete transaction. Please try again.');
     } finally {
       setActionLoading(false);
     }
@@ -191,9 +209,19 @@ const TransactionsPage = () => {
       <div className="col-12">
         <div className="panel">
           <div className="panel-header">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center w-100">
               <h5>Transactions Management</h5>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center">
+                <div className="search-box position-relative" style={{ minWidth: '250px' }}>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    placeholder="Search transactions..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
+                </div>
                 <select 
                   className="form-select form-select-sm"
                   value={typeFilter}
@@ -228,21 +256,6 @@ const TransactionsPage = () => {
           </div>
           
           <div className="panel-body">
-            <div className="row mb-3">
-              <div className="col-md-6">
-                <div className="search-box position-relative">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search transactions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3"></i>
-                </div>
-              </div>
-            </div>
-
             <div className="table-responsive">
               {loading ? (
                 <div className="text-center py-5">
@@ -262,7 +275,7 @@ const TransactionsPage = () => {
                       <th>Status</th>
                       <th>Payment Method</th>
                       <th>Date</th>
-                      <th>Actions</th>
+                      <th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -306,12 +319,14 @@ const TransactionsPage = () => {
                           <td>
                             <small>{txn.createdAt.toLocaleDateString()}</small>
                           </td>
-                          <td>
+                          <td className="text-center">
                             <div className="btn-group btn-group-sm">
                               <button
                                 className="btn btn-outline-info"
                                 onClick={() => handleViewTransaction(txn)}
                                 title="View Details"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-eye"></i>
                               </button>
@@ -319,6 +334,8 @@ const TransactionsPage = () => {
                                 className="btn btn-outline-primary"
                                 onClick={() => handleEditTransaction(txn)}
                                 title="Edit"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-edit"></i>
                               </button>
@@ -326,6 +343,8 @@ const TransactionsPage = () => {
                                 className="btn btn-outline-danger"
                                 onClick={() => handleDeleteTransaction(txn)}
                                 title="Delete"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                               >
                                 <i className="fas fa-trash"></i>
                               </button>
@@ -341,42 +360,26 @@ const TransactionsPage = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center mt-3">
+              <div className="d-flex justify-content-center align-items-center mt-4 flex-column gap-2">
                 <div className="text-muted">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} entries
                 </div>
-                <nav>
-                  <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    {[...Array(totalPages)].map((_, index) => (
-                      <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(index + 1)}
-                        >
-                          {index + 1}
-                        </button>
-                      </li>
-                    ))}
-                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
+                <div className="d-flex gap-1">
+                  <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User } from "@/services/kycService";
+import { toast } from 'react-toastify';
 
 interface UserModalProps {
   show: boolean;
@@ -88,7 +89,7 @@ const UserModal = ({ show, onClose, onSave, user, mode }: UserModalProps) => {
       onClose();
     } catch (error) {
       console.error("Error saving user:", error);
-      alert("Failed to save user. Please try again.");
+      toast.error("Failed to save user. Please try again.");
     } finally {
       setLoading(false);
     }

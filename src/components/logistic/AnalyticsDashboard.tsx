@@ -57,25 +57,25 @@ const AnalyticsDashboard = () => {
             <h5 className="card-title mb-4">Quick Access</h5>
             <div className="row g-3">
               <div className="col-6 col-md-3">
-                <a href="/packages" className="btn btn-outline-primary w-100">
+                <a href="/packages" className="btn btn-primary w-100">
                   <i className="ti ti-package me-2"></i>
                   Manage Packages
                 </a>
               </div>
               <div className="col-6 col-md-3">
-                <a href="/trips" className="btn btn-outline-success w-100">
+                <a href="/trips" className="btn btn-success w-100">
                   <i className="ti ti-car me-2"></i>
                   Manage Trips
                 </a>
               </div>
               <div className="col-6 col-md-3">
-                <a href="/disputes" className="btn btn-outline-warning w-100">
+                <a href="/disputes" className="btn btn-warning w-100">
                   <i className="ti ti-alert-circle me-2"></i>
                   View Disputes
                 </a>
               </div>
               <div className="col-6 col-md-3">
-                <a href="/users-management" className="btn btn-outline-info w-100">
+                <a href="/users-management" className="btn btn-info w-100">
                   <i className="ti ti-users me-2"></i>
                   Manage Users
                 </a>

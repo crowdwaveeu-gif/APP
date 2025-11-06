@@ -1,40 +1,16 @@
-import { useEffect, useRef, useState } from "react";
 import { useOrderStats } from "../../hooks";
 
 const TotalOrderCard2 = () => {
-  const [activeDropdown, setActiveDropdown] = useState<boolean>(false);
   const { data: orderStats, loading, error } = useOrderStats();
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setActiveDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, []);
-
-  const toggleDropdown = () => {
-    setActiveDropdown(!activeDropdown);
-  };
   return (
     <div className="card full-height">
       <div className="top-content mb-4 d-flex align-items-center justify-content-between">
         <div className="icon-wrap me-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="50"
-            height="50"
+            width="52"
+            height="52"
             viewBox="0 0 50 50"
             fill="none"
           >
@@ -56,59 +32,6 @@ const TotalOrderCard2 = () => {
               fill="#053810"
             />
           </svg>
-        </div>
-        <div className="dropdown dropstart" ref={dropdownRef}>
-          <button
-            className={`btn ${activeDropdown ? "show" : ""}`}
-            onClick={toggleDropdown}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="4"
-              height="18"
-              viewBox="0 0 4 18"
-              fill="none"
-            >
-              <g opacity="0.4">
-                <path
-                  d="M2 10C2.55228 10 3 9.55228 3 9C3 8.44772 2.55228 8 2 8C1.44772 8 1 8.44772 1 9C1 9.55228 1.44772 10 2 10Z"
-                  stroke="#737B8B"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M2 3C2.55228 3 3 2.55228 3 2C3 1.44772 2.55228 1 2 1C1.44772 1 1 1.44772 1 2C1 2.55228 1.44772 3 2 3Z"
-                  stroke="#737B8B"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M2 17C2.55228 17 3 16.5523 3 16C3 15.4477 2.55228 15 2 15C1.44772 15 1 15.4477 1 16C1 16.5523 1.44772 17 2 17Z"
-                  stroke="#737B8B"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-            </svg>
-          </button>
-          <div
-            className={`dropdown-menu dropdown-menu-end ${
-              activeDropdown ? "show" : ""
-            }`}
-          >
-            <a className="dropdown-item" href="#">
-              Jan 24
-            </a>
-            <a className="dropdown-item" href="#">
-              Feb 24
-            </a>
-            <a className="dropdown-item" href="#">
-              Mar 24
-            </a>
-          </div>
         </div>
       </div>
       <div className="card-content d-flex align-items-end justify-content-between">
