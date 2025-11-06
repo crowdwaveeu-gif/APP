@@ -18,7 +18,7 @@ class PlatformConfigService {
   static const Duration _cacheDuration = Duration(minutes: 5);
 
   /// Get platform fee percentage (returns decimal, e.g., 0.1 for 10%)
-  /// Falls back to default 10% if Firestore read fails
+  /// Falls back to 0% if Firestore read fails or document doesn't exist
   Future<double> getPlatformFeePercent() async {
     try {
       // Check cache first
@@ -43,7 +43,7 @@ class PlatformConfigService {
       if (settingsDoc.exists) {
         final data = settingsDoc.data();
         final feePercent =
-            (data?['platformFeePercent'] as num?)?.toDouble() ?? 10.0;
+            (data?['platformFeePercent'] as num?)?.toDouble() ?? 0.0;
 
         // Convert percentage to decimal (e.g., 10% -> 0.1)
         final feeDecimal = feePercent / 100;
@@ -59,26 +59,26 @@ class PlatformConfigService {
         return feeDecimal;
       } else {
         if (kDebugMode) {
-          print('⚠️ Platform settings document not found, using default 10%');
+          print('⚠️ Platform settings document not found');
         }
 
-        // Cache default value
-        _cachedPlatformFeePercent = 0.1;
+        // Cache 0% value
+        _cachedPlatformFeePercent = 0.0;
         _cacheTimestamp = DateTime.now();
 
-        return 0.1; // Default 10%
+        return 0.0;
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error fetching platform fee: $e');
-        print('⚠️ Falling back to default 10%');
+        print('⚠️ Returning 0% due to error');
       }
 
-      // Cache default value even on error
-      _cachedPlatformFeePercent = 0.1;
+      // Cache 0% value even on error
+      _cachedPlatformFeePercent = 0.0;
       _cacheTimestamp = DateTime.now();
 
-      return 0.1; // Default 10% fallback
+      return 0.0;
     }
   }
 

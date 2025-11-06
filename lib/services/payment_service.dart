@@ -8,6 +8,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../core/constants/api_constants.dart';
 import '../core/models/transaction.dart' show PaymentMethod;
+import 'platform_config_service.dart';
 
 /// Centralized payment service for Stripe integration
 class PaymentService {
@@ -16,6 +17,7 @@ class PaymentService {
   PaymentService._internal();
 
   bool _isInitialized = false;
+  final PlatformConfigService _configService = PlatformConfigService();
 
   /// Initialize Stripe with environment-specific keys
   Future<void> initializeStripe() async {
@@ -399,14 +401,16 @@ class PaymentService {
     }
   }
 
-  /// Calculate platform fee (10% for now)
-  double calculatePlatformFee(double amount) {
-    return amount * 0.1; // 10% platform fee
+  /// Calculate platform fee (fetches dynamic rate from Firestore)
+  Future<double> calculatePlatformFee(double amount) async {
+    final feePercent = await _configService.getPlatformFeePercent();
+    return amount * feePercent;
   }
 
   /// Calculate traveler payout after platform fee
-  double calculateTravelerPayout(double amount) {
-    return amount - calculatePlatformFee(amount);
+  Future<double> calculateTravelerPayout(double amount) async {
+    final platformFee = await calculatePlatformFee(amount);
+    return amount - platformFee;
   }
 
   /// Enhanced error handling for different Stripe errors

@@ -26,7 +26,7 @@ class BookingSummaryWidget extends StatefulWidget {
 
 class _BookingSummaryWidgetState extends State<BookingSummaryWidget> {
   final PlatformConfigService _configService = PlatformConfigService();
-  double _platformFeePercent = 0.1; // Default 10%
+  double _platformFeePercent = 0.0; // Will be loaded from Firestore
   bool _isLoadingFee = true;
 
   @override

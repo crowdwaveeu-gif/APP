@@ -523,5 +523,18 @@ service cloud.firestore {
       // Only admins can create, update, or delete static content
       allow create, update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
     }
+
+    // ========================================
+    // PLATFORM SETTINGS COLLECTION
+    // Global platform configuration (fees, etc.)
+    // ========================================
+    match /platformSettings/{settingId} {
+      // Allow ANYONE (including unauthenticated users) to read platform settings
+      // This is needed for the app to fetch platform fee percentage
+      allow read: if true;
+      
+      // Only admins can create, update, or delete platform settings
+      allow create, update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
   }
 }

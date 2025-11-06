@@ -48,7 +48,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   bool _isLoading = false;
   bool _isLoadingFee = true;
   String? _errorMessage;
-  double _platformFeePercent = 0.1; // Default 10%
+  double _platformFeePercent = 0.0; // Will be loaded from Firestore
 
   @override
   void initState() {

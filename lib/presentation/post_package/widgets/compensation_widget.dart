@@ -4,6 +4,7 @@ import 'package:sizer/sizer.dart';
 import 'dart:math';
 
 import '../../../core/app_export.dart';
+import '../../../services/platform_config_service.dart';
 
 class CompensationWidget extends StatefulWidget {
   final double compensationOffer;
@@ -38,6 +39,9 @@ class _CompensationWidgetState extends State<CompensationWidget>
   late Animation<double> _fadeAnimation;
   late Animation<double> _bounceAnimation;
 
+  final PlatformConfigService _configService = PlatformConfigService();
+  double _platformFeePercent = 0.0; // Will be loaded from Firestore
+
   // Suggested compensation amounts
   List<double> get _suggestedAmounts {
     final baseAmount = _calculateBaseAmount();
@@ -53,6 +57,16 @@ class _CompensationWidgetState extends State<CompensationWidget>
   void initState() {
     super.initState();
     _setupAnimations();
+    _loadPlatformFee();
+  }
+
+  Future<void> _loadPlatformFee() async {
+    final feePercent = await _configService.getPlatformFeePercent();
+    if (mounted) {
+      setState(() {
+        _platformFeePercent = feePercent;
+      });
+    }
   }
 
   @override
@@ -710,7 +724,7 @@ class _CompensationWidgetState extends State<CompensationWidget>
   Widget _buildCostBreakdown() {
     final insuranceFee =
         widget.insuranceRequired ? _calculateInsuranceFee() : 0.0;
-    final platformFee = widget.compensationOffer * 0.1; // 10% platform fee
+    final platformFee = widget.compensationOffer * _platformFeePercent;
     final totalCost = widget.compensationOffer + insuranceFee + platformFee;
 
     return Container(
@@ -736,7 +750,9 @@ class _CompensationWidgetState extends State<CompensationWidget>
           _buildCostItem('Delivery Payment', widget.compensationOffer),
           if (widget.insuranceRequired)
             _buildCostItem('Insurance Fee', insuranceFee),
-          _buildCostItem('Platform Fee (10%)', platformFee),
+          _buildCostItem(
+              'Platform Fee (${(_platformFeePercent * 100).toStringAsFixed(1)}%)',
+              platformFee),
           Divider(height: 3.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
