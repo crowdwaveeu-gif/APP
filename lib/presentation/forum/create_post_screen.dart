@@ -366,9 +366,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color(0xFF008080),
+                  color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Color(0xFF008080)),
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
