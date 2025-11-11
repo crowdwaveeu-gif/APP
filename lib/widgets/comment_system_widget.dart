@@ -128,7 +128,9 @@ class _CommentSystemWidgetState extends State<CommentSystemWidget> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(like ? 'comments.like_failed'.tr(args: [e.toString()]) : 'comments.unlike_failed'.tr(args: [e.toString()])),
+          content: Text(like
+              ? 'comments.like_failed'.tr(args: [e.toString()])
+              : 'comments.unlike_failed'.tr(args: [e.toString()])),
           backgroundColor: Colors.red,
         ),
       );
@@ -442,7 +444,8 @@ class _CommentSystemWidgetState extends State<CommentSystemWidget> {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('comments.report_failed'.tr(args: [e.toString()])),
+                  content:
+                      Text('comments.report_failed'.tr(args: [e.toString()])),
                   backgroundColor: Colors.red,
                 ),
               );

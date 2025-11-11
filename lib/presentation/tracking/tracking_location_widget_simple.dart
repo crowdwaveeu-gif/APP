@@ -97,7 +97,7 @@ class _TrackingLocationWidgetState extends State<TrackingLocationWidget> {
       markerId: const MarkerId('courier'),
       position: LatLng(courier.latitude, courier.longitude),
       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
-      infoWindow: InfoWindow (
+      infoWindow: InfoWindow(
         title: 'tracking.package_location_icon'.tr(),
         snippet: 'Currently here',
       ),
@@ -257,7 +257,8 @@ class _TrackingLocationWidgetState extends State<TrackingLocationWidget> {
               Icon(Icons.location_on, color: Color(0xFF008080), size: 6.w),
               SizedBox(width: 3.w),
               Expanded(
-                child: Text('tracking.live_tracking'.tr(),
+                child: Text(
+                  'tracking.live_tracking'.tr(),
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -278,7 +279,8 @@ class _TrackingLocationWidgetState extends State<TrackingLocationWidget> {
                     Icon(Icons.radio_button_checked,
                         color: Colors.white, size: 3.w),
                     SizedBox(width: 1.w),
-                    Text('common.live'.tr(),
+                    Text(
+                      'common.live'.tr(),
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
@@ -371,7 +373,8 @@ class _TrackingLocationWidgetState extends State<TrackingLocationWidget> {
                       Container(
                         color: Colors.grey[200],
                         child: Center(
-                          child: Text('common.map_data_loading'.tr(),
+                          child: Text(
+                            'common.map_data_loading'.tr(),
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ),
@@ -394,7 +397,8 @@ class _TrackingLocationWidgetState extends State<TrackingLocationWidget> {
                             Icon(Icons.open_in_full,
                                 color: Colors.white, size: 4.w),
                             SizedBox(width: 1.w),
-                            Text('common.tap_to_expand'.tr(),
+                            Text(
+                              'common.tap_to_expand'.tr(),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 11.sp,

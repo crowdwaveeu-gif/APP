@@ -12,6 +12,7 @@ import '../../services/auth_state_service.dart';
 import '../../services/user_profile_service.dart';
 import '../../services/image_service.dart';
 import '../../services/kyc_service.dart';
+import '../../services/enhanced_firebase_auth_service.dart';
 import '../../core/models/user_profile.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -376,6 +377,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                       ),
                       child: Column(
                         children: [
+                          // Account Deletion (App Store 5.1.1 requirement)
+                          _buildDestructiveSection(),
                           // Email Section (Read-only)
                           _buildProfileOption(
                             icon: Icons.email_outlined,
@@ -498,6 +501,124 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
               ],
             ),
     );
+  }
+
+  /// Destructive account section for App Store Guideline 5.1.1 compliance
+  Widget _buildDestructiveSection() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.delete_forever, color: Colors.red),
+              SizedBox(width: 8),
+              Text(
+                'Account Control',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'You can permanently delete your account and all associated data. This action cannot be undone.',
+            style: TextStyle(fontSize: 12, color: Colors.black87),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              icon: const Icon(Icons.warning_amber_rounded),
+              label: const Text('Delete Account'),
+              onPressed: _confirmAccountDeletion,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmAccountDeletion() async {
+    final authService = Provider.of<AuthStateService>(context, listen: false);
+    final user = authService.currentUser;
+    if (user == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and remove your profile, wallet, and presence data from our servers. You will be signed out and cannot recover the account later. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: Colors.red),
+      ),
+    );
+
+    try {
+      // Delete Firestore profile
+      await _userProfileService.deleteUserProfile();
+
+      // Delete Firebase Auth user
+      await EnhancedFirebaseAuthService.instance.deleteUserAccount();
+
+      // Sign out locally
+      await authService.signOut();
+
+      if (mounted) {
+        Navigator.of(context).pop(); // remove progress dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account deleted successfully.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete account: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildProfileAvatar(currentUser) {

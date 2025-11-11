@@ -68,23 +68,21 @@ class Transaction {
       amount: json['amount'].toDouble(),
       platformFee: json['platformFee'].toDouble(),
       travelerPayout: json['travelerPayout'].toDouble(),
-      status: TransactionStatus.values.firstWhere(
-        (e) => e.name == json['status']
-      ),
-      paymentMethod: PaymentMethod.values.firstWhere(
-        (e) => e.name == json['paymentMethod']
-      ),
+      status:
+          TransactionStatus.values.firstWhere((e) => e.name == json['status']),
+      paymentMethod: PaymentMethod.values
+          .firstWhere((e) => e.name == json['paymentMethod']),
       stripePaymentIntentId: json['stripePaymentIntentId'],
       stripeTransferId: json['stripeTransferId'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      completedAt: json['completedAt'] != null 
-          ? DateTime.parse(json['completedAt']) 
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'])
           : null,
       failureReason: json['failureReason'],
       isEscrow: json['isEscrow'] ?? true,
-      escrowReleaseDate: json['escrowReleaseDate'] != null 
-          ? DateTime.parse(json['escrowReleaseDate']) 
+      escrowReleaseDate: json['escrowReleaseDate'] != null
+          ? DateTime.parse(json['escrowReleaseDate'])
           : null,
     );
   }
@@ -118,7 +116,8 @@ class Transaction {
       travelerPayout: travelerPayout ?? this.travelerPayout,
       status: status ?? this.status,
       paymentMethod: paymentMethod ?? this.paymentMethod,
-      stripePaymentIntentId: stripePaymentIntentId ?? this.stripePaymentIntentId,
+      stripePaymentIntentId:
+          stripePaymentIntentId ?? this.stripePaymentIntentId,
       stripeTransferId: stripeTransferId ?? this.stripeTransferId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

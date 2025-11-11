@@ -119,7 +119,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('booking.booking_summary'.tr(),
+          Text(
+            'booking.booking_summary'.tr(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -170,7 +171,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('booking.select_payment_method'.tr(),
+        Text(
+          'booking.select_payment_method'.tr(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -200,7 +202,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
             if (supportedMethods.isEmpty) {
               return Center(
-                child: Text('wallet.no_payment_methods_available'.tr(),
+                child: Text(
+                  'wallet.no_payment_methods_available'.tr(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey,
                       ),
@@ -264,14 +267,17 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('wallet.secure_payment'.tr(),
+                Text(
+                  'wallet.secure_payment'.tr(),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF008080),
                       ),
                 ),
                 const SizedBox(height: 4),
-                Text('travel.your_payment_is_secured_by_stripe_your_card_detail'.tr(),
+                Text(
+                  'travel.your_payment_is_secured_by_stripe_your_card_detail'
+                      .tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Color(0xFF008080),
                       ),
@@ -318,7 +324,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
             isLoading: _isLoading,
           ),
           const SizedBox(height: 6),
-          Text('common.by_proceeding_you_agree_to_our_terms_of_service'.tr(),
+          Text(
+            'common.by_proceeding_you_agree_to_our_terms_of_service'.tr(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey.shade600,
                   fontSize: 11,

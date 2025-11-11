@@ -31,7 +31,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         appBar: AppBar(
           title: Text('wallet.transaction_history'.tr()),
         ),
-        body: Center (
+        body: Center(
           child: Text('wallet.login_required_transactions'.tr()),
         ),
       );
@@ -40,7 +40,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text('wallet.transaction_history'.tr(),
+        title: Text(
+          'wallet.transaction_history'.tr(),
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
@@ -171,7 +172,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text('common.your_transactions_will_appear_here'.tr(),
+                          Text(
+                            'common.your_transactions_will_appear_here'.tr(),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[500],

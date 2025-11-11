@@ -136,7 +136,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
                   ),
                 ),
                 SizedBox(width: 8),
-                Text('common.loading_offer'.tr(),
+                Text(
+                  'common.loading_offer'.tr(),
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 14,
@@ -199,7 +200,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
               color: Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text('status.expired'.tr(),
+            child: Text(
+              'status.expired'.tr(),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -239,7 +241,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
             ),
           ),
           SizedBox(width: 4),
-          Text('tracking.delivery_fee'.tr(),
+          Text(
+            'tracking.delivery_fee'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
@@ -343,7 +346,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
         color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text('common.waiting_for_response'.tr(),
+      child: Text(
+        'common.waiting_for_response'.tr(),
         style: TextStyle(
           fontSize: 12,
           fontStyle: FontStyle.italic,
@@ -364,7 +368,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : () => _acceptDeal(),
                 icon: Icon(Icons.check, size: 14),
-                label: Text('matching.accept'.tr(),
+                label: Text(
+                  'matching.accept'.tr(),
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -385,7 +390,8 @@ class _DealOfferMessageWidgetState extends State<DealOfferMessageWidget> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : () => _rejectDeal(),
                 icon: Icon(Icons.close, size: 14),
-                label: Text('common.decline'.tr(),
+                label: Text(
+                  'common.decline'.tr(),
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),

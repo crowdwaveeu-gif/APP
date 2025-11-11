@@ -126,7 +126,8 @@ class _PriceInputWidgetState extends State<PriceInputWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('common.your_price'.tr(),
+        Text(
+          'common.your_price'.tr(),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -209,7 +210,8 @@ class _PriceInputWidgetState extends State<PriceInputWidget> {
           children: [
             Icon(Icons.info_outline, size: 14, color: Colors.grey[600]),
             SizedBox(width: 4),
-            Text('post_package.enter_your_delivery_fee_for_this_package'.tr(),
+            Text(
+              'post_package.enter_your_delivery_fee_for_this_package'.tr(),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -288,7 +290,8 @@ class _PriceInputWidgetState extends State<PriceInputWidget> {
               ),
               side: BorderSide(color: Colors.grey[300]!),
             ),
-            child: Text('common.cancel'.tr(),
+            child: Text(
+              'common.cancel'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -318,7 +321,8 @@ class _PriceInputWidgetState extends State<PriceInputWidget> {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : Text('booking.send_offer'.tr(),
+                : Text(
+                    'booking.send_offer'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

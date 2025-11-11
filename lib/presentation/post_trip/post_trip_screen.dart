@@ -132,7 +132,8 @@ class _PostTripScreenState extends State<PostTripScreen>
         icon: Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
       ),
-      title: Text('post_trip.title'.tr(),
+      title: Text(
+        'post_trip.title'.tr(),
         style: TextStyle(
           fontSize: 18.sp,
           fontWeight: FontWeight.w600,
@@ -295,7 +296,8 @@ class _PostTripScreenState extends State<PostTripScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('common.back'.tr(),
+                child: Text(
+                  'common.back'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,

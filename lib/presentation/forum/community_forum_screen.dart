@@ -112,7 +112,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
                 ),
                 onChanged: _performSearch,
               )
-            : Text('common.community_forum'.tr(),
+            : Text(
+                'common.community_forum'.tr(),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -178,7 +179,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
         },
         backgroundColor: const Color(0xFF215C5C),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('common.new_post'.tr(),
+        label: Text(
+          'common.new_post'.tr(),
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -209,7 +211,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
               children: [
                 const Icon(Icons.error_outline, size: 48, color: Colors.red),
                 const SizedBox(height: 16),
-                Text('error_messages.error_loading_posts'.tr(),
+                Text(
+                  'error_messages.error_loading_posts'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[700],
@@ -233,7 +236,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
                   color: Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
-                Text('common.no_posts_yet'.tr(),
+                Text(
+                  'common.no_posts_yet'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -241,7 +245,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('common.be_the_first_to_post'.tr(),
+                Text(
+                  'common.be_the_first_to_post'.tr(),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[500],
@@ -277,7 +282,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
           children: [
             Icon(Icons.search, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            Text('common.search_for_posts'.tr(),
+            Text(
+              'common.search_for_posts'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -295,7 +301,8 @@ class _CommunityForumScreenState extends State<CommunityForumScreen>
           children: [
             Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            Text('common.no_results_found'.tr(),
+            Text(
+              'common.no_results_found'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

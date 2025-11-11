@@ -120,7 +120,7 @@ flutter:
     - assets/package.png
     - assets/bg_header.png
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/logo.png"
@@ -129,6 +129,7 @@ flutter_icons:
   remove_alpha_ios: true
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/images/logo.png"
+  ios_content_mode: "center"  # Ensures logo is centered with background
 
 flutter_native_splash:
   color: "#ffffff"

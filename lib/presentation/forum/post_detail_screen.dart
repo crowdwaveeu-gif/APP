@@ -193,7 +193,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('common.post'.tr(),
+        title: Text(
+          'common.post'.tr(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -219,7 +220,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text('error_messages.error_loading_post'.tr(),
+                  Text(
+                    'error_messages.error_loading_post'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
@@ -251,7 +253,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-                          Text('common.comments'.tr(),
+                          Text(
+                            'common.comments'.tr(),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -309,14 +312,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     color: Colors.grey[400],
                                   ),
                                   const SizedBox(height: 8),
-                                  Text('common.no_comments_yet'.tr(),
+                                  Text(
+                                    'common.no_comments_yet'.tr(),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text('common.be_the_first_to_comment'.tr(),
+                                  Text(
+                                    'common.be_the_first_to_comment'.tr(),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[500],
@@ -427,7 +432,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 PopupMenuButton(
                   icon: const Icon(Icons.more_vert),
                   itemBuilder: (context) => [
-                    PopupMenuItem (
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [

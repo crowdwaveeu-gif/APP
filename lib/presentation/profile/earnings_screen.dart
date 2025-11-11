@@ -162,9 +162,10 @@ class EarningsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding (
+                  Padding(
                     padding: EdgeInsets.all(20),
-                    child: Text('wallet.recent_transactions'.tr(),
+                    child: Text(
+                      'wallet.recent_transactions'.tr(),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -184,7 +185,8 @@ class EarningsScreen extends StatelessWidget {
                           color: Colors.grey[400],
                         ),
                         const SizedBox(height: 16),
-                        Text('wallet.no_transactions'.tr(),
+                        Text(
+                          'wallet.no_transactions'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -192,7 +194,9 @@ class EarningsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text('post_package.start_delivering_packages_to_see_your_earnings_her'.tr(),
+                        Text(
+                          'post_package.start_delivering_packages_to_see_your_earnings_her'
+                              .tr(),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[500],

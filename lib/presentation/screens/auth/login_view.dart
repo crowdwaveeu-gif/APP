@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show kIsWeb, TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -314,7 +316,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
 
                 /// Social Login Buttons
-                socialLoginButtons(),
+                _socialLoginButtons(),
                 SizedBox(
                   height: size.height * 0.03,
                 ),
@@ -352,6 +354,106 @@ class _LoginViewState extends State<LoginView> {
         ),
       ],
     );
+  }
+
+  // --- Added Social Login Section (Google & Apple) with robust error handling ---
+  Widget _socialLoginButtons() {
+    // Platform gating: we intentionally hide Google on iOS (App Store rules encourage Apple sign-in)
+    // and hide Apple on Android where it adds little UX value. Web shows both.
+    final bool isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+    return Column(
+      children: [
+        if (!isIOS) // Hide Google on iOS devices
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    side: const BorderSide(color: Color(0xFF008080), width: 1),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: const Text('Continue with Google'),
+                  onPressed: _handleGoogleSignIn,
+                ),
+              ),
+            ],
+          ),
+        if (!isIOS) const SizedBox(height: 12),
+        if (!isAndroid) // Hide Apple on Android devices
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.apple, size: 20),
+                  label: const Text('Continue with Apple'),
+                  onPressed: _handleAppleSignIn,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final user = await _authService.signInWithGoogle();
+      if (user == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Google sign-in cancelled')),
+        );
+        return;
+      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Welcome, ${user.displayName ?? 'User'}')),
+      );
+      // AuthWrapper will rebuild automatically due to provider listener
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+            content: Text('Google sign-in failed: $e'),
+            backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _handleAppleSignIn() async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final user = await _authService.signInWithApple();
+      if (user == null) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Apple sign-in cancelled')),
+        );
+        return;
+      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Welcome, ${user.displayName ?? 'User'}')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+            content: Text('Apple sign-in failed: $e'),
+            backgroundColor: Colors.red),
+      );
+    }
   }
 
   /// Main Body Without Animation (for when animation is positioned separately)
@@ -614,6 +716,78 @@ class _LoginViewState extends State<LoginView> {
 
   // Social Login Buttons
   Widget socialLoginButtons() {
+    // Platform gating: hide Google button on iOS, hide Apple button on Android.
+    // Keep Facebook everywhere. Web gets all providers.
+    final bool isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+    // Build the list of social buttons conditionally
+    final List<Widget> buttons = [];
+
+    // Google (hidden on iOS)
+    if (!isIOS) {
+      buttons.add(
+        _socialIconButton(
+          iconPath: 'assets/icons8-google-color/icons8-google-48.png',
+          onPressed: () async {
+            try {
+              final user = await _authService.signInWithGoogle();
+              if (user != null) {
+                _showCustomSnackbar('Success', 'Google login successful!');
+                Get.offAllNamed('/main-navigation');
+              }
+            } catch (e) {
+              String errorMessage =
+                  e.toString().replaceFirst('Exception: ', '');
+              _showCustomSnackbar('Error', errorMessage, isError: true);
+            }
+          },
+        ),
+      );
+    }
+
+    // Facebook (always shown)
+    buttons.add(
+      _socialIconButton(
+        iconPath: 'assets/images/facebook-icon.png',
+        onPressed: () async {
+          try {
+            final user = await _authService.signInWithFacebook();
+            if (user != null) {
+              _showCustomSnackbar('Success', 'Facebook login successful!');
+              Get.offAllNamed('/main-navigation');
+            }
+          } catch (e) {
+            String errorMessage = e.toString().replaceFirst('Exception: ', '');
+            _showCustomSnackbar('Error', errorMessage, isError: true);
+          }
+        },
+      ),
+    );
+
+    // Apple (hidden on Android)
+    if (!isAndroid) {
+      buttons.add(
+        _socialIconButton(
+          iconPath: 'assets/icons8-apple-ios-17-outlined/icons8-apple-100.png',
+          onPressed: () async {
+            try {
+              final user = await _authService.signInWithApple();
+              if (user != null) {
+                _showCustomSnackbar('Success', 'Apple login successful!');
+                Get.offAllNamed('/main-navigation');
+              }
+            } catch (e) {
+              String errorMessage =
+                  e.toString().replaceFirst('Exception: ', '');
+              _showCustomSnackbar('Error', errorMessage, isError: true);
+            }
+          },
+        ),
+      );
+    }
+
     return Column(
       children: [
         // Divider with "or" text
@@ -635,63 +809,7 @@ class _LoginViewState extends State<LoginView> {
         // Compact Social Login Buttons Row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Google Button
-            _socialIconButton(
-              iconPath: 'assets/icons8-google-color/icons8-google-48.png',
-              onPressed: () async {
-                try {
-                  final user = await _authService.signInWithGoogle();
-                  if (user != null) {
-                    _showCustomSnackbar('Success', 'Google login successful!');
-                    Get.offAllNamed('/main-navigation');
-                  }
-                } catch (e) {
-                  String errorMessage =
-                      e.toString().replaceFirst('Exception: ', '');
-                  _showCustomSnackbar('Error', errorMessage, isError: true);
-                }
-              },
-            ),
-
-            // Facebook Button
-            _socialIconButton(
-              iconPath: 'assets/images/facebook-icon.png',
-              onPressed: () async {
-                try {
-                  final user = await _authService.signInWithFacebook();
-                  if (user != null) {
-                    _showCustomSnackbar(
-                        'Success', 'Facebook login successful!');
-                    Get.offAllNamed('/main-navigation');
-                  }
-                } catch (e) {
-                  String errorMessage =
-                      e.toString().replaceFirst('Exception: ', '');
-                  _showCustomSnackbar('Error', errorMessage, isError: true);
-                }
-              },
-            ),
-
-            // Apple Button
-            _socialIconButton(
-              iconPath:
-                  'assets/icons8-apple-ios-17-outlined/icons8-apple-100.png',
-              onPressed: () async {
-                try {
-                  final user = await _authService.signInWithApple();
-                  if (user != null) {
-                    _showCustomSnackbar('Success', 'Apple login successful!');
-                    Get.offAllNamed('/main-navigation');
-                  }
-                } catch (e) {
-                  String errorMessage =
-                      e.toString().replaceFirst('Exception: ', '');
-                  _showCustomSnackbar('Error', errorMessage, isError: true);
-                }
-              },
-            ),
-          ],
+          children: buttons,
         ),
       ],
     );

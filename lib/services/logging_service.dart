@@ -249,7 +249,8 @@ class LoggingService {
       }
     } catch (e) {
       // Don't let analytics logging break the app
-      developer.log('Failed to log to analytics: $e', name: 'common.loggingservice'.tr());
+      developer.log('Failed to log to analytics: $e',
+          name: 'common.loggingservice'.tr());
     }
   }
 

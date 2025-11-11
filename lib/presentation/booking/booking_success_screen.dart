@@ -516,7 +516,8 @@ Download: https://crowdwave.com/app
         const SizedBox(height: 24),
 
         // Success Title
-        Text('booking.booking_success_title'.tr(),
+        Text(
+          'booking.booking_success_title'.tr(),
           style: AppTextStyles.h1.copyWith(
             color: AppColors.success,
             fontWeight: FontWeight.bold,
@@ -558,7 +559,8 @@ Download: https://crowdwave.com/app
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('booking.booking_details'.tr(),
+              Text(
+                'booking.booking_details'.tr(),
                 style: AppTextStyles.h3.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -586,7 +588,8 @@ Download: https://crowdwave.com/app
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 12),
-            Text('detail.special_instructions'.tr(),
+            Text(
+              'detail.special_instructions'.tr(),
               style: AppTextStyles.subtitle1.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -629,7 +632,8 @@ Download: https://crowdwave.com/app
                 size: 24,
               ),
               const SizedBox(width: 12),
-              Text('wallet.payment_receipt'.tr(),
+              Text(
+                'wallet.payment_receipt'.tr(),
                 style: AppTextStyles.h3.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -644,7 +648,8 @@ Download: https://crowdwave.com/app
             _buildDetailRow('Status', 'Paid'),
             _buildDetailRow('Processed At', _formatDateTime(DateTime.now())),
           ] else ...[
-            Text('common.payment_receipt_will_be_available_once_processing_'.tr(),
+            Text(
+              'common.payment_receipt_will_be_available_once_processing_'.tr(),
               style: AppTextStyles.body2.copyWith(
                 color: AppColors.textSecondary,
                 fontStyle: FontStyle.italic,
@@ -668,7 +673,9 @@ Download: https://crowdwave.com/app
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('wallet.your_payment_is_secured_in_escrow_until_delivery_c'.tr(),
+                  child: Text(
+                    'wallet.your_payment_is_secured_in_escrow_until_delivery_c'
+                        .tr(),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.success,
                     ),
@@ -837,7 +844,8 @@ Download: https://crowdwave.com/app
                         size: 22,
                       ),
                       const SizedBox(width: 8),
-                      Text('forum.share'.tr(),
+                      Text(
+                        'forum.share'.tr(),
                         style: AppTextStyles.button.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -886,7 +894,8 @@ Download: https://crowdwave.com/app
                         size: 22,
                       ),
                       const SizedBox(width: 8),
-                      Text('nav.home'.tr(),
+                      Text(
+                        'nav.home'.tr(),
                         style: AppTextStyles.button.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,

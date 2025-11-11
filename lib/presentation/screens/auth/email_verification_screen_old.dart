@@ -188,7 +188,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.black87),
             onPressed: _signOutAndGoBack,
           ),
-          title: Text('profile.verify_email'.tr(),
+          title: Text(
+            'profile.verify_email'.tr(),
             style: TextStyle(
               color: Colors.black87,
               fontSize: 18,
@@ -274,7 +275,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   _buildInstructionCard(
                     icon: Icons.link,
                     title: 'auth.click_link'.tr(),
-                    description: 'kyc.click_the_verification_link_in_the_email_to_verify'.tr(),
+                    description:
+                        'kyc.click_the_verification_link_in_the_email_to_verify'
+                            .tr(),
                   ),
                   const SizedBox(height: 12),
                   _buildInstructionCard(
@@ -309,7 +312,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text('kyc.waiting_for_verification'.tr(),
+                          child: Text(
+                            'kyc.waiting_for_verification'.tr(),
                             style: TextStyle(
                               color: Color(0xFF008080),
                               fontWeight: FontWeight.w500,
@@ -384,7 +388,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   // Sign out button
                   TextButton(
                     onPressed: _signOutAndGoBack,
-                    child: Text('auth.sign_out_and_try_again'.tr(),
+                    child: Text(
+                      'auth.sign_out_and_try_again'.tr(),
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 14,

@@ -22,7 +22,8 @@ class ConfettiCelebrationWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ConfettiCelebrationWidget> createState() => _ConfettiCelebrationWidgetState();
+  State<ConfettiCelebrationWidget> createState() =>
+      _ConfettiCelebrationWidgetState();
 }
 
 class _ConfettiCelebrationWidgetState extends State<ConfettiCelebrationWidget>
@@ -51,7 +52,8 @@ class _ConfettiCelebrationWidgetState extends State<ConfettiCelebrationWidget>
     }
 
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed && widget.onAnimationComplete != null) {
+      if (status == AnimationStatus.completed &&
+          widget.onAnimationComplete != null) {
         widget.onAnimationComplete!();
       }
     });

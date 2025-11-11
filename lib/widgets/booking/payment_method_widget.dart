@@ -96,7 +96,8 @@ class PaymentMethodWidget extends StatelessWidget {
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text('profile.coming_soon'.tr(),
+                child: Text(
+                  'profile.coming_soon'.tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey.shade600,
                         fontSize: 10,

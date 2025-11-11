@@ -676,12 +676,14 @@ class MatchingScreen extends StatelessWidget {
 
   void _contactTraveler(TravelTrip trip) {
     // Navigate to chat or contact screen
-    Get.snackbar('contact.title'.tr(), 'contact.opening_chat'.tr(args: [trip.travelerName]));
+    Get.snackbar('contact.title'.tr(),
+        'contact.opening_chat'.tr(args: [trip.travelerName]));
   }
 
   void _viewSuggestionDetails(NearbySuggestion suggestion) {
     // Navigate to detailed view
-    Get.snackbar('details.title'.tr(), 'details.viewing'.tr(args: [suggestion.title]));
+    Get.snackbar(
+        'details.title'.tr(), 'details.viewing'.tr(args: [suggestion.title]));
   }
 
   // Dialog methods
@@ -698,7 +700,8 @@ class MatchingScreen extends StatelessWidget {
       context: Get.context!,
       builder: (context) => AlertDialog(
         title: Text('matching.accept_match'.tr()),
-        content: Text('common.do_you_want_to_accept_this_match_you_can_negotiate'.tr()),
+        content: Text(
+            'common.do_you_want_to_accept_this_match_you_can_negotiate'.tr()),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
@@ -804,7 +807,8 @@ class MatchingScreen extends StatelessWidget {
                 Get.back();
                 controller.acceptMatch(match.id, negotiatedPrice: price);
               } else {
-                Get.snackbar('error.title'.tr(), 'validation.invalid_price'.tr());
+                Get.snackbar(
+                    'error.title'.tr(), 'validation.invalid_price'.tr());
               }
             },
             child: Text('matching.accept_with_price'.tr()),

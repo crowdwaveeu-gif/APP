@@ -68,8 +68,8 @@ class FormValidatorHelper {
         return ValidationMessages.validatePassword;
       case 'fullname':
       case 'name':
-        return (value) =>
-            ValidationMessages.validateName(value, fieldName: 'profile.full_name'.tr());
+        return (value) => ValidationMessages.validateName(value,
+            fieldName: 'profile.full_name'.tr());
       case 'phone':
       case 'phonenumber':
         return ValidationMessages.validatePhoneNumber;

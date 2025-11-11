@@ -668,14 +668,16 @@ class _ModerationPanelWidgetState extends State<ModerationPanelWidget> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('moderation.review_status'.tr(args: [status.toString().split('.').last])),
+          content: Text('moderation.review_status'
+              .tr(args: [status.toString().split('.').last])),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('moderation.update_status_failed'.tr(args: [e.toString()])),
+          content:
+              Text('moderation.update_status_failed'.tr(args: [e.toString()])),
           backgroundColor: Colors.red,
         ),
       );

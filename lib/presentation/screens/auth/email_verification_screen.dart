@@ -193,7 +193,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.black87),
             onPressed: _signOutAndGoBack,
           ),
-          title: Text('profile.verify_email'.tr(),
+          title: Text(
+            'profile.verify_email'.tr(),
             style: TextStyle(
               color: Colors.black87,
               fontSize: 18,
@@ -367,7 +368,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : Text('common.verify_code'.tr(),
+                              : Text(
+                                  'common.verify_code'.tr(),
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -408,7 +410,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       // Sign out button
                       TextButton(
                         onPressed: _signOutAndGoBack,
-                        child: Text('auth.sign_out_and_try_again'.tr(),
+                        child: Text(
+                          'auth.sign_out_and_try_again'.tr(),
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 14,

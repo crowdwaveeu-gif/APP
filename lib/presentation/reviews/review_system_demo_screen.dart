@@ -253,7 +253,8 @@ class _ReviewSystemDemoScreenState extends State<ReviewSystemDemoScreen> {
                                 color: Colors.green[100],
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Text('profile.verified'.tr(),
+                              child: Text(
+                                'profile.verified'.tr(),
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.green[700],

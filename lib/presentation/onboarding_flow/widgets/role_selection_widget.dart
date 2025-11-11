@@ -21,7 +21,8 @@ class RoleSelectionWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Title
-            Text('common.choose_your_role'.tr(),
+            Text(
+              'common.choose_your_role'.tr(),
               style: AppTheme.lightTheme.textTheme.headlineMedium?.copyWith(
                 color: AppTheme.lightTheme.colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
@@ -32,7 +33,8 @@ class RoleSelectionWidget extends StatelessWidget {
             SizedBox(height: 2.h),
 
             // Subtitle
-            Text('common.how_would_you_like_to_use_crowdwave'.tr(),
+            Text(
+              'common.how_would_you_like_to_use_crowdwave'.tr(),
               style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
                 color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
               ),
@@ -61,7 +63,9 @@ class RoleSelectionWidget extends StatelessWidget {
                   context: context,
                   icon: 'flight_takeoff',
                   title: 'post_package.i_want_to_deliver_packages'.tr(),
-                  description: 'post_package.earn_money_by_delivering_packages_on_your_trips'.tr(),
+                  description:
+                      'post_package.earn_money_by_delivering_packages_on_your_trips'
+                          .tr(),
                   onTap: () => onRoleSelected('traveler'),
                 ),
               ],

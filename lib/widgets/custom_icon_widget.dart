@@ -2176,7 +2176,8 @@ class CustomIconWidget extends StatelessWidget {
         height: size,
         fit: BoxFit.contain,
         color: color,
-        errorBuilder: (context, error, stackTrace) => Icon(Icons.help_outline, size: size, color: Colors.grey),
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.help_outline, size: size, color: Colors.grey),
       );
     } else if (iconName == 'apple') {
       return Image.asset(
@@ -2185,7 +2186,8 @@ class CustomIconWidget extends StatelessWidget {
         height: size,
         fit: BoxFit.contain,
         color: color,
-        errorBuilder: (context, error, stackTrace) => Icon(Icons.help_outline, size: size, color: Colors.grey),
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.help_outline, size: size, color: Colors.grey),
       );
     } else if (iconMap.containsKey(iconName)) {
       return Icon(

@@ -312,7 +312,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                     Get.back(); // Close snackbar
                     Get.offAllNamed('/login'); // Navigate to login screen
                   },
-                  child: Text('auth.sign_in'.tr(),
+                  child: Text(
+                    'auth.sign_in'.tr(),
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -374,7 +375,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text('booking.processing_payment'.tr(),
+          title: Text(
+            'booking.processing_payment'.tr(),
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -423,7 +425,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
 
                     // Progress Bar (only show during processing)
                     if (_paymentStatus == PaymentUIStatus.processing) ...[
-                      Text('wallet.processing_your_payment'.tr(),
+                      Text(
+                        'wallet.processing_your_payment'.tr(),
                         style: AppTextStyles.h3,
                         textAlign: TextAlign.center,
                       ),
@@ -473,7 +476,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Text('payment.retry_payment'.tr(),
+                          child: Text(
+                            'payment.retry_payment'.tr(),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -487,7 +491,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                         width: double.infinity,
                         child: TextButton(
                           onPressed: () => Get.back(),
-                          child: Text('wallet.choose_different_payment_method'.tr(),
+                          child: Text(
+                            'wallet.choose_different_payment_method'.tr(),
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 16,
@@ -567,7 +572,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('booking.payment_details'.tr(),
+          Text(
+            'booking.payment_details'.tr(),
             style: AppTextStyles.h3.copyWith(
               color: AppColors.textPrimary,
             ),
@@ -583,7 +589,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('common.total'.tr(),
+              Text(
+                'common.total'.tr(),
                 style: AppTextStyles.h3.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

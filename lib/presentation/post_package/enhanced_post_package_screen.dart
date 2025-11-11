@@ -239,7 +239,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('post_package.submit_button'.tr(),
+                      Text(
+                        'post_package.submit_button'.tr(),
                         style: TextStyle(
                           fontSize: 20.sp,
                           color: Colors.white,
@@ -311,7 +312,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('post_package.package_information'.tr(),
+                Text(
+                  'post_package.package_information'.tr(),
                   style: TextStyle(
                     fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
@@ -319,7 +321,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
                   ),
                 ),
                 SizedBox(height: 1.h),
-                Text('post_package.tell_us_about_your_package'.tr(),
+                Text(
+                  'post_package.tell_us_about_your_package'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.grey[600],
@@ -351,7 +354,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('post_package.package_size'.tr(),
+                      Text(
+                        'post_package.package_size'.tr(),
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -386,7 +390,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             ),
           ),
           SizedBox(height: 1.h),
-          Text('post_package.where_should_your_package_go'.tr(),
+          Text(
+            'post_package.where_should_your_package_go'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -441,7 +446,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('detail.package_detail_title'.tr(),
+          Text(
+            'detail.package_detail_title'.tr(),
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
@@ -449,7 +455,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             ),
           ),
           SizedBox(height: 1.h),
-          Text('post_package.additional_information_about_your_package'.tr(),
+          Text(
+            'post_package.additional_information_about_your_package'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -490,7 +497,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('common.urgency_level'.tr(),
+                Text(
+                  'common.urgency_level'.tr(),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -535,7 +543,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('post_package.package_photos'.tr(),
+          Text(
+            'post_package.package_photos'.tr(),
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
@@ -543,7 +552,9 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             ),
           ),
           SizedBox(height: 1.h),
-          Text('post_package.add_photos_to_help_travelers_identify_your_package'.tr(),
+          Text(
+            'post_package.add_photos_to_help_travelers_identify_your_package'
+                .tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -564,7 +575,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
                           color: const Color(0xFF2D7A6E),
                         ),
                         SizedBox(height: 2.h),
-                        Text('common.tap_to_add_photos'.tr(),
+                        Text(
+                          'common.tap_to_add_photos'.tr(),
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -620,7 +632,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
             ),
           ),
           SizedBox(height: 1.h),
-          Text('post_package.please_review_your_package_details'.tr(),
+          Text(
+            'post_package.please_review_your_package_details'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -1006,7 +1019,8 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
               size: 20.w,
             ),
             SizedBox(height: 2.h),
-            Text('common.package_posted_successfully'.tr(),
+            Text(
+              'common.package_posted_successfully'.tr(),
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -1014,7 +1028,9 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 1.h),
-            Text('post_package.your_package_has_been_posted_and_travelers_will_st'.tr(),
+            Text(
+              'post_package.your_package_has_been_posted_and_travelers_will_st'
+                  .tr(),
               style: TextStyle(
                 fontSize: 12.sp,
                 color: Colors.grey[600],

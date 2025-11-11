@@ -169,7 +169,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
       print('❌ Error accepting call: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('calls.accept_failed'.tr(args: [e.toString()]))),
+          SnackBar(
+              content: Text('calls.accept_failed'.tr(args: [e.toString()]))),
         );
       }
     }
@@ -260,7 +261,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('notifications.incoming_call'.tr(),
+                      Text(
+                        'notifications.incoming_call'.tr(),
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
@@ -338,7 +340,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                       const SizedBox(height: 8),
 
                       // Call type
-                      Text('calls.voice_call'.tr(),
+                      Text(
+                        'calls.voice_call'.tr(),
                         style: TextStyle(
                           color: Colors.white60,
                           fontSize: 16,

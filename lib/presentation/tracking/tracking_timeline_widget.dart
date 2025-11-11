@@ -32,7 +32,8 @@ class TrackingTimelineWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('tracking.delivery_timeline'.tr(),
+          Text(
+            'tracking.delivery_timeline'.tr(),
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -237,7 +238,8 @@ class TrackingTimelineWidget extends StatelessWidget {
       children: [
         Divider(color: Colors.grey[300]),
         SizedBox(height: 2.h),
-        Text('common.location_history'.tr(),
+        Text(
+          'common.location_history'.tr(),
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,

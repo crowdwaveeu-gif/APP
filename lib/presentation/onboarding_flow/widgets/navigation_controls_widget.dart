@@ -40,7 +40,8 @@ class NavigationControlsWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2.w),
                 ),
               ),
-              child: Text('onboarding.skip'.tr(),
+              child: Text(
+                'onboarding.skip'.tr(),
                 style: AppTheme.lightTheme.textTheme.labelLarge?.copyWith(
                   color: AppTheme.lightTheme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,

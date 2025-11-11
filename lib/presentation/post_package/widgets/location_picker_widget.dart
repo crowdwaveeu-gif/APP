@@ -377,7 +377,9 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget>
                   _buildLocationOption(
                     icon: Icons.my_location,
                     title: 'location.use_current'.tr(),
-                    subtitle: 'common.allow_location_access_to_use_your_current_position'.tr(),
+                    subtitle:
+                        'common.allow_location_access_to_use_your_current_position'
+                            .tr(),
                     onTap: () => _getCurrentLocation(),
                   ),
                 ],
@@ -392,7 +394,8 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget>
 
                 // Recent locations (can be added later)
                 SizedBox(height: 2.h),
-                Text('common.recent_locations'.tr(),
+                Text(
+                  'common.recent_locations'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -585,7 +588,9 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('location.get_current_failed'.tr(args: [e.toString()]))),
+          SnackBar(
+              content:
+                  Text('location.get_current_failed'.tr(args: [e.toString()]))),
         );
       }
     } finally {
@@ -846,7 +851,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('common.selected_location'.tr(),
+                                Text(
+                                  'common.selected_location'.tr(),
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w500,
@@ -869,7 +875,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                         ),
                                       ),
                                       SizedBox(width: 2.w),
-                                      Text('common.getting_address'.tr(),
+                                      Text(
+                                        'common.getting_address'.tr(),
                                         style: TextStyle(
                                           fontSize: 11.sp,
                                           color: AppTheme
@@ -1146,7 +1153,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('error.network'.tr(args: [response.statusCode.toString()])),
+              content: Text(
+                  'error.network'.tr(args: [response.statusCode.toString()])),
               backgroundColor: Colors.red,
             ),
           );
@@ -1221,7 +1229,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('location.select_failed'.tr(args: [e.toString()]))),
+        SnackBar(
+            content: Text('location.select_failed'.tr(args: [e.toString()]))),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -1243,7 +1252,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
             Row(
               children: [
                 Expanded(
-                  child: Text('common.search_location'.tr(),
+                  child: Text(
+                    'common.search_location'.tr(),
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
@@ -1313,7 +1323,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                             color: Colors.grey,
                           ),
                           SizedBox(height: 2.h),
-                          Text('common.start_typing_to_search'.tr(),
+                          Text(
+                            'common.start_typing_to_search'.tr(),
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 14.sp,

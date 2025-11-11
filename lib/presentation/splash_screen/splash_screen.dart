@@ -419,7 +419,8 @@ class _SplashScreenState extends State<SplashScreen>
                                   stops: const [0.3, 0.7],
                                 ).createShader(bounds);
                               },
-                              child: Text('app.name'.tr(),
+                              child: Text(
+                                'app.name'.tr(),
                                 style: TextStyle(
                                   fontSize: 10.w,
                                   fontWeight: FontWeight.w900,
@@ -441,7 +442,8 @@ class _SplashScreenState extends State<SplashScreen>
                       position: _textPosition,
                       child: FadeTransition(
                         opacity: _textOpacity,
-                        child: Text('common.deliver_together_earn_together'.tr(),
+                        child: Text(
+                          'common.deliver_together_earn_together'.tr(),
                           style: TextStyle(
                             fontSize: 4.5.w,
                             fontWeight: FontWeight.w500,

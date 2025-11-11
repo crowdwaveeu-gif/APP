@@ -177,7 +177,8 @@ class _AnimatedCardStackState extends State<AnimatedCardStack> {
                 color: Colors.grey[400],
               ),
               SizedBox(height: 16),
-              Text('common.no_more_cards'.tr(),
+              Text(
+                'common.no_more_cards'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.grey[600],

@@ -254,7 +254,8 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen>
               const SizedBox(height: 24),
 
               // Error Title
-              Text('payment.failed_title'.tr(),
+              Text(
+                'payment.failed_title'.tr(),
                 style: AppTextStyles.h1.copyWith(
                   color: AppColors.error,
                   fontWeight: FontWeight.bold,
@@ -304,7 +305,8 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen>
                 size: 24,
               ),
               const SizedBox(width: 12),
-              Text('error_messages.error_details'.tr(),
+              Text(
+                'error_messages.error_details'.tr(),
                 style: AppTextStyles.h3.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -362,7 +364,8 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('booking.booking_summary'.tr(),
+          Text(
+            'booking.booking_summary'.tr(),
             style: AppTextStyles.h3.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,
@@ -423,7 +426,8 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('common.suggested_solutions'.tr(),
+          Text(
+            'common.suggested_solutions'.tr(),
             style: AppTextStyles.h3.copyWith(
               color: AppColors.textPrimary,
               fontWeight: FontWeight.bold,

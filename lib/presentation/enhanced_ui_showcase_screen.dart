@@ -130,14 +130,16 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('common.enhanced_ui_showcase'.tr(),
+                      Text(
+                        'common.enhanced_ui_showcase'.tr(),
                         style: TextStyle(
                           fontSize: 20.sp,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text('common.beautiful_interactive_components'.tr(),
+                      Text(
+                        'common.beautiful_interactive_components'.tr(),
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.white.withOpacity(0.8),
@@ -182,7 +184,8 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
               ),
               child: Icon(Icons.add_box, color: Colors.white, size: 6.w),
             ),
-            title: Text('post_package.enhanced_post_package'.tr(),
+            title: Text(
+              'post_package.enhanced_post_package'.tr(),
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text('Step-by-step form with smooth animations'),
@@ -263,14 +266,17 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('common.enhanced_card'.tr(),
+                Text(
+                  'common.enhanced_card'.tr(),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 1.h),
-                Text('common.this_card_has_interactive_hover_effects_and_smooth'.tr(),
+                Text(
+                  'common.this_card_has_interactive_hover_effects_and_smooth'
+                      .tr(),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[600],
@@ -295,7 +301,8 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('common.gradient_card'.tr(),
+                Text(
+                  'common.gradient_card'.tr(),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
@@ -303,7 +310,9 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
                   ),
                 ),
                 SizedBox(height: 1.h),
-                Text('common.beautiful_gradient_backgrounds_with_smooth_interac'.tr(),
+                Text(
+                  'common.beautiful_gradient_backgrounds_with_smooth_interac'
+                      .tr(),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.white.withOpacity(0.9),
@@ -324,14 +333,16 @@ class _EnhancedUIShowcaseScreenState extends State<EnhancedUIShowcaseScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('common.glass_morphism_card'.tr(),
+                Text(
+                  'common.glass_morphism_card'.tr(),
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 1.h),
-                Text('common.modern_glass_effect_with_transparency_and_blur'.tr(),
+                Text(
+                  'common.modern_glass_effect_with_transparency_and_blur'.tr(),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[600],

@@ -335,7 +335,8 @@ class TripCardWidget extends StatelessWidget {
                             // Show error message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('error.generic'.tr(args: [e.toString()])),
+                                content: Text(
+                                    'error.generic'.tr(args: [e.toString()])),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -348,7 +349,8 @@ class TripCardWidget extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('detail.chat_now'.tr(),
+                        child: Text(
+                          'detail.chat_now'.tr(),
                           style: TextStyle(
                             color: Color(0xFF215C5C),
                             fontSize: 14,
@@ -376,7 +378,8 @@ class TripCardWidget extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: Text('detail.make_offer'.tr(),
+                        child: Text(
+                          'detail.make_offer'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,

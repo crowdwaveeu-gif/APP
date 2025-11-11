@@ -344,7 +344,8 @@ class _TravelScreenState extends State<TravelScreen>
                               : Colors.grey[600],
                         ),
                         const SizedBox(height: 4),
-                        Text('common.local'.tr(),
+                        Text(
+                          'common.local'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -399,7 +400,8 @@ class _TravelScreenState extends State<TravelScreen>
                               : Colors.grey[600],
                         ),
                         const SizedBox(height: 4),
-                        Text('common.abroad'.tr(),
+                        Text(
+                          'common.abroad'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -1098,7 +1100,8 @@ class _TravelScreenState extends State<TravelScreen>
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: Text('travel.clear_all_filters'.tr(),
+                          child: Text(
+                            'travel.clear_all_filters'.tr(),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

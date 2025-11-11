@@ -81,7 +81,8 @@ class TripDetailsWidget extends StatelessWidget {
               CheckboxListTile(
                 value: isFlexibleRoute,
                 onChanged: (value) => onFlexibleRouteChanged(value ?? false),
-                title: Text('common.flexible_route'.tr(),
+                title: Text(
+                  'common.flexible_route'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
@@ -130,7 +131,9 @@ class TripDetailsWidget extends StatelessWidget {
           controller: notesController,
           maxLines: 3,
           decoration: InputDecoration(
-            hintText: 'travel.any_additional_information_about_your_trip_special'.tr(),
+            hintText:
+                'travel.any_additional_information_about_your_trip_special'
+                    .tr(),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),

@@ -172,7 +172,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       return Scaffold(
         backgroundColor: const Color(0xFFE9E9E9),
         appBar: AppBar(
-          title: Text('chat.chats'.tr(),
+          title: Text(
+            'chat.chats'.tr(),
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -191,7 +192,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: const Color(0xFFE9E9E9),
       appBar: AppBar(
-        title: Text('chat.chats'.tr(),
+        title: Text(
+          'chat.chats'.tr(),
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -340,7 +342,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          Text('error_messages.error_loading_chats'.tr(),
+          Text(
+            'error_messages.error_loading_chats'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -383,7 +386,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         children: [
           const Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          Text('chat.no_chats_yet'.tr(),
+          Text(
+            'chat.no_chats_yet'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -391,7 +395,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(height: 8),
-          Text('common.start_a_conversation_with_someone'.tr(),
+          Text(
+            'common.start_a_conversation_with_someone'.tr(),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
@@ -409,7 +414,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         children: [
           const Icon(Icons.search_off, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          Text('common.no_conversations_found'.tr(),
+          Text(
+            'common.no_conversations_found'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -417,7 +423,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(height: 8),
-          Text('common.try_searching_for_something_else'.tr(),
+          Text(
+            'common.try_searching_for_something_else'.tr(),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
@@ -435,7 +442,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         children: [
           const Icon(Icons.refresh, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          Text('error_messages.something_went_wrong'.tr(),
+          Text(
+            'error_messages.something_went_wrong'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -443,7 +451,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(height: 8),
-          Text('chat.please_try_refreshing_the_chat'.tr(),
+          Text(
+            'chat.please_try_refreshing_the_chat'.tr(),
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 16),

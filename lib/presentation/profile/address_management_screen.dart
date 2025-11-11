@@ -152,7 +152,8 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('common.update_your_address'.tr(),
+                    Text(
+                      'common.update_your_address'.tr(),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -233,7 +234,7 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                           elevation: 0,
                         ),
                         child: _isLoading
-                            ? Row (
+                            ? Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   SizedBox(
@@ -246,7 +247,8 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Text('common.saving'.tr(),
+                                  Text(
+                                    'common.saving'.tr(),
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -254,7 +256,8 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
                                   ),
                                 ],
                               )
-                            : Text('common.save_address'.tr(),
+                            : Text(
+                                'common.save_address'.tr(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

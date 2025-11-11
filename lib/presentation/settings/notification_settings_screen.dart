@@ -173,13 +173,16 @@ class _NotificationSettingsScreenState
                     size: 20,
                   ),
                 ),
-                title: Text('common.check_nearby_opportunities'.tr(),
+                title: Text(
+                  'common.check_nearby_opportunities'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
                 ),
-                subtitle: Text('post_package.manually_scan_for_trips_and_packages_in_your_area'.tr(),
+                subtitle: Text(
+                  'post_package.manually_scan_for_trips_and_packages_in_your_area'
+                      .tr(),
                   style: TextStyle(fontSize: 14),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -211,7 +214,8 @@ class _NotificationSettingsScreenState
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    Text('common.how_it_works'.tr(),
+                    Text(
+                      'common.how_it_works'.tr(),
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,

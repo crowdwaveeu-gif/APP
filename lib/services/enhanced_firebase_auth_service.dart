@@ -20,6 +20,8 @@ class EnhancedFirebaseAuthService {
         ? '351442774180-8h5ngsn5sok47lui3hnpjijv2l18k1km.apps.googleusercontent.com'
         : null,
   );
+  // Prevent concurrent Google sign-in flows which can crash on iOS
+  bool _googleSignInInProgress = false;
 
   // Singleton instance
   static EnhancedFirebaseAuthService? _instance;
@@ -349,6 +351,16 @@ class EnhancedFirebaseAuthService {
   // Sign in with Google
   Future<User?> signInWithGoogle() async {
     try {
+      if (_googleSignInInProgress) {
+        // Debounce duplicate taps
+        if (kDebugMode) {
+          print(
+              '⚠️ Google sign-in already in progress, ignoring duplicate tap');
+        }
+        return null;
+      }
+      _googleSignInInProgress = true;
+
       final GoogleSignInAccount? googleUser =
           await _googleSignIn.signIn().catchError((error) {
         print('Google Sign-In error: $error');
@@ -397,6 +409,8 @@ class EnhancedFirebaseAuthService {
       throw Exception(_handleAuthException(e));
     } catch (e) {
       throw Exception('Google sign in failed: $e');
+    } finally {
+      _googleSignInInProgress = false;
     }
   }
 

@@ -42,7 +42,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFE9E9E9),
       appBar: AppBar(
-        title: Text('common.my_posts'.tr(),
+        title: Text(
+          'common.my_posts'.tr(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -274,7 +275,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
                   children: [
                     Icon(Icons.priority_high, color: Colors.red, size: 16),
                     SizedBox(width: 4),
-                    Text('status.urgent'.tr(),
+                    Text(
+                      'status.urgent'.tr(),
                       style: TextStyle(
                         color: Colors.red,
                         fontSize: 12,
@@ -448,7 +450,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
             color: Colors.grey,
           ),
           SizedBox(height: 16),
-          Text('common.please_log_in_to_view_your_posts'.tr(),
+          Text(
+            'common.please_log_in_to_view_your_posts'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,

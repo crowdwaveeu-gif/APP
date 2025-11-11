@@ -173,7 +173,8 @@ class TripCompensationWidget extends StatelessWidget {
                 size: 20,
               ),
               SizedBox(width: 2.w),
-              Text('common.how_rewards_work'.tr(),
+              Text(
+                'common.how_rewards_work'.tr(),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,

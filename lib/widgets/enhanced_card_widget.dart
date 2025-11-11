@@ -96,7 +96,7 @@ class _EnhancedCardWidgetState extends State<EnhancedCardWidget>
           child: Container(
             margin: widget.margin ?? EdgeInsets.symmetric(vertical: 1.h),
             child: Material(
-              elevation: widget.elevation != null 
+              elevation: widget.elevation != null
                   ? widget.elevation! * _shadowAnimation.value
                   : 4.0 * _shadowAnimation.value,
               borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
@@ -112,14 +112,16 @@ class _EnhancedCardWidgetState extends State<EnhancedCardWidget>
                   decoration: BoxDecoration(
                     color: widget.backgroundColor ?? Colors.white,
                     gradient: widget.gradient,
-                    borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
-                    boxShadow: widget.shadows ?? [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    borderRadius:
+                        widget.borderRadius ?? BorderRadius.circular(16),
+                    boxShadow: widget.shadows ??
+                        [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                   ),
                   child: widget.child,
                 ),
