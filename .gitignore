@@ -68,3 +68,7 @@ service_account.json
 # Build folders
 build/
 crowdwave/build/
+
+# Implementation status documentation
+IMPLEMENTATION_STATUS.md
+IMPLEMENTATION_STATUS_backup.md

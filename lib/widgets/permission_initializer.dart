@@ -39,7 +39,7 @@ class _PermissionInitializerState extends State<PermissionInitializer> {
       final permissionManager = PermissionManagerService.instance;
 
       // Request essential permissions in a coordinated way
-      await permissionManager.requestEssentialPermissions();
+      await permissionManager.requestEssentialPermissions(context);
 
       // Now that permissions are granted, initialize services that need them
       final zegoService = Get.find<ZegoCallService>();

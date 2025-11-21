@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
+import '../widgets/prominent_disclosure.dart';
 
 /// Service to handle all app permissions in a coordinated way
 /// This prevents multiple simultaneous permission requests that can cause white screens
@@ -20,7 +22,7 @@ class PermissionManagerService extends GetxController {
 
   /// Request all essential permissions in sequence (not simultaneously)
   /// This prevents the white screen issue caused by multiple permission dialogs
-  Future<void> requestEssentialPermissions() async {
+  Future<void> requestEssentialPermissions(BuildContext context) async {
     if (_hasRequestedInitialPermissions) {
       print('🔐 Essential permissions already requested');
       return;
@@ -33,7 +35,8 @@ class PermissionManagerService extends GetxController {
       await _requestNotificationPermission();
       await Future.delayed(const Duration(milliseconds: 500));
 
-      await _requestLocationPermissions();
+      // Pass context so location flow can show prominent disclosure when needed
+      await _requestLocationPermissions(context);
       await Future.delayed(const Duration(milliseconds: 500));
 
       await _requestMicrophonePermission();
@@ -59,7 +62,7 @@ class PermissionManagerService extends GetxController {
   }
 
   /// Request location permissions
-  Future<void> _requestLocationPermissions() async {
+  Future<void> _requestLocationPermissions(BuildContext context) async {
     try {
       print('📍 Requesting location permissions...');
 
@@ -69,8 +72,20 @@ class PermissionManagerService extends GetxController {
 
       // If granted, request background location (for delivery tracking)
       if (locationStatus == PermissionStatus.granted) {
-        final backgroundStatus = await Permission.locationAlways.request();
-        print('📍 Background location permission: $backgroundStatus');
+        // Show a prominent disclosure before requesting background permission
+        final accepted = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => const ProminentDisclosureDialog(),
+            ) ??
+            false;
+
+        if (accepted) {
+          final backgroundStatus = await Permission.locationAlways.request();
+          print('📍 Background location permission: $backgroundStatus');
+        } else {
+          print(
+              '📍 User declined prominent disclosure for background location');
+        }
       }
     } catch (e) {
       print('❌ Error requesting location permissions: $e');
