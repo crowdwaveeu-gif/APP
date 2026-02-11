@@ -527,13 +527,13 @@ class _WalletScreenState extends State<WalletScreen> {
     String timeStr;
 
     if (diff.inMinutes < 1) {
-      timeStr = 'wallet.just_now'.tr();
+      timeStr = 'Just now';
     } else if (diff.inHours < 1) {
-      timeStr = '${'wallet.minutes_ago'.tr(args: [diff.inMinutes.toString()])}';
+      timeStr = '${diff.inMinutes}m ago';
     } else if (diff.inDays < 1) {
-      timeStr = '${'wallet.hours_ago'.tr(args: [diff.inHours.toString()])}';
+      timeStr = '${diff.inHours}h ago';
     } else if (diff.inDays < 7) {
-      timeStr = '${'wallet.days_ago'.tr(args: [diff.inDays.toString()])}';
+      timeStr = '${diff.inDays}d ago';
     } else {
       timeStr =
           '${transaction.timestamp.day}/${transaction.timestamp.month}/${transaction.timestamp.year}';

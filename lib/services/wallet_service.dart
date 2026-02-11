@@ -394,7 +394,8 @@ class WalletService extends GetxController {
     }
   }
 
-  /// Process withdrawal to bank account
+  /// Submit withdrawal request for admin review
+  /// This does NOT deduct balance - admin will do that after manual processing
   Future<void> processWithdrawal({
     required String userId,
     required double amount,
@@ -403,49 +404,52 @@ class WalletService extends GetxController {
     try {
       _isLoading.value = true;
 
-      final walletRef = _firestore.collection(_walletsCollection).doc(userId);
+      // Get wallet to check balance and get user info
+      final walletDoc =
+          await _firestore.collection(_walletsCollection).doc(userId).get();
 
-      // Update wallet balances
-      await _firestore.runTransaction((transaction) async {
-        final walletDoc = await transaction.get(walletRef);
+      if (!walletDoc.exists) {
+        throw Exception('Wallet not found for user: $userId');
+      }
 
-        if (!walletDoc.exists) {
-          throw Exception('Wallet not found for user: $userId');
-        }
+      final currentBalance = (walletDoc.data()?['balance'] ?? 0.0).toDouble();
+      final currency = walletDoc.data()?['currency'] ?? 'EUR';
 
-        final currentBalance = (walletDoc.data()?['balance'] ?? 0.0).toDouble();
-        final currentWithdrawals =
-            (walletDoc.data()?['totalWithdrawals'] ?? 0.0).toDouble();
+      // Check sufficient balance
+      if (currentBalance < amount) {
+        throw Exception('Insufficient balance for withdrawal');
+      }
 
-        // Check sufficient balance
-        if (currentBalance < amount) {
-          throw Exception('Insufficient balance for withdrawal');
-        }
+      // Get user email for notification
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userEmail = userDoc.data()?['email'] ?? '';
+      final userName = userDoc.data()?['displayName'] ??
+          userDoc.data()?['fullName'] ??
+          'Unknown';
 
-        transaction.update(walletRef, {
-          'balance': currentBalance - amount,
-          'totalWithdrawals': currentWithdrawals + amount,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+      // Create withdrawal request for admin review
+      await _firestore.collection('withdrawalRequests').add({
+        'userId': userId,
+        'userEmail': userEmail,
+        'userName': userName,
+        'amount': amount,
+        'currency': currency,
+        'bankDetails': bankDetails ?? {},
+        'status': 'pending', // pending, approved, rejected, completed
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'adminNotes': '',
+        'processedBy': null,
+        'processedAt': null,
       });
-
-      // Create transaction record
-      await _createTransaction(
-        userId: userId,
-        type: WalletTransactionType.withdrawal,
-        amount: amount,
-        status: WalletTransactionStatus.pending,
-        description: 'profile.withdrawal_to_bank_account'.tr(),
-        metadata: bankDetails,
-      );
 
       if (kDebugMode) {
         print(
-            '✅ Withdrawal initiated: \$${amount.toStringAsFixed(2)} for $userId');
+            '✅ Withdrawal request submitted: \$${amount.toStringAsFixed(2)} for $userId');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error processing withdrawal: $e');
+        print('❌ Error submitting withdrawal request: $e');
       }
       rethrow;
     } finally {

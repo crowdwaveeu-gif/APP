@@ -32,7 +32,7 @@ class DealNegotiationService {
 
   // Constants
   static const Duration _defaultOfferExpiration = Duration(hours: 24);
-  static const int maxOffersPerUserPerPackage = 2;
+  static const int maxOffersPerUserPerPackage = 1;
 
   String? get currentUserId => _auth.currentUser?.uid;
 
@@ -884,7 +884,7 @@ class DealNegotiationService {
   }) async {
     try {
       // Optimization: Only fetch what we need to make the decision
-      // If limit is 2, we only need to know if count >= 2
+      // If limit is 1, we only need to know if count >= 1
       final querySnapshot = await _firestore
           .collection(_dealsCollection)
           .where('packageId', isEqualTo: packageId)
@@ -903,6 +903,95 @@ class DealNegotiationService {
         print('Error counting user offers: $e');
       }
       return 0; // Return 0 on error to allow the offer attempt
+    }
+  }
+
+  /// Get user's existing offer for a package (if any)
+  Future<DealOffer?> getUserOfferForPackage({
+    required String packageId,
+    required String userId,
+  }) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(_dealsCollection)
+          .where('packageId', isEqualTo: packageId)
+          .where('travelerId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      return DealOffer.fromMap(querySnapshot.docs.first.data());
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting user offer for package: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Update an existing offer (only if pending and not expired)
+  Future<void> updateOffer({
+    required String offerId,
+    required double newPrice,
+    String? newMessage,
+  }) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User must be logged in to update offers');
+      }
+
+      // Get existing offer
+      final offerDoc =
+          await _firestore.collection(_dealsCollection).doc(offerId).get();
+
+      if (!offerDoc.exists) {
+        throw Exception('Offer not found');
+      }
+
+      final offer = DealOffer.fromMap(offerDoc.data()!);
+
+      // Validate user owns this offer
+      if (offer.senderId != currentUser.uid) {
+        throw Exception('You can only edit your own offers');
+      }
+
+      // Validate offer is still pending
+      if (offer.status != DealStatus.pending) {
+        throw Exception('You can only edit pending offers');
+      }
+
+      // Validate offer is not expired
+      if (offer.isExpired) {
+        throw Exception('This offer has expired and cannot be edited');
+      }
+
+      // Update the offer
+      await _firestore.collection(_dealsCollection).doc(offerId).update({
+        'offeredPrice': newPrice,
+        'message': newMessage,
+      });
+
+      // Send chat message about the update
+      await _chatService.sendMessage(
+        conversationId: offer.conversationId,
+        content:
+            'Updated offer: \$${newPrice.toStringAsFixed(2)}${newMessage != null && newMessage.isNotEmpty ? '\n\n$newMessage' : ''}',
+        type: MessageType.system,
+      );
+
+      if (kDebugMode) {
+        print(
+            '✅ Offer updated: $offerId - New price: \$${newPrice.toStringAsFixed(2)}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error updating offer: $e');
+      }
+      rethrow;
     }
   }
 
@@ -944,23 +1033,8 @@ class DealNegotiationService {
         throw Exception('This delivery request is no longer accepting offers.');
       }
 
-      // Check if user has reached the offer limit for this package
-      if (currentUserId != null) {
-        final userOfferCount = await _getUserOfferCountForPackage(
-          packageId: packageId,
-          userId: currentUserId!,
-        );
-
-        if (kDebugMode) {
-          print(
-              'User offer count: $userOfferCount/$maxOffersPerUserPerPackage');
-        }
-
-        if (userOfferCount >= maxOffersPerUserPerPackage) {
-          throw Exception(
-              'You have reached the maximum limit of $maxOffersPerUserPerPackage offers for this package.');
-        }
-      }
+      // Note: Offer limit validation removed - users with existing offers
+      // are automatically routed to edit mode via the UI
 
       if (kDebugMode) {
         print('✅ Package validation passed');
@@ -971,7 +1045,8 @@ class DealNegotiationService {
       }
       if (e.toString().contains('No active delivery request') ||
           e.toString().contains('no longer accepting offers') ||
-          e.toString().contains('maximum limit')) {
+          e.toString().contains('maximum limit') ||
+          e.toString().contains('already made an offer')) {
         rethrow;
       }
       throw Exception(
@@ -1222,6 +1297,7 @@ class DealNegotiationService {
 
   /// Get count of unseen pending offers (received only)
   /// Stream count of unseen offers received by current user (as package owner)
+  /// Stream the count of unseen pending offers for the current user's packages
   Stream<int> streamUnseenOffersCount() {
     final userId = currentUserId;
     if (userId == null) {
@@ -1237,12 +1313,46 @@ class DealNegotiationService {
       return snapshot.docs.where((doc) {
         try {
           final data = doc.data();
-          // Check if offer has been seen (you can add a 'seenAt' field later)
-          return data['status'] == DealStatus.pending.name;
+          // Only count offers that haven't been seen yet
+          return data['seenAt'] == null;
         } catch (e) {
           return false;
         }
       }).length;
     });
+  }
+
+  /// Mark an offer as seen by the package owner
+  Future<void> markOfferAsSeen(String offerId) async {
+    try {
+      await _firestore.collection(_dealsCollection).doc(offerId).update({
+        'seenAt': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      print('Error marking offer as seen: $e');
+      // Don't throw - this is not critical
+    }
+  }
+
+  /// Mark multiple offers as seen
+  Future<void> markOffersAsSeen(List<String> offerIds) async {
+    if (offerIds.isEmpty) return;
+
+    try {
+      final batch = _firestore.batch();
+      final seenAt = DateTime.now().toIso8601String();
+
+      for (final offerId in offerIds) {
+        batch.update(
+          _firestore.collection(_dealsCollection).doc(offerId),
+          {'seenAt': seenAt},
+        );
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print('Error marking offers as seen: $e');
+      // Don't throw - this is not critical
+    }
   }
 }

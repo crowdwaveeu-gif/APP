@@ -77,7 +77,7 @@ class AppStrings {
   static const String yourOrders = "Your Orders";
   static const String myProfile = "My Profile";
   static const String wallet = "Wallet";
-  static const String myOrders = "My Orders";
+  static const String myOrders = "My Posts";
   static const String home = "Home";
 
   // Orders

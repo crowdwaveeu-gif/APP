@@ -447,6 +447,10 @@ class _LoginViewState extends State<LoginView> {
       messenger.showSnackBar(
         SnackBar(content: Text('Welcome, ${user.displayName ?? 'User'}')),
       );
+      // Navigate to main navigation screen after successful sign-in
+      if (mounted) {
+        Get.offAllNamed('/main-navigation');
+      }
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(

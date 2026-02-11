@@ -1,0 +1,161 @@
+workflows:
+  # iOS App Store Workflow (Existing)
+  ios-workflow:
+    name: iOS App Store Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: CrowdWave App Store
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.crowdwave.courier
+      vars:
+        BUNDLE_ID: "com.crowdwave.courier"
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  # Android Play Store Workflow (NEW)
+  android-workflow:
+    name: Android Play Store Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      google_play: CrowdWave Play Store
+    environment:
+      android_signing:
+        - crowdwave_keystore
+      groups:
+        - google_play_credentials
+      vars:
+        PACKAGE_NAME: "com.crowdwave.courier"
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Build Android App Bundle
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/**/*.aab
+      - build/app/outputs/**/mapping.txt
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+  # Combined Workflow - Build Both Platforms
+  release-all-platforms:
+    name: Release iOS & Android
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: CrowdWave App Store
+      google_play: CrowdWave Play Store
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.crowdwave.courier
+      android_signing:
+        - crowdwave_keystore
+      groups:
+        - google_play_credentials
+      vars:
+        BUNDLE_ID: "com.crowdwave.courier"
+        PACKAGE_NAME: "com.crowdwave.courier"
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      java: 17
+    scripts:
+      # iOS Setup
+      - name: Set up iOS code signing
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      # iOS Build
+      - name: Flutter build iOS
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+      # Android Setup
+      - name: Set up local.properties for Android
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      # Android Build
+      - name: Flutter build Android
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/app/outputs/**/*.aab
+      - build/app/outputs/**/mapping.txt
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true

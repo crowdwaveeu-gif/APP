@@ -78,7 +78,7 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
     ));
   }
 
-  Future<void> _loadTrackingData() async {
+  Future<void> _loadTrackingData({bool forceRefresh = false}) async {
     try {
       setState(() {
         _isLoading = true;
@@ -86,7 +86,10 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
       });
 
       // Load tracking data
-      final tracking = await _trackingService.getTracking(widget.trackingId);
+      final tracking = await _trackingService.getTracking(
+        widget.trackingId,
+        forceRefresh: forceRefresh,
+      );
       if (tracking == null) {
         setState(() {
           _error = 'Tracking information not found';
@@ -123,7 +126,7 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
   }
 
   Future<void> _refreshTracking() async {
-    await _loadTrackingData();
+    await _loadTrackingData(forceRefresh: true);
   }
 
   bool get _isUserTraveler {
@@ -507,7 +510,11 @@ class _PackageTrackingScreenState extends State<PackageTrackingScreen>
 
     // Refresh tracking data if status was updated
     if (result == true) {
-      _refreshTracking();
+      print('✅ Status update confirmed, refreshing tracking data...');
+      // Reset animations to show refresh visually
+      _statusAnimationController.reset();
+      _mapAnimationController.reset();
+      await _refreshTracking();
     }
   }
 

@@ -30,25 +30,39 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     _authService.addListener(_onAuthStateChanged);
+    // Listen to profile changes from UserProfileService
+    _userProfileService.addListener(_onProfileChanged);
     _loadUserProfile();
   }
 
   @override
   void dispose() {
     _authService.removeListener(_onAuthStateChanged);
+    _userProfileService.removeListener(_onProfileChanged);
     super.dispose();
   }
 
   void _onAuthStateChanged() {
     if (mounted) {
       setState(() {});
-      _loadUserProfile();
+      _loadUserProfile(forceRefresh: true);
     }
   }
 
-  Future<void> _loadUserProfile() async {
+  /// Called when profile is updated anywhere in the app
+  void _onProfileChanged() {
+    if (mounted) {
+      setState(() {
+        _userProfile = _userProfileService.currentProfile;
+      });
+    }
+  }
+
+  Future<void> _loadUserProfile({bool forceRefresh = false}) async {
     try {
-      final profile = await _userProfileService.getCurrentUserProfile();
+      final profile = await _userProfileService.getCurrentUserProfile(
+        forceRefresh: forceRefresh,
+      );
       if (mounted) {
         setState(() {
           _userProfile = profile;
@@ -133,6 +147,26 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Widget _buildUserAvatar() {
     final user = _authService.currentUser;
+
+    // If user exists but profile hasn't loaded yet, show loading indicator
+    // This prevents showing Google profile photo before Firestore profile loads
+    if (user != null && _userProfile == null) {
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+        ),
+        child: CircleAvatar(
+          radius: 50,
+          backgroundColor: Colors.white,
+          child: LiquidLoadingIndicator(
+            size: 50,
+            color: Color(0xFF215C5C),
+          ),
+        ),
+      );
+    }
+
     final photoUrl = _userProfile?.photoUrl ?? user?.photoURL;
 
     if (photoUrl != null && photoUrl.isNotEmpty) {

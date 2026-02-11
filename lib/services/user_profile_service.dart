@@ -2,28 +2,88 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../core/models/user_profile.dart';
 
-class UserProfileService {
+/// UserProfileService with ChangeNotifier to allow screens to listen for profile changes.
+/// Uses singleton pattern so all screens share the same instance and get notified together.
+class UserProfileService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static const String _usersCollection = 'users';
 
+  // Singleton instance
+  static final UserProfileService _instance = UserProfileService._internal();
+  factory UserProfileService() => _instance;
+  UserProfileService._internal();
+
+  // Current user profile (shared across all listeners)
+  UserProfile? _currentProfile;
+  UserProfile? get currentProfile => _currentProfile;
+
+  // Cache for user profiles
+  static final Map<String, UserProfile> _profileCache = {};
+  static final Map<String, DateTime> _cacheTimestamps = {};
+  static const Duration _cacheDuration = Duration(minutes: 5);
+
+  /// Clear cache for a specific user or all users
+  static void clearCache([String? userId]) {
+    if (userId != null) {
+      _profileCache.remove(userId);
+      _cacheTimestamps.remove(userId);
+    } else {
+      _profileCache.clear();
+      _cacheTimestamps.clear();
+    }
+  }
+
+  /// Get profile from cache without fetching (returns null if not cached or expired)
+  static UserProfile? getFromCache(String userId) {
+    if (_isCacheValid(userId)) {
+      return _profileCache[userId];
+    }
+    return null;
+  }
+
+  /// Check if cache is valid for a user
+  static bool _isCacheValid(String userId) {
+    if (!_profileCache.containsKey(userId)) return false;
+    final timestamp = _cacheTimestamps[userId];
+    if (timestamp == null) return false;
+    return DateTime.now().difference(timestamp) < _cacheDuration;
+  }
+
   /// Get current user's profile
-  Future<UserProfile?> getCurrentUserProfile() async {
+  Future<UserProfile?> getCurrentUserProfile(
+      {bool forceRefresh = false}) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return null;
+
+      // Return cached profile if valid and not forcing refresh
+      if (!forceRefresh && _isCacheValid(user.uid)) {
+        _currentProfile = _profileCache[user.uid];
+        return _currentProfile;
+      }
 
       final doc =
           await _firestore.collection(_usersCollection).doc(user.uid).get();
 
       if (doc.exists) {
-        return UserProfile.fromJson({
+        final profile = UserProfile.fromJson({
           'uid': user.uid,
           ...doc.data()!,
         });
+
+        // Cache the profile
+        _profileCache[user.uid] = profile;
+        _cacheTimestamps[user.uid] = DateTime.now();
+
+        // Update current profile and notify listeners
+        _currentProfile = profile;
+
+        return profile;
       }
       return null;
     } catch (e) {
@@ -101,6 +161,9 @@ class UserProfileService {
           .doc(user.uid)
           .update(updates);
 
+      // Clear cache so next fetch gets fresh data
+      clearCache(user.uid);
+
       // Also update Firebase Auth profile if name or photo changed
       if (fullName != null || photoUrl != null) {
         try {
@@ -115,8 +178,48 @@ class UserProfileService {
           print('Firebase Auth profile update failed: $authError');
         }
       }
+
+      // Fetch fresh profile data and notify all listeners
+      await _refreshAndNotify(user.uid);
     } catch (e) {
       throw Exception('Failed to update user profile: $e');
+    }
+  }
+
+  /// Internal method to refresh profile and notify listeners
+  Future<void> _refreshAndNotify(String userId) async {
+    try {
+      final doc =
+          await _firestore.collection(_usersCollection).doc(userId).get();
+      if (doc.exists) {
+        final profile = UserProfile.fromJson({
+          'uid': userId,
+          ...doc.data()!,
+        });
+
+        // Update cache
+        _profileCache[userId] = profile;
+        _cacheTimestamps[userId] = DateTime.now();
+
+        // Update current profile
+        _currentProfile = profile;
+
+        // Notify all listeners (screens) that profile has changed
+        notifyListeners();
+        debugPrint(
+            '✅ UserProfileService: Profile updated and listeners notified');
+      }
+    } catch (e) {
+      debugPrint('❌ UserProfileService: Failed to refresh profile: $e');
+    }
+  }
+
+  /// Force refresh and notify all listeners (can be called from screens)
+  Future<void> refreshCurrentProfile() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      clearCache(user.uid);
+      await _refreshAndNotify(user.uid);
     }
   }
 
@@ -146,6 +249,10 @@ class UserProfileService {
           .collection(_usersCollection)
           .doc(user.uid)
           .update(updates);
+
+      // Clear cache and notify listeners
+      clearCache(user.uid);
+      await _refreshAndNotify(user.uid);
     } catch (e) {
       throw Exception('Failed to update user address: $e');
     }

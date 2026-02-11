@@ -516,7 +516,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                         children: [
                           Icon(
                             Icons.security,
-                            color: Color(0xFF008080),
+                            color: Colors.white,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
@@ -525,7 +525,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                               'Your payment is secured by Stripe\'s industry-leading encryption',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Color(0xFF008080),
+                                color: Colors.white,
                               ),
                             ),
                           ),

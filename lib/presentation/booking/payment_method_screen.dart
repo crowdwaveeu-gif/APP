@@ -259,7 +259,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         children: [
           Icon(
             Icons.security,
-            color: Color(0xFF008080),
+            color: Colors.white,
             size: 24,
           ),
           const SizedBox(width: 12),
@@ -271,7 +271,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   'wallet.secure_payment'.tr(),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF008080),
+                        color: Colors.white,
                       ),
                 ),
                 const SizedBox(height: 4),
@@ -279,7 +279,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   'travel.your_payment_is_secured_by_stripe_your_card_detail'
                       .tr(),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Color(0xFF008080),
+                        color: Colors.white.withOpacity(0.9),
                       ),
                 ),
               ],

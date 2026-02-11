@@ -475,7 +475,7 @@ class _TrackingStatusUpdateScreenState
                 children: [
                   Icon(
                     Icons.location_on,
-                    color: Color(0xFF008080),
+                    color: Colors.white,
                     size: 5.w,
                   ),
                   SizedBox(width: 3.w),
@@ -484,7 +484,7 @@ class _TrackingStatusUpdateScreenState
                       _currentLocationText ?? 'Loading location...',
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: Color(0xFF008080),
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -643,7 +643,7 @@ class _TrackingStatusUpdateScreenState
           padding: EdgeInsets.only(bottom: 5.h),
           child: SizedBox(
             width: double.infinity,
-            height: 6.h,
+            height: 7.h,
             child: ElevatedButton(
               onPressed: canUpdate && !_isLoading ? _updateStatus : null,
               style: ElevatedButton.styleFrom(
@@ -666,7 +666,7 @@ class _TrackingStatusUpdateScreenState
                               ? '📸 Add Photo to Continue'
                               : 'Status Already Final',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -758,12 +758,22 @@ class _TrackingStatusUpdateScreenState
         }
       }
 
+      print('✅ Status update successful, navigating back...');
+
+      // Small delay to ensure Firestore syncs before navigating back
+      await Future.delayed(const Duration(milliseconds: 300));
+
       ToastUtils.show('tracking.updated'.tr());
 
-      // Return true to indicate success
-      Get.back(result: true);
+      // Navigate back with success result
+      if (mounted) {
+        Get.back(result: true);
+      }
     } catch (e) {
       print('❌ Error updating status: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
       Get.snackbar(
         'Update Failed',
         'Failed to update status: $e',
@@ -771,8 +781,6 @@ class _TrackingStatusUpdateScreenState
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 

@@ -1,5 +1,6 @@
 import '../../widgets/liquid_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide Trans;
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,9 +8,11 @@ import '../../controllers/smart_matching_controller.dart';
 import '../../core/app_export.dart';
 import '../../services/auth_state_service.dart';
 import '../../services/kyc_service.dart';
+import '../../services/deal_negotiation_service.dart';
 import '../../widgets/trip_card_widget.dart';
 import '../../utils/status_bar_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../trip_detail/trip_detail_screen.dart';
 
 class TravelScreen extends StatefulWidget {
   const TravelScreen({Key? key}) : super(key: key);
@@ -44,6 +47,10 @@ class _TravelScreenState extends State<TravelScreen>
   // Local state to hold stream data (for My Trips mode)
   List<TravelTrip> _streamTrips = [];
 
+  // Bottom navigation badge count
+  int _unseenOffersCount = 0;
+  StreamSubscription<int>? _offersCountSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +71,8 @@ class _TravelScreenState extends State<TravelScreen>
     matchingController.loadSmartSuggestions();
     // Check KYC status on initialization
     _checkKycStatus();
+    // Setup unseen offers count for bottom nav badge
+    _setupOffersCountStream();
   }
 
   Future<void> _checkKycStatus() async {
@@ -121,9 +130,32 @@ class _TravelScreenState extends State<TravelScreen>
   @override
   void dispose() {
     _streamSubscription?.cancel();
+    _offersCountSubscription?.cancel();
     _searchController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _setupOffersCountStream() {
+    _offersCountSubscription =
+        DealNegotiationService().streamUnseenOffersCount().listen((count) {
+      if (mounted) {
+        setState(() {
+          _unseenOffersCount = count;
+        });
+      }
+    });
+  }
+
+  void _navigateToTab(int index) {
+    HapticFeedback.lightImpact();
+    // Navigate to MainNavigationScreen with the selected tab
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.mainNavigation,
+      (route) => false,
+      arguments: {'initialIndex': index},
+    );
   }
 
   void _initializeStreams() {
@@ -173,6 +205,7 @@ class _TravelScreenState extends State<TravelScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      extendBody: true,
       backgroundColor: const Color(0xFFE9E9E9), // Your light grey
       appBar: AppBar(
         backgroundColor: const Color(0xFF215C5C), // Your electric blue
@@ -596,6 +629,7 @@ class _TravelScreenState extends State<TravelScreen>
       ),
       floatingActionButton: _buildFloatingActionButton(),
       floatingActionButtonLocation: _CustomFloatingActionButtonLocation(),
+      bottomNavigationBar: _buildCustomBottomNavBar(),
     );
   }
 
@@ -1319,14 +1353,30 @@ class _TravelScreenState extends State<TravelScreen>
         if (result != null && mounted) {
           print('✅ Trip posted, refreshing streams...');
           _forceRefreshStreams();
-          // Show confirmation message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('travel.trip_posted'.tr()),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 1),
-            ),
-          );
+
+          // Fetch the created trip and navigate to detail screen
+          final tripId = result as String;
+          try {
+            final createdTrip = await _tripRepository.getTravelTrip(tripId);
+            if (createdTrip != null && mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TripDetailScreen(trip: createdTrip),
+                ),
+              );
+            }
+          } catch (e) {
+            print('Error fetching created trip: $e');
+            // Show success message if navigation fails
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('travel.trip_posted'.tr()),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 1),
+              ),
+            );
+          }
         }
       },
       backgroundColor: Color(0xFF215C5C),
@@ -1336,6 +1386,120 @@ class _TravelScreenState extends State<TravelScreen>
         'travel.post_trip'.tr(),
         style: TextStyle(
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomBottomNavBar() {
+    return Container(
+      height: 85 + MediaQuery.of(context).viewPadding.bottom,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(25),
+          topRight: Radius.circular(25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(0, Icons.home_outlined, Icons.home, 'nav.home'.tr()),
+            _buildNavItem(1, Icons.receipt_long_outlined, Icons.receipt_long,
+                'nav.orders'.tr(),
+                badgeCount: _unseenOffersCount),
+            _buildNavItem(2, Icons.account_balance_wallet_outlined,
+                Icons.account_balance_wallet, 'nav.wallet'.tr()),
+            _buildNavItem(3, Icons.chat_outlined, Icons.chat, 'nav.chat'.tr()),
+            _buildNavItem(
+                4, Icons.person_outline, Icons.person, 'nav.account'.tr()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+      int index, IconData inactiveIcon, IconData activeIcon, String label,
+      {int? badgeCount}) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _navigateToTab(index),
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 70,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon area with fixed size
+              SizedBox(
+                width: 50,
+                height: 32,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Icon
+                    Icon(
+                      inactiveIcon,
+                      size: 24,
+                      color: Colors.grey[800],
+                    ),
+                    // Badge
+                    if (badgeCount != null && badgeCount > 0)
+                      Positioned(
+                        right: 7,
+                        top: -4,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(
+                              badgeCount > 9 ? '9+' : badgeCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Label
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1350,11 +1514,11 @@ class _CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
             scaffoldGeometry.floatingActionButtonSize.width) /
         2;
 
-    // Fixed Y position from bottom (not affected by keyboard)
-    // Use scaffoldGeometry.contentBottom which represents the bottom of the content area
+    // Position FAB above the bottom navigation bar (85px height + some padding)
     final double fabY = scaffoldGeometry.scaffoldSize.height -
         scaffoldGeometry.floatingActionButtonSize.height -
-        115;
+        scaffoldGeometry.minViewPadding.bottom -
+        100; // Above bottom nav bar
 
     return Offset(fabX, fabY);
   }

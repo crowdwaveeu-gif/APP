@@ -28,6 +28,7 @@ exports.sendPasswordResetOTP = emailFunctions.sendPasswordResetOTP;
 exports.verifyPasswordResetOTP = emailFunctions.verifyPasswordResetOTP;
 exports.verifyEmailWithOTP = emailFunctions.verifyEmailWithOTP;
 exports.sendDeliveryUpdateEmail = emailFunctions.sendDeliveryUpdateEmail;
+exports.sendDeliveryOTPEmail = emailFunctions.sendDeliveryOTPEmail;
 exports.testEmailConfig = emailFunctions.testEmailConfig;
 exports.sendOTPEmail = emailFunctions.sendOTPEmail;
 exports.sendCrmLoginOTP = emailFunctions.sendCrmLoginOTP;
@@ -1573,11 +1574,12 @@ exports.notifyTrackingStatusChange = functions.firestore
       const packageData = packageDoc.data();
       
       // Prepare package details for email
+      // Package model uses pickupLocation and destinationLocation (not fromLocation/toLocation)
       const packageDetails = {
         packageId: packageId,
         trackingNumber: trackingId,
-        from: packageData.fromLocation?.city || 'Unknown',
-        to: packageData.toLocation?.city || 'Unknown',
+        from: packageData.pickupLocation?.city || packageData.pickupLocation?.address || packageData.fromLocation?.city || 'Unknown',
+        to: packageData.destinationLocation?.city || packageData.destinationLocation?.address || packageData.toLocation?.city || 'Unknown',
         description: packageData.description || 'Package',
         weight: packageData.weight?.toString() || 'N/A',
       };
@@ -1729,3 +1731,457 @@ Questions? Email us at support@crowdwave.eu
       return null;
     }
   });
+
+/**
+ * ✅ Scheduled function to expire old posts (packages and trips)
+ * Runs every day at midnight UTC to mark posts older than 5 days as expired
+ */
+exports.expireOldPosts = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
+  const EXPIRATION_DAYS = 5;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - EXPIRATION_DAYS);
+  const cutoffDateISO = cutoffDate.toISOString();
+
+  functions.logger.info('Running post expiration job', {
+    cutoffDate: cutoffDateISO,
+    expirationDays: EXPIRATION_DAYS
+  });
+
+  let expiredPackages = 0;
+  let expiredTrips = 0;
+
+  try {
+    // Expire old package requests
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    const packageBatch = admin.firestore().batch();
+    packagesSnapshot.docs.forEach(doc => {
+      packageBatch.update(doc.ref, {
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredPackages++;
+    });
+
+    if (expiredPackages > 0) {
+      await packageBatch.commit();
+      functions.logger.info(`Expired ${expiredPackages} package requests`);
+    }
+
+    // Expire old travel trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('status', '==', 'active')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    const tripBatch = admin.firestore().batch();
+    tripsSnapshot.docs.forEach(doc => {
+      tripBatch.update(doc.ref, {
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredTrips++;
+    });
+
+    if (expiredTrips > 0) {
+      await tripBatch.commit();
+      functions.logger.info(`Expired ${expiredTrips} travel trips`);
+    }
+
+    functions.logger.info('Post expiration job completed', {
+      expiredPackages,
+      expiredTrips,
+      totalExpired: expiredPackages + expiredTrips
+    });
+
+    return null;
+  } catch (error) {
+    functions.logger.error('Error in post expiration job:', error);
+    throw error;
+  }
+});
+
+/**
+ * ✅ HTTP callable function to manually expire old posts (for admin use)
+ */
+exports.manualExpireOldPosts = functions.https.onCall(async (data, context) => {
+  // Verify the user is authenticated (optional: add admin check)
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const EXPIRATION_DAYS = data.expirationDays || 5;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - EXPIRATION_DAYS);
+  const cutoffDateISO = cutoffDate.toISOString();
+
+  let expiredPackages = 0;
+  let expiredTrips = 0;
+
+  try {
+    // Expire old package requests
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    for (const doc of packagesSnapshot.docs) {
+      await doc.ref.update({
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredPackages++;
+    }
+
+    // Expire old travel trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('status', '==', 'active')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    for (const doc of tripsSnapshot.docs) {
+      await doc.ref.update({
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredTrips++;
+    }
+
+    return {
+      success: true,
+      expiredPackages,
+      expiredTrips,
+      totalExpired: expiredPackages + expiredTrips,
+      cutoffDate: cutoffDateISO
+    };
+  } catch (error) {
+    functions.logger.error('Error in manual post expiration:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to expire posts: ' + error.message);
+  }
+});
+
+// ==================== ACCOUNT DELETION WITH OTP ====================
+
+/**
+ * Send Account Deletion OTP
+ * Sends a 6-digit OTP to the user's email for account deletion verification
+ */
+exports.sendAccountDeletionOTP = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const userId = context.auth.uid;
+
+  try {
+    // Get user email from Firebase Auth
+    const userRecord = await admin.auth().getUser(userId);
+    const email = userRecord.email;
+
+    if (!email) {
+      throw new functions.https.HttpsError('failed-precondition', 'No email associated with this account');
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Store OTP in Firestore (with expiration)
+    await admin.firestore().collection('accountDeletionOTPs').doc(userId).set({
+      otp: otp,
+      email: email,
+      expiresAt: expiresAt,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Send email with OTP
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.eu',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER || functions.config().smtp?.user || 'nauman@crowdwave.eu',
+        pass: process.env.SMTP_PASSWORD || functions.config().smtp?.password,
+      },
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Deletion Verification</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 30px 0;
+          }
+          .otp-container {
+            background-color: #fff3cd;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #dc3545;
+            letter-spacing: 8px;
+            margin: 0;
+          }
+          .otp-label {
+            font-size: 14px;
+            color: #856404;
+            margin-top: 10px;
+          }
+          .warning-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+          }
+          .warning-text {
+            font-size: 14px;
+            color: #721c24;
+            margin: 0;
+            line-height: 1.6;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <h1 class="email-logo">⚠️ Account Deletion</h1>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">Verify Account Deletion</h2>
+            <p class="email-text">
+              You have requested to permanently delete your CrowdWave account. 
+              Enter the code below in the app to confirm this action.
+            </p>
+            
+            <div class="otp-container">
+              <p class="otp-code">${otp}</p>
+              <p class="otp-label">This code expires in 10 minutes</p>
+            </div>
+            
+            <div class="warning-box">
+              <p class="warning-text">
+                ⚠️ <strong>This action is irreversible!</strong><br><br>
+                Once your account is deleted:<br>
+                • All your profile data will be permanently removed<br>
+                • Your wallet balance will be forfeited<br>
+                • All your packages and trips will be deleted<br>
+                • You will not be able to recover your account<br><br>
+                If you did not request this, please ignore this email and secure your account.
+              </p>
+            </div>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              If you didn't request this, please contact 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: '"CrowdWave Security" <nauman@crowdwave.eu>',
+      to: email,
+      replyTo: 'support@crowdwave.eu',
+      subject: '⚠️ Account Deletion Verification Code',
+      html: html,
+      text: `Account Deletion Verification\n\nYour verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nWARNING: This action is irreversible! All your data will be permanently deleted.\n\nIf you did not request this, please ignore this email and secure your account.`,
+    });
+
+    functions.logger.info('Account deletion OTP sent', { userId, email });
+
+    return { 
+      success: true, 
+      message: 'Verification code sent to your email',
+      email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3') // Mask email
+    };
+  } catch (error) {
+    functions.logger.error('Error sending account deletion OTP:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send verification code');
+  }
+});
+
+/**
+ * Verify OTP and Delete Account
+ * Verifies the OTP and permanently deletes the user account using Admin SDK
+ */
+exports.verifyAndDeleteAccount = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const { otp } = data;
+  const userId = context.auth.uid;
+
+  if (!otp) {
+    throw new functions.https.HttpsError('invalid-argument', 'OTP is required');
+  }
+
+  try {
+    // Get stored OTP
+    const otpDoc = await admin.firestore().collection('accountDeletionOTPs').doc(userId).get();
+
+    if (!otpDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'No verification code found. Please request a new one.');
+    }
+
+    const otpData = otpDoc.data();
+
+    // Check if OTP is expired
+    if (Date.now() > otpData.expiresAt) {
+      await admin.firestore().collection('accountDeletionOTPs').doc(userId).delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'Verification code has expired. Please request a new one.');
+    }
+
+    // Verify OTP
+    if (otpData.otp !== otp) {
+      throw new functions.https.HttpsError('permission-denied', 'Invalid verification code');
+    }
+
+    // OTP is valid - proceed with account deletion
+    functions.logger.info('OTP verified, proceeding with account deletion', { userId });
+
+    // Delete user data from Firestore collections
+    const batch = admin.firestore().batch();
+
+    // Delete user profile
+    const userProfileRef = admin.firestore().collection('users').doc(userId);
+    batch.delete(userProfileRef);
+
+    // Delete user wallet
+    const walletRef = admin.firestore().collection('wallets').doc(userId);
+    batch.delete(walletRef);
+
+    // Delete user presence
+    const presenceRef = admin.firestore().collection('presence').doc(userId);
+    batch.delete(presenceRef);
+
+    // Delete the OTP document
+    const otpRef = admin.firestore().collection('accountDeletionOTPs').doc(userId);
+    batch.delete(otpRef);
+
+    // Commit the batch delete
+    await batch.commit();
+
+    // Delete user's packages (query and delete)
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('userId', '==', userId)
+      .get();
+    
+    const packageDeleteBatch = admin.firestore().batch();
+    packagesSnapshot.docs.forEach(doc => {
+      packageDeleteBatch.delete(doc.ref);
+    });
+    if (!packagesSnapshot.empty) {
+      await packageDeleteBatch.commit();
+    }
+
+    // Delete user's trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('userId', '==', userId)
+      .get();
+    
+    const tripDeleteBatch = admin.firestore().batch();
+    tripsSnapshot.docs.forEach(doc => {
+      tripDeleteBatch.delete(doc.ref);
+    });
+    if (!tripsSnapshot.empty) {
+      await tripDeleteBatch.commit();
+    }
+
+    // Finally, delete the Firebase Auth user (using Admin SDK - no recent auth needed)
+    await admin.auth().deleteUser(userId);
+
+    functions.logger.info('Account deleted successfully', { userId });
+
+    return { 
+      success: true, 
+      message: 'Your account has been permanently deleted' 
+    };
+  } catch (error) {
+    functions.logger.error('Error deleting account:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError('internal', 'Failed to delete account: ' + error.message);
+  }
+});

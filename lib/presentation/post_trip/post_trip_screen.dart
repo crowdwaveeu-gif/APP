@@ -401,7 +401,12 @@ class _PostTripScreenState extends State<PostTripScreen>
           _showErrorSnackBar('Please select a transportation mode');
           return false;
         }
-        if (_departureDate.isBefore(DateTime.now())) {
+        // Compare only dates (not time) to allow same-day departure
+        final today = DateTime(
+            DateTime.now().year, DateTime.now().month, DateTime.now().day);
+        final departureDay = DateTime(
+            _departureDate.year, _departureDate.month, _departureDate.day);
+        if (departureDay.isBefore(today)) {
           _showErrorSnackBar('Departure date cannot be in the past');
           return false;
         }
@@ -450,10 +455,13 @@ class _PostTripScreenState extends State<PostTripScreen>
   }
 
   Future<void> _selectDepartureDate() async {
+    // Use today's date at midnight to allow same-day departure
+    final today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _departureDate,
-      firstDate: DateTime.now(),
+      initialDate: _departureDate.isBefore(today) ? today : _departureDate,
+      firstDate: today,
       lastDate: DateTime.now().add(Duration(days: 365)),
     );
     if (picked != null && picked != _departureDate) {

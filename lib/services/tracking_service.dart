@@ -174,19 +174,41 @@ class TrackingService extends GetxController {
   }
 
   /// Get tracking by ID
-  Future<DeliveryTracking?> getTracking(String trackingId) async {
+  Future<DeliveryTracking?> getTracking(String trackingId,
+      {bool forceRefresh = false}) async {
     try {
-      final doc = await _firestore
-          .collection(_trackingCollection)
-          .doc(trackingId)
-          .get();
+      DocumentSnapshot doc;
+      if (forceRefresh) {
+        // Force fetch from server, bypassing cache
+        doc = await _firestore
+            .collection(_trackingCollection)
+            .doc(trackingId)
+            .get(const GetOptions(source: Source.server));
+      } else {
+        doc = await _firestore
+            .collection(_trackingCollection)
+            .doc(trackingId)
+            .get();
+      }
 
       if (doc.exists) {
-        return DeliveryTracking.fromMap(doc.data()!);
+        return DeliveryTracking.fromMap(doc.data() as Map<String, dynamic>);
       }
       return null;
     } catch (e) {
       print('❌ Error getting tracking: $e');
+      // Fallback to cache if server fails
+      if (forceRefresh) {
+        try {
+          final doc = await _firestore
+              .collection(_trackingCollection)
+              .doc(trackingId)
+              .get();
+          if (doc.exists) {
+            return DeliveryTracking.fromMap(doc.data() as Map<String, dynamic>);
+          }
+        } catch (_) {}
+      }
       return null;
     }
   }
@@ -535,6 +557,7 @@ class TrackingService extends GetxController {
       final tracking = await getTracking(trackingId);
       if (tracking != null) {
         // Send in-app notification to sender to confirm delivery
+        // Notify sender about delivery (no email here - Firestore trigger handles it)
         await _notificationService.createNotification(
           userId: tracking.senderId,
           title: '📦 Package Delivered!',
@@ -549,16 +572,6 @@ class TrackingService extends GetxController {
             'photoUrl': photoUrl,
             'action': 'confirm_delivery',
           },
-        );
-
-        // Send email notification to sender
-        await _sendEmailNotification(
-          trackingId: trackingId,
-          tracking: tracking,
-          status: 'delivered',
-          title: '📦 Package Delivered!',
-          body:
-              'Your package has been delivered. Please confirm to release payment.',
         );
       }
 
@@ -690,29 +703,13 @@ class TrackingService extends GetxController {
         travelerId: tracking.travelerId,
       );
 
-      // Send notification to receiver with OTP
-      await _notificationService.createNotification(
-        userId: tracking.senderId,
-        title: '🔐 Delivery OTP Generated',
-        body:
-            'Your delivery OTP is: $otpCode. Share this code with the traveler to complete delivery.',
-        type: NotificationType.packageUpdate,
-        relatedEntityId: trackingId,
-        data: {
-          'trackingId': trackingId,
-          'packageRequestId': tracking.packageRequestId,
-          'otpCode': otpCode,
-          'action': 'otp_generated',
-        },
-      );
-
-      // Send email notification with OTP
+      // Send email notification with OTP (no in-app notification needed)
       await _sendOTPEmailNotification(
         tracking: tracking,
         otpCode: otpCode,
       );
 
-      print('✅ OTP generated and notifications sent: $otpCode');
+      print('✅ OTP generated and email notification sent');
       return otpCode;
     } catch (e) {
       print('❌ Error generating delivery OTP: $e');
@@ -798,7 +795,7 @@ class TrackingService extends GetxController {
       // Automatically release payment after OTP verification
       await _releasePaymentAfterOTPVerification(tracking);
 
-      // Notify sender that delivery is complete
+      // Notify sender that delivery is complete (no email here - Firestore trigger handles it)
       await _notificationService.createNotification(
         userId: tracking.senderId,
         title: '✅ Package Delivered Successfully!',
@@ -812,16 +809,6 @@ class TrackingService extends GetxController {
           'photoUrl': photoUrl,
           'action': 'delivery_verified',
         },
-      );
-
-      // Send email notification
-      await _sendEmailNotification(
-        trackingId: trackingId,
-        tracking: tracking,
-        status: 'delivered',
-        title: '✅ Package Delivered & Verified',
-        body:
-            'Your package has been delivered and verified via OTP. Payment has been released.',
       );
 
       print('✅ Delivery verified and completed via OTP');
@@ -1018,14 +1005,8 @@ class TrackingService extends GetxController {
         );
         print('✅ In-app notification sent to sender: ${tracking.senderId}');
 
-        // Send email notification to sender
-        await _sendEmailNotification(
-          trackingId: trackingId,
-          tracking: tracking,
-          status: emailStatus,
-          title: title,
-          body: body,
-        );
+        // Email notification is handled by Firestore trigger (notifyTrackingStatusChange)
+        // No need to call _sendEmailNotification here - it causes duplicate emails
       } else {
         print('⚠️ No sender ID found in tracking data');
       }
@@ -1074,11 +1055,16 @@ class TrackingService extends GetxController {
       final packageData = packageDoc.data()!;
 
       // Prepare package details for email
+      // Package model uses pickupLocation and destinationLocation (not fromLocation/toLocation)
       final packageDetails = {
         'packageId': tracking.packageRequestId,
         'trackingNumber': trackingId,
-        'from': packageData['fromLocation']?['city'] ?? 'Unknown',
-        'to': packageData['toLocation']?['city'] ?? 'Unknown',
+        'from': packageData['pickupLocation']?['city'] ??
+            packageData['pickupLocation']?['address'] ??
+            'Unknown',
+        'to': packageData['destinationLocation']?['city'] ??
+            packageData['destinationLocation']?['address'] ??
+            'Unknown',
         'description': packageData['description'] ?? 'Package',
         'weight': packageData['weight']?.toString() ?? 'N/A',
       };

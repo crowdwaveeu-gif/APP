@@ -20,44 +20,70 @@ class _OffersTabScreenState extends State<OffersTabScreen>
   late TabController _tabController;
   final DealNegotiationService _dealService = DealNegotiationService();
 
-  List<DealOffer> _allOffers = [];
+  List<DealOffer> _receivedOffers = [];
+  List<DealOffer> _sentOffers = [];
   bool _isLoading = false;
-  StreamSubscription<List<DealOffer>>? _offersSubscription;
+  StreamSubscription<List<DealOffer>>? _receivedOffersSubscription;
+  StreamSubscription<List<DealOffer>>? _sentOffersSubscription;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _setupOffersStream();
+    _tabController = TabController(length: 4, vsync: this);
+    _setupOffersStreams();
   }
 
-  void _setupOffersStream() {
+  void _setupOffersStreams() {
     setState(() {
       _isLoading = true;
     });
 
-    // Cancel existing subscription
-    _offersSubscription?.cancel();
+    // Cancel existing subscriptions
+    _receivedOffersSubscription?.cancel();
+    _sentOffersSubscription?.cancel();
 
-    // Stream all offers for current user
-    _offersSubscription = _dealService.streamReceivedOffers().listen((offers) {
+    // Stream received offers
+    _receivedOffersSubscription =
+        _dealService.streamReceivedOffers().listen((offers) {
       if (mounted) {
-        debugPrint('📦 Offers stream update: ${offers.length} offers received');
-        for (var offer in offers) {
-          debugPrint('  - Offer ${offer.id}: status=${offer.status.name}');
+        debugPrint('📦 Received offers stream update: ${offers.length} offers');
+
+        // Mark all pending offers as seen when they load
+        final unseenOfferIds = offers
+            .where((offer) =>
+                offer.status == DealStatus.pending && offer.seenAt == null)
+            .map((offer) => offer.id)
+            .toList();
+
+        if (unseenOfferIds.isNotEmpty) {
+          _dealService.markOffersAsSeen(unseenOfferIds);
+          debugPrint('👁️ Marked ${unseenOfferIds.length} offers as seen');
         }
+
         setState(() {
-          _allOffers = offers;
+          _receivedOffers = offers;
           _isLoading = false;
         });
       }
     }, onError: (error) {
-      debugPrint('❌ Error in offers stream: $error');
+      debugPrint('❌ Error in received offers stream: $error');
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
+    });
+
+    // Stream sent offers
+    _sentOffersSubscription = _dealService.streamSentOffers().listen((offers) {
+      if (mounted) {
+        debugPrint('📤 Sent offers stream update: ${offers.length} offers');
+        setState(() {
+          _sentOffers = offers;
+        });
+      }
+    }, onError: (error) {
+      debugPrint('❌ Error in sent offers stream: $error');
     });
 
     // Set timeout to stop loading
@@ -77,7 +103,8 @@ class _OffersTabScreenState extends State<OffersTabScreen>
 
   @override
   void dispose() {
-    _offersSubscription?.cancel();
+    _receivedOffersSubscription?.cancel();
+    _sentOffersSubscription?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -102,6 +129,7 @@ class _OffersTabScreenState extends State<OffersTabScreen>
               Tab(text: 'offers.new_offers'.tr()),
               Tab(text: 'offers.accepted'.tr()),
               Tab(text: 'Declined/Expired'),
+              Tab(text: 'Sent Offers'),
             ],
           ),
         ),
@@ -110,23 +138,37 @@ class _OffersTabScreenState extends State<OffersTabScreen>
             controller: _tabController,
             children: [
               _buildOffersList(
+                offers: _receivedOffers,
                 filter: (offer) =>
                     offer.status == DealStatus.pending && !offer.isExpired,
                 emptyTitle: 'offers.no_new_offers'.tr(),
                 emptyMessage: 'offers.no_new_offers_message'.tr(),
+                isReceivedOffers: true,
               ),
               _buildOffersList(
+                offers: _receivedOffers,
                 filter: (offer) => offer.status == DealStatus.accepted,
                 emptyTitle: 'offers.no_accepted_offers'.tr(),
                 emptyMessage: 'offers.no_accepted_offers_message'.tr(),
+                isReceivedOffers: true,
               ),
               _buildOffersList(
+                offers: _receivedOffers,
                 filter: (offer) =>
                     offer.status == DealStatus.rejected ||
                     offer.status == DealStatus.expired ||
                     (offer.status == DealStatus.pending && offer.isExpired),
                 emptyTitle: 'offers.no_rejected_offers'.tr(),
                 emptyMessage: 'offers.no_rejected_offers_message'.tr(),
+                isReceivedOffers: true,
+              ),
+              _buildOffersList(
+                offers: _sentOffers,
+                filter: (offer) => true, // Show all sent offers
+                emptyTitle: 'No Sent Offers',
+                emptyMessage:
+                    'You haven\'t made any offers yet. Browse packages and make your first offer!',
+                isReceivedOffers: false,
               ),
             ],
           ),
@@ -136,9 +178,11 @@ class _OffersTabScreenState extends State<OffersTabScreen>
   }
 
   Widget _buildOffersList({
+    required List<DealOffer> offers,
     required bool Function(DealOffer) filter,
     required String emptyTitle,
     required String emptyMessage,
+    required bool isReceivedOffers,
   }) {
     return LiquidRefreshIndicator(
       onRefresh: _handleRefresh,
@@ -165,7 +209,7 @@ class _OffersTabScreenState extends State<OffersTabScreen>
           }
 
           // Apply filter
-          final filteredOffers = _allOffers.where(filter).toList();
+          final filteredOffers = offers.where(filter).toList();
 
           // Show empty state
           if (filteredOffers.isEmpty) {
@@ -181,14 +225,17 @@ class _OffersTabScreenState extends State<OffersTabScreen>
           // Show offers list
           return ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 100,
+            ),
             itemCount: filteredOffers.length,
             itemBuilder: (context, index) {
               final offer = filteredOffers[index];
               return OfferCardWidget(
                 key: ValueKey('${offer.id}_${offer.status.name}'),
                 offer: offer,
-                isReceivedOffer: true,
+                isReceivedOffer: isReceivedOffers,
                 onOfferUpdated: () {
                   // Refresh will happen automatically via stream
                 },

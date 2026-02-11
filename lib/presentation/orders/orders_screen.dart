@@ -59,7 +59,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       vsync: this,
       initialIndex: widget.initialTabIndex ??
           0, // Use provided initial index or default to 0
-    ); // 6 tabs: Active, Offers, Delivered, Pending, Payment Due, My Orders
+    ); // 6 tabs: Active, Offers, Delivered, Pending, Payment Due, My Posts
     _initializeServices().then((_) {
       if (mounted) {
         _setupRealTimeStreams();
@@ -610,7 +610,12 @@ class _OrdersScreenState extends State<OrdersScreen>
 
           // Show list of pending payment bookings
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 100,
+            ),
             itemCount: pendingBookings.length,
             itemBuilder: (context, index) {
               final booking = pendingBookings[index];
@@ -920,7 +925,12 @@ class _OrdersScreenState extends State<OrdersScreen>
             setState(() {});
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 100,
+            ),
             itemCount: packages.length,
             itemBuilder: (context, index) {
               final package = packages[index];
@@ -1018,7 +1028,12 @@ class _OrdersScreenState extends State<OrdersScreen>
             setState(() {});
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 100,
+            ),
             itemCount: trips.length,
             itemBuilder: (context, index) {
               final trip = trips[index];
@@ -1236,6 +1251,10 @@ class _OrdersScreenState extends State<OrdersScreen>
         color = Colors.red;
         text = 'Disputed';
         break;
+      case PackageStatus.expired:
+        color = Colors.grey;
+        text = 'Expired';
+        break;
     }
 
     return Container(
@@ -1280,6 +1299,10 @@ class _OrdersScreenState extends State<OrdersScreen>
       case TripStatus.cancelled:
         color = Colors.red;
         text = 'Cancelled';
+        break;
+      case TripStatus.expired:
+        color = Colors.grey;
+        text = 'Expired';
         break;
     }
 

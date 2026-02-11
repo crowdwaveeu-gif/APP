@@ -505,7 +505,7 @@ class _TrackingHistoryScreenState extends State<TrackingHistoryScreen>
                     children: [
                       Icon(
                         Icons.location_history,
-                        color: Color(0xFF008080),
+                        color: Colors.white,
                         size: 4.w,
                       ),
                       SizedBox(width: 1.w),
@@ -513,7 +513,7 @@ class _TrackingHistoryScreenState extends State<TrackingHistoryScreen>
                         '${tracking.trackingPoints.length} location points',
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: Color(0xFF008080),
+                          color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

@@ -61,32 +61,20 @@ class PermissionManagerService extends GetxController {
     }
   }
 
-  /// Request location permissions
+  /// Request location permissions (foreground only - when app is active)
+  /// Background location should only be requested later if needed for live tracking
   Future<void> _requestLocationPermissions(BuildContext context) async {
     try {
-      print('📍 Requesting location permissions...');
+      print('📍 Requesting location permission (foreground only)...');
 
-      // First request basic location permission
-      final locationStatus = await Permission.location.request();
-      print('📍 Location permission: $locationStatus');
+      // Request FOREGROUND location permission only (while app is in use)
+      // This prevents annoying users with background tracking requests
+      final locationStatus = await Permission.locationWhenInUse.request();
+      print('📍 Location (foreground) permission: $locationStatus');
 
-      // If granted, request background location (for delivery tracking)
-      if (locationStatus == PermissionStatus.granted) {
-        // Show a prominent disclosure before requesting background permission
-        final accepted = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => const ProminentDisclosureDialog(),
-            ) ??
-            false;
-
-        if (accepted) {
-          final backgroundStatus = await Permission.locationAlways.request();
-          print('📍 Background location permission: $backgroundStatus');
-        } else {
-          print(
-              '📍 User declined prominent disclosure for background location');
-        }
-      }
+      // NOTE: Background location (locationAlways) should only be requested
+      // when the user explicitly enables live tracking features
+      // This will be handled separately when they use that feature
     } catch (e) {
       print('❌ Error requesting location permissions: $e');
     }
@@ -109,7 +97,7 @@ class PermissionManagerService extends GetxController {
   Future<bool> hasEssentialPermissions() async {
     try {
       final notification = await Permission.notification.status;
-      final location = await Permission.location.status;
+      final location = await Permission.locationWhenInUse.status;
       final microphone = await Permission.microphone.status;
 
       return notification.isGranted &&

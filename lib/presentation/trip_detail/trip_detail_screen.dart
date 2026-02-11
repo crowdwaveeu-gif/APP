@@ -310,6 +310,10 @@ class _TripDetailScreenState extends State<TripDetailScreen>
         statusColor = Colors.red;
         statusText = 'Cancelled';
         break;
+      case TripStatus.expired:
+        statusColor = Colors.grey;
+        statusText = 'Expired';
+        break;
     }
 
     return Container(

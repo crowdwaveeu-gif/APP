@@ -11,6 +11,7 @@ class LocationService {
   // Cache settings
   static const String _locationCacheKey = 'cached_location';
   static const String _locationTimestampKey = 'location_timestamp';
+  static const String _permissionRequestedKey = 'location_permission_requested';
   static const Duration _cacheValidDuration =
       Duration(minutes: 15); // Cache for 15 minutes
 
@@ -167,7 +168,10 @@ class LocationService {
     return await _checkLocationPermission();
   }
 
-  /// Request location permission with user-friendly explanation
+  /// Request location permission (asks only once for foreground/when-in-use)
+  /// Only requests permission if:
+  /// 1. Permission is currently denied AND
+  /// 2. We haven't asked before OR reason is provided (explicit user action)
   Future<bool> requestLocationPermission({String? reason}) async {
     try {
       // Check if location services are enabled
@@ -179,25 +183,59 @@ class LocationService {
 
       LocationPermission permission = await Geolocator.checkPermission();
 
+      // If already granted, return true
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        return true;
+      }
+
+      // If permanently denied, guide user to settings
       if (permission == LocationPermission.deniedForever) {
         throw LocationPermissionException(
             'Location permissions are permanently denied. Please enable them in app settings.');
       }
 
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw LocationPermissionException('Location permission was denied.');
+      // Check if we've already asked for permission
+      final prefs = await SharedPreferences.getInstance();
+      final hasAskedBefore = prefs.getBool(_permissionRequestedKey) ?? false;
+
+      // Only ask if:
+      // 1. We haven't asked before (first time), OR
+      // 2. User explicitly triggered this (reason provided)
+      if (!hasAskedBefore || reason != null) {
+        if (kDebugMode) {
+          print(
+              'Requesting location permission (foreground only)${reason != null ? ": $reason" : ""}');
         }
+
+        // Request FOREGROUND permission only (whileInUse, not always)
+        permission = await Geolocator.requestPermission();
+
+        // Mark that we've asked
+        await prefs.setBool(_permissionRequestedKey, true);
+
+        if (permission == LocationPermission.denied) {
+          if (kDebugMode) {
+            print('Location permission denied by user');
+          }
+          return false;
+        }
+
+        if (permission == LocationPermission.deniedForever) {
+          throw LocationPermissionException(
+              'Location permissions are permanently denied. Please enable them in app settings.');
+        }
+      } else {
+        // Already asked before and user denied - don't ask again
+        if (kDebugMode) {
+          print(
+              'Location permission already requested before, not asking again');
+        }
+        return false;
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        throw LocationPermissionException(
-            'Location permissions are permanently denied. Please enable them in app settings.');
-      }
-
-      return permission == LocationPermission.always ||
-          permission == LocationPermission.whileInUse;
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
     } catch (e) {
       if (kDebugMode) {
         print('Error requesting location permission: $e');
@@ -214,6 +252,22 @@ class LocationService {
 
     if (kDebugMode) {
       print('Location cache cleared');
+    }
+  }
+
+  /// Reset permission request state (for testing/debugging only)
+  /// This allows the permission dialog to be shown again
+  Future<void> resetPermissionRequestState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_permissionRequestedKey);
+      if (kDebugMode) {
+        print('Permission request state reset');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error resetting permission state: $e');
+      }
     }
   }
 

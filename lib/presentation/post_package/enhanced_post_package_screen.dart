@@ -134,10 +134,13 @@ class _EnhancedPostPackageScreenState extends State<EnhancedPostPackageScreen>
   }
 
   Future<void> _selectDate(bool isPickup) async {
+    // Use today's date at midnight to allow same-day selection
+    final today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: today,
+      firstDate: today,
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(

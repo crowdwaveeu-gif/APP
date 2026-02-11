@@ -1,15 +1,23 @@
 class ApiConstants {
   // Google Maps API Configuration - Environment specific
+  
+  // Load from google-services.json at runtime instead
   static String get googleMapsApiKey {
+    // Prefer environment variable first
+    const envKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+    if (envKey.isNotEmpty) {
+      return envKey;
+    }
+
+    // Fallback to Firebase auto-generated key (from google-services.json)
+    // This key is automatically managed by Firebase and has proper restrictions
     switch (EnvironmentConfig.currentEnvironment) {
       case Environment.development:
-        return 'AIzaSyC8gJgw5v3LQ2Y7IeTTfWP3ikey-P9xtqI'; // Development key
+        return 'AIzaSyBn3TkF-M_d8ICAISbEtOmaA20k-C5niks'; // Firebase Android key
       case Environment.staging:
-        return 'AIzaSyC8gJgw5v3LQ2Y7IeTTfWP3ikey-P9xtqI'; // Same key for staging
+        return 'AIzaSyBn3TkF-M_d8ICAISbEtOmaA20k-C5niks'; // Firebase Android key
       case Environment.production:
-        return String.fromEnvironment('GOOGLE_MAPS_API_KEY',
-            defaultValue:
-                'AIzaSyC8gJgw5v3LQ2Y7IeTTfWP3ikey-P9xtqI'); // Use env var for production
+        return 'AIzaSyBn3TkF-M_d8ICAISbEtOmaA20k-C5niks'; // Firebase Android key
     }
   }
 

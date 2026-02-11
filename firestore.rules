@@ -383,5 +383,22 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && (request.auth.uid == userId || hasAdminRole(request.auth.uid));
     }
+
+    // Withdrawal requests - users can create, admins can manage
+    match /withdrawalRequests/{requestId} {
+      allow read: if request.auth != null 
+        && (resource.data.userId == request.auth.uid || hasAdminRole(request.auth.uid));
+      
+      allow create: if request.auth != null 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount > 0;
+      
+      allow update: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow delete: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow list: if request.auth != null;
+    }
   }
 }

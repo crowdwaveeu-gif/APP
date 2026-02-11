@@ -566,6 +566,216 @@ Questions? Email us at support@crowdwave.eu
 © ${new Date().getFullYear()} CrowdWave. All rights reserved.
     `.trim(),
   }),
+
+  // Delivery OTP Email Template - OTP sent to receiver for delivery verification
+  deliveryOTP: (packageDetails, otpCode) => ({
+    subject: `🔐 Your Delivery Verification Code: ${otpCode}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Delivery Verification Code</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-header img {
+            height: 50px;
+            margin-bottom: 10px;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+          }
+          .email-tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            margin-top: 8px;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 30px 0;
+          }
+          .otp-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .otp-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+          .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 8px;
+            margin: 0;
+          }
+          .otp-expiry {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            margin-top: 15px;
+          }
+          .package-details {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eeeeee;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+          .detail-label {
+            font-weight: 600;
+            color: #666666;
+          }
+          .detail-value {
+            color: #333333;
+          }
+          .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+          }
+          .warning-text {
+            color: #856404;
+            font-size: 14px;
+            margin: 0;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <img src="https://firebasestorage.googleapis.com/v0/b/crowdwave-85e10.firebasestorage.app/o/email_assets%2Fcrowdwave_logo.png?alt=media" alt="CrowdWave" style="height: 50px;">
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">🔐 Delivery Verification Code</h2>
+            <p class="email-text">
+              Your package is ready for delivery! Please share the following verification code with the traveler to confirm receipt of your package.
+            </p>
+            
+            <div class="otp-container">
+              <p class="otp-label">Your Verification Code</p>
+              <p class="otp-code">${otpCode}</p>
+              <p class="otp-expiry">⏱️ This code expires in 30 minutes</p>
+            </div>
+            
+            <div class="package-details">
+              <h3 style="margin: 0 0 15px 0; color: #333;">Package Details</h3>
+              ${packageDetails.trackingNumber ? `
+                <div class="detail-row">
+                  <span class="detail-label">Tracking Number:</span>
+                  <span class="detail-value">${packageDetails.trackingNumber}</span>
+                </div>
+              ` : ''}
+              ${packageDetails.description ? `
+                <div class="detail-row">
+                  <span class="detail-label">Description:</span>
+                  <span class="detail-value">${packageDetails.description}</span>
+                </div>
+              ` : ''}
+            </div>
+            
+            <div class="warning-box">
+              <p class="warning-text">
+                ⚠️ <strong>Security Notice:</strong> Only share this code when you have received your package and verified its contents. Never share this code before receiving your package.
+              </p>
+            </div>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              Questions? Contact us at 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+🔐 Delivery Verification Code
+
+Your package is ready for delivery!
+
+YOUR VERIFICATION CODE: ${otpCode}
+
+⏱️ This code expires in 30 minutes.
+
+Package Details:
+${packageDetails.trackingNumber ? `Tracking Number: ${packageDetails.trackingNumber}\n` : ''}
+${packageDetails.description ? `Description: ${packageDetails.description}\n` : ''}
+
+⚠️ IMPORTANT: Only share this code when you have received your package and verified its contents. Never share this code before receiving your package.
+
+Questions? Email us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+    `.trim(),
+  }),
 };
 
 /**
@@ -728,6 +938,52 @@ exports.sendDeliveryUpdateEmail = functions.https.onCall(async (data, context) =
       error: error.message,
     });
     throw new functions.https.HttpsError('internal', 'Failed to send delivery update email');
+  }
+});
+
+/**
+ * Send Delivery OTP Email
+ * Called when traveler generates OTP for delivery verification
+ * OTP is sent to the receiver (sender) so they can verify the delivery
+ */
+exports.sendDeliveryOTPEmail = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const { recipientEmail, packageDetails, otpCode } = data;
+
+  if (!recipientEmail || !packageDetails || !otpCode) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing required fields: recipientEmail, packageDetails, and otpCode are required');
+  }
+
+  try {
+    const transporter = getEmailTransporter();
+    const template = emailTemplates.deliveryOTP(packageDetails, otpCode);
+
+    await transporter.sendMail({
+      from: '"CrowdWave Deliveries" <nauman@crowdwave.eu>',
+      to: recipientEmail,
+      replyTo: 'support@crowdwave.eu',
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+
+    functions.logger.info('Delivery OTP email sent successfully', {
+      recipientEmail: recipientEmail,
+      trackingNumber: packageDetails.trackingNumber,
+      // Don't log OTP for security
+    });
+
+    return { success: true };
+  } catch (error) {
+    functions.logger.error('Failed to send delivery OTP email', {
+      recipientEmail: recipientEmail,
+      error: error.message,
+    });
+    throw new functions.https.HttpsError('internal', 'Failed to send delivery OTP email');
   }
 });
 
@@ -2348,6 +2604,7 @@ module.exports = {
   // sendEmailVerification: exports.sendEmailVerification, // DISABLED - using OTP system instead
   sendPasswordResetEmail: exports.sendPasswordResetEmail,
   sendDeliveryUpdateEmail: exports.sendDeliveryUpdateEmail,
+  sendDeliveryOTPEmail: exports.sendDeliveryOTPEmail,
   testEmailConfig: exports.testEmailConfig,
   sendOTPEmail: exports.sendOTPEmail,
   sendPasswordResetOTP: exports.sendPasswordResetOTP,

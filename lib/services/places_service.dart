@@ -15,9 +15,7 @@ class PlacesService {
       queryParameters: {
         'input': input,
         'key': _apiKey,
-        'types': 'geocode', // For addresses only
-        'components':
-            'country:us|country:ca', // Limit to US and Canada (adjust as needed)
+        'types': 'geocode', // For addresses/locations worldwide
       },
     );
 
@@ -33,6 +31,9 @@ class PlacesService {
               .map((prediction) =>
                   PlaceAutocompletePrediction.fromJson(prediction))
               .toList();
+        } else if (data['status'] == 'ZERO_RESULTS') {
+          // No results found - return empty list (not an error)
+          return [];
         } else {
           throw Exception(
               'Places API error: ${data['status']} - ${data['error_message'] ?? 'Unknown error'}');
@@ -102,6 +103,9 @@ class PlacesService {
           return results
               .map((result) => PlaceSearchResult.fromJson(result))
               .toList();
+        } else if (data['status'] == 'ZERO_RESULTS') {
+          // No nearby places found - return empty list (not an error)
+          return [];
         } else {
           throw Exception(
               'Places API error: ${data['status']} - ${data['error_message'] ?? 'Unknown error'}');

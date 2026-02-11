@@ -62,7 +62,7 @@ class TripRepository {
             }).toList());
   }
 
-  // Get available trips for matching
+  // Get available trips for matching (excludes expired posts)
   Stream<List<TravelTrip>> getAvailableTrips({
     String? excludeTravelerId,
     TripStatus status = TripStatus.active,
@@ -76,11 +76,17 @@ class TripRepository {
       query = query.where('travelerId', isNotEqualTo: excludeTravelerId);
     }
 
-    return query.snapshots().map((snapshot) => snapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['id'] = data['id'] ?? doc.id;
-          return TravelTrip.fromJson(data);
-        }).toList());
+    return query.snapshots().map((snapshot) {
+      final trips = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = data['id'] ?? doc.id;
+        return TravelTrip.fromJson(data);
+      }).toList();
+
+      // Filter out trips that should be expired (older than 5 days)
+      // This provides immediate filtering before the cloud function runs
+      return trips.where((trip) => !trip.shouldExpire).toList();
+    });
   }
 
   // Update travel trip
@@ -149,6 +155,9 @@ class TripRepository {
 
       // Filter by additional criteria (in production, use proper geo queries)
       return trips.where((trip) {
+        // Skip trips that should be expired
+        if (trip.shouldExpire) return false;
+
         bool matches = true;
 
         if (transportModes != null && transportModes.isNotEmpty) {
@@ -195,7 +204,7 @@ class TripRepository {
             }).toList());
   }
 
-  // Get recent trips for feed
+  // Get recent trips for feed (excludes expired posts)
   Stream<List<TravelTrip>> getRecentTrips({int limit = 20}) {
     return _firestore
         .collection(_collection)
@@ -203,11 +212,48 @@ class TripRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = data['id'] ?? doc.id;
-              return TravelTrip.fromJson(data);
-            }).toList());
+        .map((snapshot) {
+      final trips = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = data['id'] ?? doc.id;
+        return TravelTrip.fromJson(data);
+      }).toList();
+
+      // Filter out trips that should be expired (older than 5 days)
+      return trips.where((trip) => !trip.shouldExpire).toList();
+    });
+  }
+
+  // Expire a trip (mark as expired)
+  Future<void> expireTrip(String id) async {
+    await updateTripStatus(id, TripStatus.expired);
+  }
+
+  // Check and expire old trips (can be called periodically)
+  Future<int> expireOldTrips() async {
+    try {
+      final cutoffDate = DateTime.now()
+          .subtract(const Duration(days: TravelTrip.expirationDays));
+
+      final snapshot = await _firestore
+          .collection(_collection)
+          .where('status', isEqualTo: TripStatus.active.name)
+          .where('createdAt', isLessThan: cutoffDate.toIso8601String())
+          .get();
+
+      int expiredCount = 0;
+      for (final doc in snapshot.docs) {
+        await doc.reference.update({
+          'status': TripStatus.expired.name,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+        expiredCount++;
+      }
+
+      return expiredCount;
+    } catch (e) {
+      throw Exception('Failed to expire old trips: $e');
+    }
   }
 
   // Update trip earnings

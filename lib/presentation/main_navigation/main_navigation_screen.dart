@@ -14,6 +14,8 @@ import '../settings/notification_settings_screen.dart';
 import '../../services/auth_state_service.dart';
 import '../../services/locale/locale_detection_service.dart';
 import '../../services/deal_negotiation_service.dart';
+import '../../services/user_profile_service.dart';
+import '../../core/models/models.dart';
 import '../../routes/app_routes.dart';
 import '../../services/location_notification_service.dart';
 import '../../utils/black_screen_fix.dart';
@@ -47,12 +49,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _unseenOffersCount = 0;
   StreamSubscription<int>? _offersCountSubscription;
 
+  // User profile service for preloading
+  final UserProfileService _userProfileService = UserProfileService();
+
   // Based on analysis of the app structure
   late List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
+
+    // Preload user profile IMMEDIATELY before creating any screens
+    // This ensures the cache is populated before children try to read it
+    _preloadUserProfileSync();
 
     // Set initial index from widget parameter
     _selectedIndex = widget.initialIndex ?? 0;
@@ -61,12 +70,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _pageController = PageController(initialPage: _selectedIndex);
 
     // Initialize screens with orders tab index if provided
+    // Order: Home, Orders, Wallet, Chat, Account
     _screens = [
-      const UpdatedHomeScreen(), // Updated home screen with the new design
-      const ChatScreen(), // Chat functionality
-      OrdersScreen(initialTabIndex: _ordersTabIndex), // Order management
-      const WalletScreen(), // Payments & earnings
-      const AccountScreen(), // Account settings and profile
+      const UpdatedHomeScreen(), // Index 0: Home
+      OrdersScreen(initialTabIndex: _ordersTabIndex), // Index 1: Orders
+      const WalletScreen(), // Index 2: Wallet
+      const ChatScreen(), // Index 3: Chat
+      const AccountScreen(), // Index 4: Account
     ];
 
     // Listen to auth state changes to update drawer UI when user data changes
@@ -93,7 +103,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void _onAuthStateChanged() {
     // Rebuild the widget when auth state changes (user login/logout, profile updates)
     if (mounted) {
+      // Reload profile when auth state changes
+      _preloadUserProfileSync();
       setState(() {});
+    }
+  }
+
+  /// Preload user profile synchronously into cache to prevent UI flicker
+  void _preloadUserProfileSync() {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      // Fire and forget - populate cache in background
+      _userProfileService.getCurrentUserProfile().catchError((e) {
+        debugPrint('Failed to preload user profile: $e');
+      });
+    }
+  }
+
+  /// Preload user profile into cache to prevent UI flicker (async version)
+  Future<void> _preloadUserProfile() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      try {
+        // This will fetch and cache the profile if not already cached
+        await _userProfileService.getCurrentUserProfile();
+      } catch (e) {
+        // Silently fail - we'll fall back to Firebase Auth data
+        debugPrint('Failed to preload user profile: $e');
+      }
     }
   }
 
@@ -200,12 +237,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(0, Icons.home_outlined, Icons.home, 'nav.home'.tr()),
-            _buildNavItem(1, Icons.chat_outlined, Icons.chat, 'nav.chat'.tr()),
-            _buildNavItem(2, Icons.receipt_long_outlined, Icons.receipt_long,
+            _buildNavItem(1, Icons.receipt_long_outlined, Icons.receipt_long,
                 'nav.orders'.tr(),
                 badgeCount: _unseenOffersCount),
-            _buildNavItem(3, Icons.account_balance_wallet_outlined,
+            _buildNavItem(2, Icons.account_balance_wallet_outlined,
                 Icons.account_balance_wallet, 'nav.wallet'.tr()),
+            _buildNavItem(3, Icons.chat_outlined, Icons.chat, 'nav.chat'.tr()),
             _buildNavItem(
                 4, Icons.person_outline, Icons.person, 'nav.account'.tr()),
           ],
@@ -482,14 +519,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _buildDrawerUserAvatar() {
     final user = _authService.currentUser;
+    if (user == null) {
+      return CircleAvatar(
+        radius: 40,
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.person, color: Color(0xFF215C5C), size: 40),
+      );
+    }
 
-    if (user?.photoURL != null && user!.photoURL!.isNotEmpty) {
+    // Check cache first to avoid flicker
+    final cachedProfile = UserProfileService.getFromCache(user.uid);
+    final photoUrl = cachedProfile?.photoUrl ?? user.photoURL;
+
+    if (photoUrl != null && photoUrl.isNotEmpty) {
       return CircleAvatar(
         radius: 40,
         backgroundColor: Colors.white,
         child: ClipOval(
           child: CachedNetworkImage(
-            imageUrl: user.photoURL!,
+            imageUrl: photoUrl,
             width: 80,
             height: 80,
             fit: BoxFit.cover,
@@ -510,7 +558,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         radius: 40,
         backgroundColor: Colors.white,
         child: Text(
-          _getUserInitials(),
+          _getUserInitials(cachedProfile),
           style: const TextStyle(
             color: Color(0xFF215C5C),
             fontSize: 28,
@@ -560,29 +608,39 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   String _getUserDisplayName() {
     final user = _authService.currentUser;
+    if (user == null) return 'User';
 
-    if (user?.displayName != null && user!.displayName!.isNotEmpty) {
-      return user.displayName!;
-    } else if (user?.email != null) {
-      final emailName = user!.email!.split('@').first;
+    // Check cache first to avoid flicker
+    final cachedProfile = UserProfileService.getFromCache(user.uid);
+    final displayName = cachedProfile?.fullName ?? user.displayName;
+
+    if (displayName != null && displayName.isNotEmpty) {
+      return displayName;
+    } else if (user.email != null) {
+      final emailName = user.email!.split('@').first;
       return emailName[0].toUpperCase() + emailName.substring(1);
     } else {
       return 'User';
     }
   }
 
-  String _getUserInitials() {
+  String _getUserInitials([UserProfile? cachedProfile]) {
     final user = _authService.currentUser;
+    if (user == null) return 'US';
 
-    if (user?.displayName != null && user!.displayName!.isNotEmpty) {
-      final names = user.displayName!.split(' ');
+    // Use provided cache or fetch from cache
+    final profile = cachedProfile ?? UserProfileService.getFromCache(user.uid);
+    final displayName = profile?.fullName ?? user.displayName;
+
+    if (displayName != null && displayName.isNotEmpty) {
+      final names = displayName.split(' ');
       if (names.length >= 2) {
         return (names[0][0] + names[1][0]).toUpperCase();
       } else {
         return names[0].substring(0, 2).toUpperCase();
       }
-    } else if (user?.email != null) {
-      final emailName = user!.email!.split('@').first;
+    } else if (user.email != null) {
+      final emailName = user.email!.split('@').first;
       return emailName.substring(0, 2).toUpperCase();
     } else {
       return 'US';

@@ -693,7 +693,7 @@ class _ModerationPanelWidgetState extends State<ModerationPanelWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Color(0xFF008080),
+      color: const Color(0xFF008080).withOpacity(0.1),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -701,13 +701,14 @@ class _ModerationPanelWidgetState extends State<ModerationPanelWidget> {
           children: [
             Row(
               children: [
-                Icon(Icons.admin_panel_settings, color: Color(0xFF008080)),
+                const Icon(Icons.admin_panel_settings,
+                    color: Color(0xFF006666)),
                 const SizedBox(width: 8),
                 Text(
                   'common.moderation_panel'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF008080),
+                    color: Color(0xFF006666),
                   ),
                 ),
               ],

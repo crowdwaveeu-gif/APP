@@ -66,7 +66,7 @@ class PackageRepository {
             }).toList());
   }
 
-  // Get available packages for matching
+  // Get available packages for matching (excludes expired posts)
   Stream<List<PackageRequest>> getAvailablePackages({
     String? excludeSenderId,
     PackageStatus status = PackageStatus.pending,
@@ -80,11 +80,17 @@ class PackageRepository {
       query = query.where('senderId', isNotEqualTo: excludeSenderId);
     }
 
-    return query.snapshots().map((snapshot) => snapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return PackageRequest.fromJson(data);
-        }).toList());
+    return query.snapshots().map((snapshot) {
+      final packages = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return PackageRequest.fromJson(data);
+      }).toList();
+
+      // Filter out packages that should be expired (older than 5 days)
+      // This provides immediate filtering before the cloud function runs
+      return packages.where((package) => !package.shouldExpire).toList();
+    });
   }
 
   // Update package request
@@ -150,6 +156,9 @@ class PackageRepository {
 
       // Filter by additional criteria (in production, use proper geo queries)
       return packages.where((package) {
+        // Skip packages that should be expired
+        if (package.shouldExpire) return false;
+
         // Add distance calculations and other filtering logic here
         bool matches = true;
 
@@ -195,7 +204,7 @@ class PackageRepository {
             }).toList());
   }
 
-  // Get recent packages for feed
+  // Get recent packages for feed (excludes expired posts)
   Stream<List<PackageRequest>> getRecentPackages({int limit = 20}) {
     return _firestore
         .collection(_collection)
@@ -203,10 +212,47 @@ class PackageRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return PackageRequest.fromJson(data);
-            }).toList());
+        .map((snapshot) {
+      final packages = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return PackageRequest.fromJson(data);
+      }).toList();
+
+      // Filter out packages that should be expired (older than 5 days)
+      return packages.where((package) => !package.shouldExpire).toList();
+    });
+  }
+
+  // Expire a package (mark as expired)
+  Future<void> expirePackage(String id) async {
+    await updatePackageStatus(id, PackageStatus.expired);
+  }
+
+  // Check and expire old packages (can be called periodically)
+  Future<int> expireOldPackages() async {
+    try {
+      final cutoffDate = DateTime.now()
+          .subtract(const Duration(days: PackageRequest.expirationDays));
+
+      final snapshot = await _firestore
+          .collection(_collection)
+          .where('status', isEqualTo: PackageStatus.pending.name)
+          .where('createdAt', isLessThan: cutoffDate.toIso8601String())
+          .get();
+
+      int expiredCount = 0;
+      for (final doc in snapshot.docs) {
+        await doc.reference.update({
+          'status': PackageStatus.expired.name,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+        expiredCount++;
+      }
+
+      return expiredCount;
+    } catch (e) {
+      throw Exception('Failed to expire old packages: $e');
+    }
   }
 }

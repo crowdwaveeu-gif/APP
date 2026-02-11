@@ -6,6 +6,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:get/get.dart' hide Trans;
 import 'dart:io';
 import 'dart:convert';
 import '../../services/auth_state_service.dart';
@@ -377,8 +379,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                       ),
                       child: Column(
                         children: [
-                          // Account Deletion (App Store 5.1.1 requirement)
-                          _buildDestructiveSection(),
                           // Email Section (Read-only)
                           _buildProfileOption(
                             icon: Icons.email_outlined,
@@ -492,6 +492,11 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
                             ),
                           ),
 
+                          const SizedBox(height: 20),
+
+                          // Account Deletion (App Store 5.1.1 requirement) - at the end
+                          _buildDestructiveSection(),
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -563,7 +568,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Account'),
         content: const Text(
-          'This will permanently delete your account and remove your profile, wallet, and presence data from our servers. You will be signed out and cannot recover the account later. Continue?',
+          'This will permanently delete your account and remove your profile, wallet, and presence data from our servers. You will be signed out and cannot recover the account later.\n\nWe will send a verification code to your email to confirm this action.',
         ),
         actions: [
           TextButton(
@@ -573,7 +578,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
+            child: const Text('Send Verification Code'),
           ),
         ],
       ),
@@ -581,6 +586,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
 
     if (confirmed != true) return;
 
+    // Show loading
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -590,35 +596,182 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
     );
 
     try {
-      // Delete Firestore profile
-      await _userProfileService.deleteUserProfile();
-
-      // Delete Firebase Auth user
-      await EnhancedFirebaseAuthService.instance.deleteUserAccount();
-
-      // Sign out locally
-      await authService.signOut();
+      // Call cloud function to send OTP
+      final functions = FirebaseFunctions.instance;
+      final sendOtpCallable = functions.httpsCallable('sendAccountDeletionOTP');
+      final result = await sendOtpCallable.call();
 
       if (mounted) {
-        Navigator.of(context).pop(); // remove progress dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account deleted successfully.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Navigator.of(context).pop(); // Close loading dialog
+      }
+
+      final maskedEmail = result.data['email'] as String? ?? 'your email';
+
+      // Show OTP entry dialog
+      final otpVerified = await _showOTPVerificationDialog(maskedEmail);
+
+      if (otpVerified == true) {
+        // Sign out locally after successful deletion
+        await authService.signOut();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account deleted successfully.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+
+          // Navigate to login screen and clear navigation stack
+          Get.offAllNamed('/login');
+        }
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete account: $e'),
+            content: Text(
+                'Failed to send verification code: ${e.toString().replaceAll('Exception: ', '')}'),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  Future<bool?> _showOTPVerificationDialog(String maskedEmail) async {
+    final otpController = TextEditingController();
+    bool isVerifying = false;
+    String? errorMessage;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Row(
+            children: const [
+              Icon(Icons.security, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Verify Deletion'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'A verification code has been sent to $maskedEmail. Enter the code below to confirm account deletion.',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: otpController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 8,
+                ),
+                decoration: InputDecoration(
+                  hintText: '000000',
+                  counterText: '',
+                  border: const OutlineInputBorder(),
+                  errorText: errorMessage,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.warning, color: Colors.red, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action is irreversible!',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isVerifying ? null : () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: isVerifying
+                  ? null
+                  : () async {
+                      final otp = otpController.text.trim();
+                      if (otp.length != 6) {
+                        setState(() {
+                          errorMessage = 'Please enter the 6-digit code';
+                        });
+                        return;
+                      }
+
+                      setState(() {
+                        isVerifying = true;
+                        errorMessage = null;
+                      });
+
+                      try {
+                        final functions = FirebaseFunctions.instance;
+                        final verifyCallable =
+                            functions.httpsCallable('verifyAndDeleteAccount');
+                        await verifyCallable.call({'otp': otp});
+
+                        if (context.mounted) {
+                          Navigator.pop(ctx, true);
+                        }
+                      } on FirebaseFunctionsException catch (e) {
+                        setState(() {
+                          isVerifying = false;
+                          errorMessage = e.message ?? 'Verification failed';
+                        });
+                      } catch (e) {
+                        setState(() {
+                          isVerifying = false;
+                          errorMessage = 'Failed to verify: ${e.toString()}';
+                        });
+                      }
+                    },
+              child: isVerifying
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Delete Account'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildProfileAvatar(currentUser) {
@@ -634,7 +787,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
         ),
         child: ClipOval(
           child: photoUrl.startsWith('data:image/')
-              ? // Base64 image stored in Firestore (FREE!)
+              ? // Base64 encoded image
               Image.memory(
                   base64Decode(photoUrl.split(',')[1]),
                   width: 100,
@@ -900,133 +1053,202 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
     final nameController = TextEditingController(
       text: _userProfile?.fullName ?? '',
     );
+    String? errorText;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.person_outline, color: AppTheme.primaryVariantLight),
-            const SizedBox(width: 8),
-            Text('Edit Name'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Full Name',
-                hintText: 'Enter your full name',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.primaryVariantLight,
-                    width: 2,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 16,
+              bottom: 24 + MediaQuery.of(context).padding.bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              textCapitalization: TextCapitalization.words,
-              maxLength: 50,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              nameController.dispose();
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey.shade600),
+                const SizedBox(height: 20),
+                // Title
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryVariantLight.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.person_outline,
+                        color: AppTheme.primaryVariantLight,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Edit Name',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Input field
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    hintText: 'Enter your full name',
+                    errorText: errorText,
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    prefixIcon: Icon(Icons.person, color: Colors.grey.shade600),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppTheme.primaryVariantLight,
+                        width: 2,
+                      ),
+                    ),
+                    counterText: '',
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  maxLength: 50,
+                ),
+                const SizedBox(height: 24),
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          nameController.dispose();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final newName = nameController.text.trim();
+                          if (newName.isEmpty) {
+                            setState(() => errorText = 'Name cannot be empty');
+                            return;
+                          }
+                          if (newName.length < 2) {
+                            setState(() => errorText =
+                                'Name must be at least 2 characters');
+                            return;
+                          }
+
+                          Navigator.pop(context);
+
+                          showDialog(
+                            context: this.context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+
+                          try {
+                            await _userProfileService.updateUserProfile(
+                                fullName: newName);
+                            if (mounted) Navigator.pop(this.context);
+                            await _loadUserProfile();
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Name updated successfully ✓'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) Navigator.pop(this.context);
+                            if (mounted) {
+                              ScaffoldMessenger.of(this.context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to update name: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                          nameController.dispose();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryVariantLight,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Update',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final newName = nameController.text.trim();
-              if (newName.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Name cannot be empty'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-
-              if (newName.length < 2) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Name must be at least 2 characters'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
-
-              Navigator.pop(context);
-
-              // Show loading
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-
-              try {
-                // Update name
-                await _userProfileService.updateUserProfile(
-                  fullName: newName,
-                );
-
-                // Close loading
-                Navigator.pop(context);
-
-                // Reload profile
-                await _loadUserProfile();
-
-                // Show success
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Name updated successfully ✓'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } catch (e) {
-                // Close loading
-                Navigator.pop(context);
-
-                // Show error
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to update name: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-
-              nameController.dispose();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryVariantLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Update',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1037,129 +1259,195 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       text: _userProfile?.phoneNumber ?? '',
     );
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.phone_outlined, color: AppTheme.primaryVariantLight),
-            const SizedBox(width: 8),
-            Text('Edit Phone Number'),
-          ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(
-                labelText: 'Phone Number',
-                hintText: 'Enter your phone number',
-                prefixIcon: Icon(Icons.phone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.primaryVariantLight,
-                    width: 2,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 16,
+            bottom: 24 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              keyboardType: TextInputType.phone,
-              maxLength: 20,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              phoneController.dispose();
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final newPhone = phoneController.text.trim();
-              final dialogContext = context;
-
-              // Close the dialog first
-              Navigator.of(dialogContext).pop();
-
-              // Use mounted check to ensure widget is still in tree
-              if (!mounted) {
-                phoneController.dispose();
-                return;
-              }
-
-              // Show loading using the main screen context
-              showDialog(
-                context: this.context,
-                barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-
-              try {
-                // Update phone number
-                await _userProfileService.updateUserProfile(
-                  phoneNumber: newPhone.isEmpty ? null : newPhone,
-                );
-
-                // Close loading
-                if (mounted) {
-                  Navigator.of(this.context).pop();
-                }
-
-                // Reload profile
-                await _loadUserProfile();
-
-                // Show success
-                if (mounted) {
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(
-                      content: Text('Phone number updated successfully ✓'),
-                      backgroundColor: Colors.green,
+              const SizedBox(height: 20),
+              // Title
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryVariantLight.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                }
-              } catch (e) {
-                // Close loading
-                if (mounted) {
-                  Navigator.of(this.context).pop();
-                }
-
-                // Show error
-                if (mounted) {
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to update phone number: $e'),
-                      backgroundColor: Colors.red,
+                    child: Icon(
+                      Icons.phone_outlined,
+                      color: AppTheme.primaryVariantLight,
+                      size: 24,
                     ),
-                  );
-                }
-              }
-
-              phoneController.dispose();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryVariantLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Edit Phone Number',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: Text(
-              'Update',
-              style: TextStyle(color: Colors.white),
-            ),
+              const SizedBox(height: 24),
+              // Input field
+              TextField(
+                controller: phoneController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  hintText: 'Enter your phone number',
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  prefixIcon: Icon(Icons.phone, color: Colors.grey.shade600),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: AppTheme.primaryVariantLight,
+                      width: 2,
+                    ),
+                  ),
+                  counterText: '',
+                ),
+                keyboardType: TextInputType.phone,
+                maxLength: 20,
+              ),
+              const SizedBox(height: 24),
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        phoneController.dispose();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final newPhone = phoneController.text.trim();
+                        Navigator.pop(context);
+
+                        if (!mounted) {
+                          phoneController.dispose();
+                          return;
+                        }
+
+                        showDialog(
+                          context: this.context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+
+                        try {
+                          await _userProfileService.updateUserProfile(
+                            phoneNumber: newPhone.isEmpty ? null : newPhone,
+                          );
+                          if (mounted) Navigator.of(this.context).pop();
+                          await _loadUserProfile();
+                          if (mounted) {
+                            ScaffoldMessenger.of(this.context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Phone number updated successfully ✓'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) Navigator.of(this.context).pop();
+                          if (mounted) {
+                            ScaffoldMessenger.of(this.context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text('Failed to update phone number: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                        phoneController.dispose();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryVariantLight,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Update',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1670,7 +1958,12 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: 20 + MediaQuery.of(context).padding.bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1816,10 +2109,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
       print(
           'Original image: ${imageInfo['width']}x${imageInfo['height']}, Size: ${imageInfo['fileSizeMB']} MB');
 
-      // Convert image to Base64 with automatic compression (Free alternative to Firebase Storage!)
+      // Convert image to Base64 with automatic compression
       final String photoData = await ImageService.imageFileToBase64(imageFile);
 
-      // Update user profile with Base64 photo data (stored in Firestore - FREE!)
+      // Update user profile with photo data
       await _userProfileService.updateUserProfile(photoUrl: photoData);
 
       // Close loading dialog
@@ -1838,23 +2131,12 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen> {
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('profile.profile_photo_updated'.tr()),
-                    Text(
-                      'Saved ${imageInfo['fileSizeMB']} MB to Firestore (FREE!)',
-                      style:
-                          const TextStyle(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
-                ),
+                child: Text('profile.profile_photo_updated'.tr()),
               ),
             ],
           ),
           backgroundColor: Colors.green,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
         ),
       );
     } catch (e) {

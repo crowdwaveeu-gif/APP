@@ -6,6 +6,7 @@ import '../../core/models/deal_offer.dart';
 import '../../core/models/package_request.dart';
 import '../../services/deal_negotiation_service.dart';
 import '../../presentation/booking/booking_confirmation_screen.dart';
+import '../../presentation/booking/make_offer_screen.dart';
 
 class OfferCardWidget extends StatefulWidget {
   final DealOffer offer;
@@ -80,6 +81,13 @@ class _OfferCardWidgetState extends State<OfferCardWidget> {
           if (_canShowActions()) ...[
             const Divider(height: 1),
             _buildActionButtons(),
+          ],
+          // Show edit button for sent pending offers
+          if (!widget.isReceivedOffer &&
+              widget.offer.status == DealStatus.pending &&
+              !widget.offer.isExpired) ...[
+            const Divider(height: 1),
+            _buildEditButton(),
           ],
         ],
       ),
@@ -412,6 +420,55 @@ class _OfferCardWidgetState extends State<OfferCardWidget> {
     return widget.isReceivedOffer && widget.offer.canRespond && !_isLoading;
   }
 
+  Widget _buildEditButton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _isLoading ? null : _navigateToEditOffer,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF215C5C),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          icon: const Icon(Icons.edit, size: 18),
+          label: Text(
+            'Edit Offer',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToEditOffer() async {
+    if (_package == null) {
+      Get.snackbar(
+        'Error',
+        'Package information not available',
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Navigate to edit offer screen
+    final result = await Get.to(() => MakeOfferScreen(
+          package: _package!,
+          existingOffer: widget.offer,
+        ));
+
+    // Refresh if offer was updated
+    if (result == true) {
+      widget.onOfferUpdated?.call();
+    }
+  }
+
   Future<void> _acceptDeal() async {
     setState(() => _isLoading = true);
 
@@ -530,7 +587,7 @@ class _OfferCardWidgetState extends State<OfferCardWidget> {
   Color _getIconColorForStatus(DealStatus status) {
     switch (status) {
       case DealStatus.pending:
-        return Color(0xFF008080)!;
+        return Color(0xFF008080);
       case DealStatus.accepted:
         return Colors.green[600]!;
       case DealStatus.rejected:

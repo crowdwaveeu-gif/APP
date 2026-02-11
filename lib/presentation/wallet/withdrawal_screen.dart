@@ -83,10 +83,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       builder: (context) => AlertDialog(
         title: Text('wallet.confirm_withdrawal_title'.tr()),
         content: Text(
-          'wallet.confirm_withdrawal_message'.tr(args: [
-            _wallet!.currency,
-            amount.toStringAsFixed(2),
-          ]),
+          'Withdraw ${_wallet!.currency} ${amount.toStringAsFixed(2)} to your bank account?\n\nProcessing time: 2-3 business days',
         ),
         actions: [
           TextButton(
@@ -125,9 +122,10 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('wallet.withdrawal_success'.tr()),
+            content: Text(
+                'Withdrawal request submitted! Our team will process it within 2-3 business days.'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: 5),
           ),
         );
       }
@@ -449,15 +447,16 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Color(0xFF008080),
+                    color: const Color(0xFF008080).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Color(0xFF008080)),
+                    border: Border.all(
+                        color: const Color(0xFF008080).withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.info_outline,
-                        color: Color(0xFF008080),
+                        color: Color(0xFF006666),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -466,16 +465,16 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                           children: [
                             Text(
                               'wallet.processing_time_title'.tr(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF008080),
+                                color: Color(0xFF006666),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'wallet.processing_time_desc'.tr(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF008080),
                               ),

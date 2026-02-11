@@ -13,6 +13,7 @@ import '../../widgets/chat/location_message_widget.dart';
 import '../../services/zego_call_service.dart';
 import '../../services/presence_service.dart';
 import '../../services/location_service.dart';
+import '../../widgets/user_moderation_widgets.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 class IndividualChatScreen extends StatefulWidget {
@@ -163,6 +164,52 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     // Stop listening to messages when leaving the screen
     _chatController.stopListeningToMessages(widget.conversationId);
     super.dispose();
+  }
+
+  // Handle report and block actions for App Store Guideline 1.2 compliance
+  void _handleChatMenuAction(String action) {
+    if (action == 'report') {
+      showDialog(
+        context: context,
+        builder: (context) => ReportUserContentDialog(
+          reportedUserId: widget.otherUserId,
+          contentId: widget.conversationId,
+          contentType: 'conversation',
+          contentPreview: 'Chat with ${widget.otherUserName}',
+        ),
+      ).then((reported) {
+        if (reported == true && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'User reported. Thank you for helping keep our community safe.'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    } else if (action == 'block') {
+      showDialog(
+        context: context,
+        builder: (context) => BlockUserDialog(
+          userId: widget.otherUserId,
+          userName: widget.otherUserName,
+        ),
+      ).then((blocked) {
+        if (blocked == true && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${widget.otherUserName} has been blocked'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          // Navigate back to chat list
+          Get.back();
+        }
+      });
+    }
   }
 
   // ✅ ENHANCED: Force scroll to bottom - more aggressive approach
@@ -343,6 +390,35 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
                 // Start video call using Zego
                 _startVideoCall();
               },
+            ),
+            // Report and Block menu for App Store Guideline 1.2 compliance
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.black87),
+              onSelected: (value) {
+                _handleChatMenuAction(value);
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flag, color: Colors.orange, size: 20),
+                      SizedBox(width: 12),
+                      Text('Report User'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      Icon(Icons.block, color: Colors.red, size: 20),
+                      SizedBox(width: 12),
+                      Text('Block User'),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -588,67 +664,119 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Column(
-              crossAxisAlignment: isFromCurrentUser
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: message.type == MessageType.image
-                      ? EdgeInsets.zero
-                      : const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+            child: GestureDetector(
+              // Add long-press menu for reporting messages from other users
+              onLongPress: !isFromCurrentUser
+                  ? () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) => SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.flag,
+                                    color: Colors.orange),
+                                title: const Text('Report Message'),
+                                subtitle:
+                                    const Text('Flag this message for review'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        ReportUserContentDialog(
+                                      reportedUserId: widget.otherUserId,
+                                      contentId: message.id,
+                                      contentType: 'message',
+                                      contentPreview: message.content.length >
+                                              50
+                                          ? '${message.content.substring(0, 50)}...'
+                                          : message.content,
+                                    ),
+                                  ).then((reported) {
+                                    if (reported == true && mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Message reported. Thank you for keeping our community safe.'),
+                                          backgroundColor: Colors.green,
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                  decoration: BoxDecoration(
-                    color: message.type == MessageType.image
-                        ? Colors.transparent
-                        : (isFromCurrentUser
-                            ? const Color(0xFF215C5C)
-                            : Colors.white),
-                    // Slightly reduced opacity for optimistic messages
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: isFromCurrentUser
-                          ? const Radius.circular(18)
-                          : const Radius.circular(4),
-                      bottomRight: isFromCurrentUser
-                          ? const Radius.circular(4)
-                          : const Radius.circular(18),
-                    ),
-                    boxShadow: message.type == MessageType.image
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                  ),
-                  child: _buildMessageContent(message, isFromCurrentUser),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      DateFormat('h:mm a')
-                          .format(message.timestamp)
-                          .toLowerCase(), // Lowercase am/pm
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
+                      );
+                    }
+                  : null,
+              child: Column(
+                crossAxisAlignment: isFromCurrentUser
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: message.type == MessageType.image
+                        ? EdgeInsets.zero
+                        : const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                    decoration: BoxDecoration(
+                      color: message.type == MessageType.image
+                          ? Colors.transparent
+                          : (isFromCurrentUser
+                              ? const Color(0xFF215C5C)
+                              : Colors.white),
+                      // Slightly reduced opacity for optimistic messages
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(18),
+                        topRight: const Radius.circular(18),
+                        bottomLeft: isFromCurrentUser
+                            ? const Radius.circular(18)
+                            : const Radius.circular(4),
+                        bottomRight: isFromCurrentUser
+                            ? const Radius.circular(4)
+                            : const Radius.circular(18),
                       ),
+                      boxShadow: message.type == MessageType.image
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
-                    if (isFromCurrentUser) ...[
-                      const SizedBox(width: 4),
-                      _buildMessageStatusIcon(message),
+                    child: _buildMessageContent(message, isFromCurrentUser),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        DateFormat('h:mm a')
+                            .format(message.timestamp)
+                            .toLowerCase(), // Lowercase am/pm
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      if (isFromCurrentUser) ...[
+                        const SizedBox(width: 4),
+                        _buildMessageStatusIcon(message),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
           if (isFromCurrentUser) ...[

@@ -7,8 +7,10 @@ import 'package:get/get.dart' hide Trans;
 import '../../core/app_export.dart';
 import '../../services/firebase_auth_service.dart';
 import '../../services/kyc_service.dart';
+import '../../services/deal_negotiation_service.dart';
 // import '../../services/booking_service.dart';
 import '../../controllers/chat_controller.dart';
+import '../../core/models/deal_offer.dart';
 import '../chat/individual_chat_screen.dart';
 import '../booking/make_offer_screen.dart';
 // import '../../models/review_model.dart';
@@ -41,8 +43,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
 
   final FirebaseAuthService _authService = FirebaseAuthService();
   final KycService _kycService = KycService();
+  final DealNegotiationService _dealService = DealNegotiationService();
   bool _isLoading = false;
   bool _hasApprovedKyc = false;
+  DealOffer? _existingOffer;
 
   @override
   void initState() {
@@ -50,6 +54,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
     _initializeAnimations();
     _startAnimations();
     _checkKycStatus();
+    _checkExistingOffer();
   }
 
   Future<void> _checkKycStatus() async {
@@ -64,6 +69,25 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
         }
       } catch (e) {
         print('Error checking KYC status: $e');
+      }
+    }
+  }
+
+  Future<void> _checkExistingOffer() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      try {
+        final offer = await _dealService.getUserOfferForPackage(
+          packageId: widget.package.id,
+          userId: currentUser.uid,
+        );
+        if (mounted) {
+          setState(() {
+            _existingOffer = offer;
+          });
+        }
+      } catch (e) {
+        print('Error checking existing offer: $e');
       }
     }
   }
@@ -128,6 +152,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Show banner if user has existing offer
+                      if (_existingOffer != null) ...[
+                        _buildExistingOfferBanner(),
+                        SizedBox(height: 20),
+                      ],
                       _buildPackageOverview(),
                       SizedBox(height: 24),
                       _buildLocationSection(),
@@ -182,6 +211,116 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
             color: Colors.white,
             fontWeight: FontWeight.w600,
             fontSize: 18,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExistingOfferBanner() {
+    final offer = _existingOffer!;
+    final isExpired = offer.isExpired;
+    final isPending = offer.status == DealStatus.pending && !isExpired;
+    final isAccepted = offer.status == DealStatus.accepted;
+    final isRejected = offer.status == DealStatus.rejected;
+
+    Color bannerColor;
+    IconData bannerIcon;
+    String statusText;
+    String actionText;
+
+    if (isAccepted) {
+      bannerColor = Colors.green;
+      bannerIcon = Icons.check_circle;
+      statusText =
+          'Your offer of €${offer.offeredPrice.toStringAsFixed(2)} was accepted!';
+      actionText = 'Tap to view details';
+    } else if (isRejected || isExpired) {
+      bannerColor = Colors.red;
+      bannerIcon = isExpired ? Icons.access_time : Icons.cancel;
+      statusText = isExpired
+          ? 'Your offer of €${offer.offeredPrice.toStringAsFixed(2)} has expired'
+          : 'Your offer of €${offer.offeredPrice.toStringAsFixed(2)} was declined';
+      actionText = 'You can make a new offer';
+    } else {
+      bannerColor = Color(0xFF2D7A6E);
+      bannerIcon = Icons.local_offer;
+      statusText =
+          'You already bid €${offer.offeredPrice.toStringAsFixed(2)} on this package';
+      actionText = 'Tap to edit your offer';
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [bannerColor, bannerColor.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: bannerColor.withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isPending ? () => _navigateToEditOffer(offer) : null,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    bannerIcon,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        actionText,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isPending)
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1770,7 +1909,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
           Expanded(
             child: FloatingActionButton.extended(
               heroTag: "interest_button_${widget.package.id}",
-              onPressed: _isLoading ? null : _navigateToMakeOfferScreen,
+              onPressed: _isLoading
+                  ? null
+                  : (_existingOffer != null
+                      ? () => _navigateToEditOffer(_existingOffer!)
+                      : _navigateToMakeOfferScreen),
               backgroundColor: Color(0xFF215C5C),
               foregroundColor: Colors.white,
               elevation: 6,
@@ -1783,9 +1926,13 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : Icon(Icons.monetization_on),
+                  : Icon(_existingOffer != null
+                      ? Icons.edit
+                      : Icons.monetization_on),
               label: Text(
-                'detail.make_offer'.tr(),
+                _existingOffer != null
+                    ? 'Edit Your Offer'
+                    : 'detail.make_offer'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -1800,6 +1947,15 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
 
   // Navigate to make offer screen
   void _navigateToMakeOfferScreen() async {
+    // Validate package sender information before navigating
+    if (widget.package.senderName.isEmpty) {
+      EnhancedSnackBar.showError(
+        context,
+        'Unable to load package information. Please try again.',
+      );
+      return;
+    }
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1809,9 +1965,41 @@ class _PackageDetailScreenState extends State<PackageDetailScreen>
       ),
     );
 
-    // If offer was submitted successfully, show success message
+    // If offer was submitted successfully, refresh and show success message
     if (result == true) {
       EnhancedSnackBar.showSuccess(context, 'Offer sent successfully!');
+      _checkExistingOffer(); // Refresh the offer status
+    } else if (result == false) {
+      // User cancelled or error occurred - still refresh to check current state
+      _checkExistingOffer();
+    }
+  }
+
+  // Navigate to edit offer screen
+  void _navigateToEditOffer(DealOffer offer) async {
+    // Validate package sender information before navigating
+    if (widget.package.senderName.isEmpty) {
+      EnhancedSnackBar.showError(
+        context,
+        'Unable to load package information. Please try again.',
+      );
+      return;
+    }
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MakeOfferScreen(
+          package: widget.package,
+          existingOffer: offer, // Pass existing offer for editing
+        ),
+      ),
+    );
+
+    // If offer was updated successfully, refresh
+    if (result == true) {
+      EnhancedSnackBar.showSuccess(context, 'Offer updated successfully!');
+      _checkExistingOffer(); // Refresh the offer status
     }
   }
 

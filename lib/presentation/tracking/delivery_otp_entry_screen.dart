@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../core/models/delivery_tracking.dart';
 import '../../services/tracking_service.dart';
-import '../../services/image_storage_service.dart';
+import '../../services/image_service.dart';
 
 /// Screen for traveler to generate OTP and enter code from receiver
 /// This ensures both parties are present during package handoff
@@ -23,7 +23,6 @@ class DeliveryOTPEntryScreen extends StatefulWidget {
 
 class _DeliveryOTPEntryScreenState extends State<DeliveryOTPEntryScreen> {
   final TrackingService _trackingService = Get.find<TrackingService>();
-  final ImageStorageService _imageStorage = ImageStorageService();
   final ImagePicker _imagePicker = ImagePicker();
 
   final TextEditingController _otpController = TextEditingController();
@@ -56,8 +55,8 @@ class _DeliveryOTPEntryScreenState extends State<DeliveryOTPEntryScreen> {
       });
 
       Get.snackbar(
-        '✅ OTP Generated',
-        'OTP has been sent to the receiver. They will share it with you.',
+        '✅ OTP Sent',
+        'OTP has been sent to the receiver\'s email. Ask them for the code.',
         backgroundColor: Colors.green.withOpacity(0.9),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -89,14 +88,16 @@ class _DeliveryOTPEntryScreenState extends State<DeliveryOTPEntryScreen> {
         // Convert photo to base64
         Get.snackbar(
           '📤 Processing Photo',
-          'Please wait...',
+          'Compressing and preparing...',
           backgroundColor: Colors.blue.withOpacity(0.9),
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 2),
         );
 
-        final base64Image = await _imageStorage.fileToBase64(File(photo.path));
+        // Use ImageService which compresses the photo to fit within Firestore limits
+        final base64Image =
+            await ImageService.imageFileToBase64(File(photo.path));
 
         setState(() {
           _photoUrl = base64Image;
@@ -167,18 +168,24 @@ class _DeliveryOTPEntryScreenState extends State<DeliveryOTPEntryScreen> {
         notes: _notesController.text.trim(),
       );
 
+      // Close any open snackbars before navigating to avoid disposal errors
+      if (Get.isSnackbarOpen) {
+        Get.closeCurrentSnackbar();
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
       Get.snackbar(
         '🎉 Success!',
-        'Delivery completed and verified. Payment will be released shortly.',
+        'Delivery completed and verified. Check your wallet for payment!',
         backgroundColor: Colors.green.withOpacity(0.9),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 3),
       );
 
-      // Navigate back to tracking screen
-      Get.back();
-      Get.back(); // Go back twice to return to main tracking list
+      // Navigate to wallet screen to show the payment
+      await Future.delayed(const Duration(milliseconds: 300));
+      Get.offAllNamed('/main-navigation', arguments: {'selectedIndex': 2});
     } catch (e) {
       Get.snackbar(
         '❌ Verification Failed',
@@ -201,383 +208,391 @@ class _DeliveryOTPEntryScreenState extends State<DeliveryOTPEntryScreen> {
         backgroundColor: const Color(0xFF6A5AE0),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Instructions Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF008080).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF008080), width: 2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.info_outline,
-                          color: Color(0xFF008080), size: 24),
-                      SizedBox(width: 8),
-                      Text(
-                        'How it works',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF008080),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildStep('1', 'Generate OTP to send to receiver'),
-                  _buildStep('2', 'Meet with receiver and hand over package'),
-                  _buildStep('3', 'Take a photo of the delivered package'),
-                  _buildStep('4', 'Ask receiver for the OTP code'),
-                  _buildStep('5', 'Enter code to complete delivery'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Step 1: Generate OTP
-            if (_generatedOTP == null) ...[
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Instructions Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF008080).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: const Color(0xFF008080), width: 2),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.vpn_key,
-                        size: 48, color: Color(0xFF6A5AE0)),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Step 1: Generate OTP',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tap the button below to generate an OTP code.\nIt will be sent to the receiver.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isGeneratingOTP ? null : _generateOTP,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A5AE0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isGeneratingOTP
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Generate OTP',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            // Steps 2-5: After OTP is generated
-            if (_generatedOTP != null) ...[
-              // OTP Generated Confirmation
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green, width: 2),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.check_circle, color: Colors.green, size: 24),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'OTP sent to receiver!\nThey will share it with you.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Step 2: Take Photo
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Step 2: Take Delivery Photo',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_deliveryPhoto != null) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          _deliveryPhoto!,
-                          height: 200,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (_photoUrl == null) const CircularProgressIndicator(),
-                      if (_photoUrl != null)
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle,
-                                color: Colors.green, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Photo uploaded',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: OutlinedButton.icon(
-                        onPressed: _pickDeliveryPhoto,
-                        icon: const Icon(Icons.camera_alt),
-                        label: Text(
-                          _deliveryPhoto == null
-                              ? 'Take Photo'
-                              : 'Retake Photo',
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF6A5AE0),
-                          side: const BorderSide(
-                            color: Color(0xFF6A5AE0),
-                            width: 2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Step 3: Optional Notes
-              TextField(
-                controller: _notesController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Delivery Notes (Optional)',
-                  hintText: 'Add any notes about the delivery...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.note),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Step 4: Enter OTP
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Step 3: Enter OTP from Receiver',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _otpController,
-                      focusNode: _otpFocusNode,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 8,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      decoration: InputDecoration(
-                        hintText: '000000',
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(width: 2),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF6A5AE0),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Ask the receiver to provide their 6-digit code',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Verify Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isVerifying ? null : _verifyAndCompleteDelivery,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isVerifying
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          '✓ Verify & Complete Delivery',
+                    Row(
+                      children: const [
+                        Icon(Icons.info_outline,
+                            color: Color(0xFF008080), size: 24),
+                        SizedBox(width: 8),
+                        Text(
+                          'How it works',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Color(0xFF008080),
                           ),
                         ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Help Text
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange, width: 1),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.help_outline,
-                        color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'The receiver received the OTP via notification and email. Once you enter it correctly, the delivery will be completed and payment will be released.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.orange[800],
-                        ),
-                      ),
+                      ],
                     ),
+                    const SizedBox(height: 12),
+                    _buildStep('1', 'Generate OTP (sent to receiver\'s email)'),
+                    _buildStep('2', 'Meet with receiver and hand over package'),
+                    _buildStep('3', 'Take a photo of the delivered package'),
+                    _buildStep('4', 'Ask receiver for the OTP code'),
+                    _buildStep('5', 'Enter code to complete delivery'),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 24),
+
+              // Step 1: Generate OTP
+              if (_generatedOTP == null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.vpn_key,
+                          size: 48, color: Color(0xFF6A5AE0)),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Step 1: Generate OTP',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tap the button below to generate an OTP code.\nIt will be sent to the receiver\'s email.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isGeneratingOTP ? null : _generateOTP,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A5AE0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isGeneratingOTP
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Generate OTP',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Steps 2-5: After OTP is generated
+              if (_generatedOTP != null) ...[
+                // OTP Generated Confirmation
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green, width: 2),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.check_circle, color: Colors.green, size: 24),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'OTP sent to receiver\'s email!\nAsk them for the verification code.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Step 2: Take Photo
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Step 2: Take Delivery Photo',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_deliveryPhoto != null) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            _deliveryPhoto!,
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        if (_photoUrl == null)
+                          const CircularProgressIndicator(),
+                        if (_photoUrl != null)
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle,
+                                  color: Colors.green, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Photo uploaded',
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: OutlinedButton.icon(
+                          onPressed: _pickDeliveryPhoto,
+                          icon: const Icon(Icons.camera_alt),
+                          label: Text(
+                            _deliveryPhoto == null
+                                ? 'Take Photo'
+                                : 'Retake Photo',
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF6A5AE0),
+                            side: const BorderSide(
+                              color: Color(0xFF6A5AE0),
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Step 3: Optional Notes
+                TextField(
+                  controller: _notesController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Delivery Notes (Optional)',
+                    hintText: 'Add any notes about the delivery...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    prefixIcon: const Icon(Icons.note),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Step 4: Enter OTP
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Step 3: Enter OTP from Receiver',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _otpController,
+                        focusNode: _otpFocusNode,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 8,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          hintText: '000000',
+                          counterText: '',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(width: 2),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF6A5AE0),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Ask the receiver to provide their 6-digit code',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Verify Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isVerifying ? null : _verifyAndCompleteDelivery,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isVerifying
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            '✓ Verify & Complete Delivery',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Help Text
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange, width: 1),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.help_outline,
+                          color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'The receiver received the OTP via notification and email. Once you enter it correctly, the delivery will be completed and payment will be released.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

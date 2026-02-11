@@ -171,227 +171,250 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
   }
 
   Widget _buildPackageCard(PackageRequest package) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PackageDetailScreen(package: package),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(package.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      _getPackageTypeIcon(package.packageDetails.type),
-                      color: _getStatusColor(package.status),
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      package.packageDetails.description,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  _buildStatusChip(package.status),
-                ],
+    return Stack(
+      children: [
+        Container(
+          margin: EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.location_on, color: Colors.grey[600], size: 16),
-                  SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      '${package.pickupLocation.city ?? package.pickupLocation.address} → ${package.destinationLocation.city ?? package.destinationLocation.address}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.schedule, color: Colors.grey[600], size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    _formatDate(package.preferredDeliveryDate),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                  Spacer(),
-                  Text(
-                    '€${package.compensationOffer.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      color: Color(0xFF215C5C),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              if (package.isUrgent) ...[
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.priority_high, color: Colors.red, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      'status.urgent'.tr(),
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ],
           ),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PackageDetailScreen(package: package),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color:
+                              _getStatusColor(package.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          _getPackageTypeIcon(package.packageDetails.type),
+                          color: _getStatusColor(package.status),
+                          size: 20,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          package.packageDetails.description,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      _buildStatusChip(package.status),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on,
+                          color: Colors.grey[600], size: 16),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '${package.pickupLocation.city ?? package.pickupLocation.address} → ${package.destinationLocation.city ?? package.destinationLocation.address}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule, color: Colors.grey[600], size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        _formatDate(package.preferredDeliveryDate),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        '€${package.compensationOffer.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: Color(0xFF215C5C),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (package.isUrgent) ...[
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.priority_high, color: Colors.red, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'status.urgent'.tr(),
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+        // Minimalist status indicator dot in top-right corner
+        Positioned(
+          top: 8,
+          right: 8,
+          child: _buildStatusDot(_getStatusColor(package.status)),
+        ),
+      ],
     );
   }
 
   Widget _buildTripCard(TravelTrip trip) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TripDetailScreen(trip: trip),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: _getTripStatusColor(trip.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      _getTransportModeIcon(trip.transportMode),
-                      color: _getTripStatusColor(trip.status),
-                      size: 20,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${trip.departureLocation.city} → ${trip.destinationLocation.city}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  _buildTripStatusChip(trip.status),
-                ],
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.schedule, color: Colors.grey[600], size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    _formatDate(trip.departureDate),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                  Spacer(),
-                  Text(
-                    '€${trip.suggestedReward.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      color: Color(0xFF215C5C),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.inventory, color: Colors.grey[600], size: 16),
-                  SizedBox(width: 4),
-                  Text(
-                    '${trip.acceptedPackageIds.length}/${trip.capacity.maxPackages} packages',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+    return Stack(
+      children: [
+        Container(
+          margin: EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TripDetailScreen(trip: trip),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color:
+                              _getTripStatusColor(trip.status).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          _getTransportModeIcon(trip.transportMode),
+                          color: _getTripStatusColor(trip.status),
+                          size: 20,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${trip.departureLocation.city} → ${trip.destinationLocation.city}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      _buildTripStatusChip(trip.status),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule, color: Colors.grey[600], size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        _formatDate(trip.departureDate),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        '€${trip.suggestedReward.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: Color(0xFF215C5C),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.inventory, color: Colors.grey[600], size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        '${trip.acceptedPackageIds.length}/${trip.capacity.maxPackages} packages',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+        // Minimalist status indicator dot in top-right corner
+        Positioned(
+          top: 8,
+          right: 8,
+          child: _buildStatusDot(_getTripStatusColor(trip.status)),
+        ),
+      ],
     );
   }
 
@@ -546,6 +569,25 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
   }
 
   // Helper methods
+  Widget _buildStatusDot(Color color) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color _getStatusColor(PackageStatus status) {
     switch (status) {
       case PackageStatus.pending:
@@ -564,6 +606,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
         return Colors.red;
       case PackageStatus.disputed:
         return Colors.red[800]!;
+      case PackageStatus.expired:
+        return Colors.grey;
     }
   }
 
@@ -585,6 +629,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
         return 'Cancelled';
       case PackageStatus.disputed:
         return 'Disputed';
+      case PackageStatus.expired:
+        return 'Expired';
     }
   }
 
@@ -600,6 +646,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
         return Colors.green[700]!;
       case TripStatus.cancelled:
         return Colors.red;
+      case TripStatus.expired:
+        return Colors.grey;
     }
   }
 
@@ -615,6 +663,8 @@ class _UserPackagesScreenState extends State<UserPackagesScreen>
         return 'Completed';
       case TripStatus.cancelled:
         return 'Cancelled';
+      case TripStatus.expired:
+        return 'Expired';
     }
   }
 

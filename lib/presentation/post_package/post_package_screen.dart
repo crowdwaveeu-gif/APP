@@ -834,10 +834,15 @@ class _PostPackageScreenState extends State<PostPackageScreen>
   }
 
   Future<void> _selectDeliveryDate() async {
+    // Use today's date at midnight to allow same-day delivery selection
+    final today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _preferredDeliveryDate,
-      firstDate: DateTime.now(),
+      initialDate: _preferredDeliveryDate.isBefore(today)
+          ? today
+          : _preferredDeliveryDate,
+      firstDate: today,
       lastDate: DateTime.now().add(Duration(days: 365)),
     );
     if (picked != null && picked != _preferredDeliveryDate) {

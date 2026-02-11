@@ -41,6 +41,26 @@ class TravelTrip {
       capacity.maxWeightKg; // Available weight capacity
   double? get pricePerKg => suggestedReward; // Price per kg
 
+  // Expiration constants
+  static const int expirationDays = 5;
+
+  // Check if the trip should be expired (older than 5 days and still active)
+  bool get shouldExpire {
+    if (status != TripStatus.active) return false;
+    final now = DateTime.now();
+    final daysSinceCreation = now.difference(createdAt).inDays;
+    return daysSinceCreation >= expirationDays;
+  }
+
+  // Check if the trip is already expired
+  bool get isExpired => status == TripStatus.expired;
+
+  // Check if the trip is active (not expired, cancelled, or completed)
+  bool get isActive =>
+      status != TripStatus.expired &&
+      status != TripStatus.cancelled &&
+      status != TripStatus.completed;
+
   TravelTrip({
     required this.id,
     required this.travelerId,
@@ -297,4 +317,4 @@ enum TransportMode {
   ship
 }
 
-enum TripStatus { active, full, inProgress, completed, cancelled }
+enum TripStatus { active, full, inProgress, completed, cancelled, expired }

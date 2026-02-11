@@ -9,6 +9,8 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 
 import '../../../core/app_export.dart';
+import '../../../core/constants/api_constants.dart';
+import '../../../services/location_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class LocationPickerWidget extends StatefulWidget {
@@ -559,12 +561,26 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget>
     setState(() => _isLoading = true);
 
     try {
-      final permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+      final locationService = LocationService();
+
+      // Use LocationService which handles "ask once" logic
+      final hasPermission = await locationService.requestLocationPermission(
+        reason: 'To use your current location', // Explicit user action
+      );
+
+      if (!hasPermission) {
         throw Exception('Location permission denied');
       }
 
-      final position = await Geolocator.getCurrentPosition();
+      final position = await locationService.getCurrentLocation(
+        forceRefresh: true,
+        accuracy: LocationAccuracy.high,
+      );
+
+      if (position == null) {
+        throw Exception('Could not get current location');
+      }
+
       final placemarks = await geocoding.placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -1003,8 +1019,14 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
   Future<void> _goToCurrentLocation() async {
     try {
-      final permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+      final locationService = LocationService();
+
+      // Use LocationService which handles "ask once" logic
+      final hasPermission = await locationService.requestLocationPermission(
+        reason: 'To center map on your location', // Explicit user action
+      );
+
+      if (!hasPermission) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('profile.location_permission_denied'.tr()),
@@ -1013,7 +1035,20 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition();
+      final position = await locationService.getCurrentLocation(
+        forceRefresh: true,
+        accuracy: LocationAccuracy.high,
+      );
+
+      if (position == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not get current location'),
+          ),
+        );
+        return;
+      }
+
       final latLng = LatLng(position.latitude, position.longitude);
 
       _mapController?.animateCamera(
@@ -1085,7 +1120,8 @@ class LocationSearchDialog extends StatefulWidget {
 
 class _LocationSearchDialogState extends State<LocationSearchDialog> {
   final TextEditingController _controller = TextEditingController();
-  final String _googleApiKey = 'AIzaSyC8gJgw5v3LQ2Y7IeTTfWP3ikey-P9xtqI';
+  final String _googleApiKey =
+      ApiConstants.googleMapsApiKey; // Use centralized config
   List<PlaceSuggestion> _suggestions = [];
   bool _isLoading = false;
   Timer? _debounceTimer;
@@ -1106,12 +1142,12 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
     setState(() => _isLoading = true);
 
     try {
+      // Remove country restrictions to allow worldwide search
       final url =
           'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
           'input=${Uri.encodeComponent(query)}&'
           'key=$_googleApiKey&'
-          'types=address&'
-          'components=country:us|country:ca|country:gb|country:de|country:fr';
+          'types=geocode';
 
       print('Making request to: $url'); // Debug log
 
@@ -1133,10 +1169,16 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
           });
 
           print('Found ${_suggestions.length} suggestions'); // Debug log
+        } else if (data['status'] == 'ZERO_RESULTS') {
+          // No results found - this is not an error, just clear suggestions
+          print('No places found for query: $query');
+          setState(() {
+            _suggestions.clear();
+          });
         } else {
           print(
               'API Error: ${data['status']} - ${data['error_message'] ?? 'Unknown error'}');
-          // Show specific error to user
+          // Only show error for actual API errors (not ZERO_RESULTS)
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

@@ -20,6 +20,7 @@ class DealOffer {
   final DateTime createdAt;
   final DateTime? expiresAt;
   final DateTime? respondedAt;
+  final DateTime? seenAt; // When the package owner viewed the offer
   final String? responseMessage;
   final String? originalOfferId; // For counter-offers
 
@@ -37,6 +38,7 @@ class DealOffer {
     required this.createdAt,
     this.expiresAt,
     this.respondedAt,
+    this.seenAt,
     this.responseMessage,
     this.originalOfferId,
   });
@@ -56,6 +58,7 @@ class DealOffer {
       'createdAt': createdAt.toIso8601String(),
       'expiresAt': expiresAt?.toIso8601String(),
       'respondedAt': respondedAt?.toIso8601String(),
+      'seenAt': seenAt?.toIso8601String(),
       'responseMessage': responseMessage,
       'originalOfferId': originalOfferId,
     };
@@ -82,6 +85,7 @@ class DealOffer {
       respondedAt: map['respondedAt'] != null
           ? DateTime.parse(map['respondedAt'])
           : null,
+      seenAt: map['seenAt'] != null ? DateTime.parse(map['seenAt']) : null,
       responseMessage: map['responseMessage'],
       originalOfferId: map['originalOfferId'],
     );
@@ -101,6 +105,7 @@ class DealOffer {
     DateTime? createdAt,
     DateTime? expiresAt,
     DateTime? respondedAt,
+    DateTime? seenAt,
     String? responseMessage,
     String? originalOfferId,
   }) {
@@ -118,6 +123,7 @@ class DealOffer {
       createdAt: createdAt ?? this.createdAt,
       expiresAt: expiresAt ?? this.expiresAt,
       respondedAt: respondedAt ?? this.respondedAt,
+      seenAt: seenAt ?? this.seenAt,
       responseMessage: responseMessage ?? this.responseMessage,
       originalOfferId: originalOfferId ?? this.originalOfferId,
     );

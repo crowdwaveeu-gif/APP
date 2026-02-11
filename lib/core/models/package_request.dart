@@ -26,6 +26,26 @@ class PackageRequest {
   final RecipientDetails? receiverDetails; // Added receiver details
   final String? pickupMethod; // 'self_pickup' or 'sender_delivers'
 
+  // Expiration constants
+  static const int expirationDays = 5;
+
+  // Check if the package should be expired (older than 5 days and still pending)
+  bool get shouldExpire {
+    if (status != PackageStatus.pending) return false;
+    final now = DateTime.now();
+    final daysSinceCreation = now.difference(createdAt).inDays;
+    return daysSinceCreation >= expirationDays;
+  }
+
+  // Check if the package is already expired
+  bool get isExpired => status == PackageStatus.expired;
+
+  // Check if the package is active (not expired, cancelled, or delivered)
+  bool get isActive =>
+      status != PackageStatus.expired &&
+      status != PackageStatus.cancelled &&
+      status != PackageStatus.delivered;
+
   PackageRequest({
     required this.id,
     required this.senderId,
@@ -317,7 +337,8 @@ enum PackageStatus {
   inTransit,
   delivered,
   cancelled,
-  disputed
+  disputed,
+  expired
 }
 
 enum PackageSize {

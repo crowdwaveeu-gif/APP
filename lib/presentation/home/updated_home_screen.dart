@@ -1,12 +1,18 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:math' as math;
+import 'package:geolocator/geolocator.dart';
 import '../../core/app_export.dart';
+import '../../core/models/user_profile.dart';
 import '../../services/auth_state_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/kyc_service.dart';
+import '../../services/user_profile_service.dart';
+import '../../services/location_service.dart';
+import '../../utils/location_utils.dart';
 import '../../controllers/smart_matching_controller.dart';
 import '../package_detail/package_detail_screen.dart';
 import '../../widgets/liquid_refresh_indicator.dart';
@@ -16,6 +22,8 @@ import '../forum/community_forum_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../chat/individual_chat_screen.dart';
 import '../booking/make_offer_screen.dart';
+import '../../services/deal_negotiation_service.dart';
+import '../../core/models/deal_offer.dart';
 
 class UpdatedHomeScreen extends StatefulWidget {
   const UpdatedHomeScreen({Key? key}) : super(key: key);
@@ -25,13 +33,20 @@ class UpdatedHomeScreen extends StatefulWidget {
 }
 
 class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
-    with WidgetsBindingObserver, TickerProviderStateMixin {
+    with
+        WidgetsBindingObserver,
+        TickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   // 'Sender' or 'Traveler'
   bool _showOnlyMyPackages =
       false; // Toggle to show only user's own packages/trips
   final AuthStateService _authService = AuthStateService();
   final PackageRepository _packageRepository = PackageRepository();
   final TripRepository _tripRepository = TripRepository();
+  final UserProfileService _userProfileService = UserProfileService();
   final FocusNode _searchFocusNode = FocusNode();
   late AnimationController _airplaneController;
   final TextEditingController _searchController = TextEditingController();
@@ -50,9 +65,29 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
       false; // Start with false, only set to true if needed
   bool _isCheckingKyc = false; // Prevent concurrent KYC checks
 
+  // Deal/Offer tracking
+  final DealNegotiationService _dealService = DealNegotiationService();
+  final Map<String, DealOffer?> _packageOffers =
+      {}; // Track existing offers per package
+
   // Real data streams
   Stream<List<PackageRequest>>? _packagesStream;
   Stream<List<TravelTrip>>? _tripsStream;
+
+  // Advanced search filter state
+  final LocationService _locationService = LocationService();
+  Position? _currentUserPosition;
+  String? _filterFromCity;
+  String? _filterToCity;
+  double _searchRadiusKm = 10.0; // Default 10km radius
+  int _resultLimit = 50; // Default limit
+  bool _sortByDistance = true; // Default: sort by nearest first
+  bool _filterByRadius = false; // Only filter by radius when explicitly enabled
+  bool _isLoadingLocation = false;
+  bool _hasActiveFilters = false;
+
+  // User profile for avatar display
+  UserProfile? _userProfile;
 
   @override
   void initState() {
@@ -84,7 +119,10 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
         print('   _isKycCheckLoading = $_isKycCheckLoading');
       }
     } else {
-      print('⚠️ No current user - skipping KYC check');
+      // No user yet - but auth might be loading, so set loading to prevent flash of banner
+      _isKycCheckLoading = true;
+      print(
+          '⚠️ No current user yet - setting loading=true to prevent banner flash');
     }
 
     print(
@@ -109,11 +147,21 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
     // Listen to auth state changes to update UI when user data changes
     _authService.addListener(_onAuthStateChanged);
 
+    // Listen to profile changes from UserProfileService (singleton)
+    _userProfileService.addListener(_onProfileChanged);
+
     // Initialize data streams
     _initializeDataStreams();
 
     // Check KYC status (will use cache if available, or load from Firestore)
     _checkKycStatus();
+
+    // Preload user profile after first frame to ensure Firebase Auth is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _preloadUserProfile();
+      // Get current location for distance-based sorting
+      _getCurrentLocation();
+    });
   }
 
   @override
@@ -155,10 +203,50 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
       // Only refresh if user actually changed (prevents unnecessary updates on listener re-registration)
       final currentUser = _authService.currentUser;
       if (currentUser != null) {
+        // IMMEDIATELY set loading state to prevent banner flash
+        setState(() {
+          _isKycCheckLoading = true;
+        });
+        _preloadUserProfile(); // Reload profile when auth state changes
         _initializeDataStreams(); // Refresh streams when user changes
         _checkKycStatus(); // Check KYC status when auth state changes (will use cache if available)
+      } else {
+        // User logged out - reset KYC state
+        setState(() {
+          _hasSubmittedKyc = false;
+          _isKycCheckLoading =
+              true; // Keep loading to prevent flash on next login
+          _userProfile = null;
+        });
       }
-      setState(() {});
+    }
+  }
+
+  /// Called when profile is updated anywhere in the app
+  void _onProfileChanged() {
+    if (mounted) {
+      setState(() {
+        _userProfile = _userProfileService.currentProfile;
+      });
+    }
+  }
+
+  /// Preload user profile into cache to prevent UI flicker
+  Future<void> _preloadUserProfile() async {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      try {
+        // This will fetch and cache the profile if not already cached
+        final profile = await _userProfileService.getCurrentUserProfile();
+        if (mounted && profile != null) {
+          setState(() {
+            _userProfile = profile;
+          });
+        }
+      } catch (e) {
+        // Silently fail - we'll fall back to Firebase Auth data
+        debugPrint('Failed to preload user profile: $e');
+      }
     }
   }
 
@@ -274,6 +362,7 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
       // Remove observers first
       WidgetsBinding.instance.removeObserver(this);
       _authService.removeListener(_onAuthStateChanged);
+      _userProfileService.removeListener(_onProfileChanged);
 
       _searchFocusNode.dispose();
       _searchController.dispose();
@@ -291,7 +380,10 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     print('🏗️ ====== BUILD CALLED ======');
     print('   _hasSubmittedKyc = $_hasSubmittedKyc');
     print('   _isKycCheckLoading = $_isKycCheckLoading');
@@ -485,7 +577,7 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
 
                   const SizedBox(height: 30),
 
-                  // Search bar + Local/Abroad buttons
+                  // Search bar + Filter icon + Local/Abroad buttons
                   Row(
                     children: [
                       // Search bar
@@ -508,7 +600,7 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                             controller: _searchController,
                             focusNode: _searchFocusNode,
                             decoration: InputDecoration(
-                              hintText: 'Search packages...',
+                              hintText: 'home.search_packages'.tr(),
                               hintStyle: TextStyle(color: Colors.grey[400]),
                               border: InputBorder.none,
                               focusedBorder: InputBorder.none,
@@ -519,18 +611,52 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                                 Icons.search,
                                 color: Colors.grey[400],
                               ),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_searchController.text.isNotEmpty)
+                                    IconButton(
                                       icon:
                                           Icon(Icons.clear, color: Colors.grey),
                                       onPressed: () {
                                         _searchController.clear();
-                                        setState(() {
-                                          // Trigger rebuild to clear search filter
-                                        });
+                                        setState(() {});
                                       },
-                                    )
-                                  : null,
+                                    ),
+                                  // Filter icon with badge
+                                  GestureDetector(
+                                    onTap: () =>
+                                        _showAdvancedFilterBottomSheet(),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Stack(
+                                        children: [
+                                          Icon(
+                                            Icons.tune,
+                                            color: _hasActiveFilters
+                                                ? const Color(0xFF2D6A5F)
+                                                : Colors.grey[500],
+                                            size: 22,
+                                          ),
+                                          if (_hasActiveFilters)
+                                            Positioned(
+                                              right: 0,
+                                              top: 0,
+                                              child: Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFF2D6A5F),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                               contentPadding:
                                   EdgeInsets.symmetric(vertical: 15),
                             ),
@@ -1222,8 +1348,45 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                     .where((package) =>
                         package.senderId != currentUserId &&
                         package.status == PackageStatus.pending)
-                    .take(10)
                     .toList();
+
+                // Apply advanced filter: From city
+                if (_filterFromCity != null && _filterFromCity!.isNotEmpty) {
+                  final fromCity = _filterFromCity!.toLowerCase();
+                  filteredPackages = filteredPackages.where((package) {
+                    final pickupCity =
+                        (package.pickupLocation.city ?? '').toLowerCase();
+                    final pickupAddress =
+                        package.pickupLocation.address.toLowerCase();
+                    return pickupCity.contains(fromCity) ||
+                        pickupAddress.contains(fromCity);
+                  }).toList();
+                }
+
+                // Apply advanced filter: To city
+                if (_filterToCity != null && _filterToCity!.isNotEmpty) {
+                  final toCity = _filterToCity!.toLowerCase();
+                  filteredPackages = filteredPackages.where((package) {
+                    final destCity =
+                        (package.destinationLocation.city ?? '').toLowerCase();
+                    final destAddress =
+                        package.destinationLocation.address.toLowerCase();
+                    return destCity.contains(toCity) ||
+                        destAddress.contains(toCity);
+                  }).toList();
+                }
+
+                // Apply advanced filter: Radius (only when filterByRadius is enabled)
+                if (_filterByRadius &&
+                    _currentUserPosition != null &&
+                    _searchRadiusKm > 0) {
+                  filteredPackages = filteredPackages.where((package) {
+                    final distance = _getDistanceToPackage(package);
+                    if (distance == null) return true;
+                    return distance <=
+                        (_searchRadiusKm * 1000); // Convert km to meters
+                  }).toList();
+                }
 
                 // Apply search filter if search text is provided
                 if (searchText.isNotEmpty) {
@@ -1274,6 +1437,21 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                         destCountry.isNotEmpty &&
                         pickupCountry != destCountry;
                   }).toList();
+                }
+
+                // Sort by distance from current location if enabled
+                if (_sortByDistance && _currentUserPosition != null) {
+                  filteredPackages.sort((a, b) {
+                    final distA = _getDistanceToPackage(a) ?? double.infinity;
+                    final distB = _getDistanceToPackage(b) ?? double.infinity;
+                    return distA.compareTo(distB);
+                  });
+                }
+
+                // Apply result limit
+                if (filteredPackages.length > _resultLimit) {
+                  filteredPackages =
+                      filteredPackages.take(_resultLimit).toList();
                 }
 
                 if (filteredPackages.isEmpty) {
@@ -1564,59 +1742,80 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
                   ),
                   SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Check authentication
-                        if (_authService.currentUser == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please log in to make an offer'),
-                              backgroundColor: Colors.red,
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                          Navigator.pushNamed(
-                              context, AppRoutes.onboardingFlow);
-                          return;
-                        }
+                    child: FutureBuilder<DealOffer?>(
+                      future: _getExistingOfferForPackage(package.id),
+                      builder: (context, snapshot) {
+                        final existingOffer = snapshot.data;
+                        final hasOffer = existingOffer != null;
 
-                        // Check KYC approval
-                        if (!_hasSubmittedKyc) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  'Please complete KYC verification to make an offer'),
-                              backgroundColor: Colors.orange,
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                          // Navigate to KYC completion and refresh status when returning
-                          Navigator.pushNamed(context, AppRoutes.kycCompletion)
-                              .then((_) {
-                            // Refresh KYC status when user returns
-                            _checkKycStatus();
-                          });
-                          return;
-                        }
+                        return ElevatedButton.icon(
+                          onPressed: () {
+                            // Check authentication
+                            if (_authService.currentUser == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                      Text('Please log in to make an offer'),
+                                  backgroundColor: Colors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                              Navigator.pushNamed(
+                                  context, AppRoutes.onboardingFlow);
+                              return;
+                            }
 
-                        // Navigate to make offer screen
-                        Get.to(() => MakeOfferScreen(
-                              package: package,
-                            ));
+                            // Check KYC approval
+                            if (!_hasSubmittedKyc) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Please complete KYC verification to make an offer'),
+                                  backgroundColor: Colors.orange,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                              // Navigate to KYC completion and refresh status when returning
+                              Navigator.pushNamed(
+                                      context, AppRoutes.kycCompletion)
+                                  .then((_) {
+                                // Refresh KYC status when user returns
+                                _checkKycStatus();
+                              });
+                              return;
+                            }
+
+                            // Navigate to make/edit offer screen
+                            Get.to(() => MakeOfferScreen(
+                                  package: package,
+                                  existingOffer: existingOffer,
+                                ))?.then((_) {
+                              // Refresh offer state after returning
+                              setState(() {
+                                _packageOffers.remove(package.id);
+                              });
+                            });
+                          },
+                          icon: Icon(
+                            hasOffer ? Icons.edit : Icons.local_offer_outlined,
+                            size: 18,
+                          ),
+                          label: Text(
+                            hasOffer ? 'Edit Offer' : 'detail.make_offer'.tr(),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF2D6A5F),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                        );
                       },
-                      icon: Icon(Icons.local_offer_outlined, size: 18),
-                      label: Text('detail.make_offer'.tr()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF2D6A5F),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
                     ),
                   ),
                 ],
@@ -1772,6 +1971,10 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
         statusColor = Colors.red;
         statusText = 'Cancelled';
         break;
+      case TripStatus.expired:
+        statusColor = Colors.grey;
+        statusText = 'Expired';
+        break;
     }
 
     return Container(
@@ -1923,27 +2126,59 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
   Widget _buildUserAvatar() {
     final user = _authService.currentUser;
 
-    if (user?.photoURL != null && user!.photoURL!.isNotEmpty) {
-      // User has a profile photo (from Google/Apple login)
+    // If user exists but profile hasn't loaded yet, show loading indicator
+    // This prevents showing Google profile photo before Firestore profile loads
+    if (user != null && _userProfile == null) {
+      return CircleAvatar(
+        radius: 25,
+        backgroundColor: Colors.white,
+        child: LiquidLoadingIndicator(
+          size: 30,
+          color: Color(0xFF2D6A5F),
+        ),
+      );
+    }
+
+    // Use Firestore profile photo first, fallback to Firebase Auth photo
+    final photoUrl = _userProfile?.photoUrl ?? user?.photoURL;
+
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      // User has a profile photo
       return CircleAvatar(
         radius: 25,
         backgroundColor: Colors.white,
         child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: user.photoURL!,
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => LiquidLoadingIndicator(
-              size: 50,
-              color: Color(0xFF2D6A5F), // Teal/green
-            ),
-            errorWidget: (context, url, error) => const Icon(
-              Icons.person,
-              color: Color(0xFF2D6A5F), // Teal/green
-              size: 30,
-            ),
-          ),
+          child: photoUrl.startsWith('data:image/')
+              ? // Base64 image stored in Firestore
+              Image.memory(
+                  base64Decode(photoUrl.split(',')[1]),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.person,
+                      color: Color(0xFF2D6A5F),
+                      size: 30,
+                    );
+                  },
+                )
+              : // URL image (Google/Apple profile photo or external URL)
+              CachedNetworkImage(
+                  imageUrl: photoUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => LiquidLoadingIndicator(
+                    size: 50,
+                    color: Color(0xFF2D6A5F), // Teal/green
+                  ),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.person,
+                    color: Color(0xFF2D6A5F), // Teal/green
+                    size: 30,
+                  ),
+                ),
         ),
       );
     } else {
@@ -1965,14 +2200,20 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
 
   String _getUserGreeting() {
     final user = _authService.currentUser;
+    if (user == null) return 'Hi';
 
-    if (user?.displayName != null && user!.displayName!.isNotEmpty) {
+    // Use local profile first (most up to date), then cache, then Firebase Auth
+    final displayName = _userProfile?.fullName ??
+        UserProfileService.getFromCache(user.uid)?.fullName ??
+        user.displayName;
+
+    if (displayName != null && displayName.isNotEmpty) {
       // Use display name (especially for Google/Apple login)
-      final firstName = user.displayName!.split(' ').first;
+      final firstName = displayName.split(' ').first;
       return 'Hi, $firstName';
-    } else if (user?.email != null) {
+    } else if (user.email != null) {
       // Extract name from email if no display name
-      final emailName = user!.email!.split('@').first;
+      final emailName = user.email!.split('@').first;
       final capitalizedName =
           emailName[0].toUpperCase() + emailName.substring(1);
       return 'Hi, $capitalizedName';
@@ -1980,18 +2221,25 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
     return 'Hi';
   }
 
-  String _getUserInitials() {
+  String _getUserInitials([UserProfile? cachedProfile]) {
     final user = _authService.currentUser;
+    if (user == null) return 'US';
 
-    if (user?.displayName != null && user!.displayName!.isNotEmpty) {
-      final names = user.displayName!.split(' ');
+    // Use local profile first (most up to date), then provided cache, then service cache
+    final profile = _userProfile ??
+        cachedProfile ??
+        UserProfileService.getFromCache(user.uid);
+    final displayName = profile?.fullName ?? user.displayName;
+
+    if (displayName != null && displayName.isNotEmpty) {
+      final names = displayName.split(' ');
       if (names.length >= 2) {
         return '${names[0][0]}${names[1][0]}'.toUpperCase();
       } else {
         return names[0].substring(0, 2).toUpperCase();
       }
-    } else if (user?.email != null) {
-      final emailName = user!.email!.split('@').first;
+    } else if (user.email != null) {
+      final emailName = user.email!.split('@').first;
       return emailName.substring(0, 2).toUpperCase();
     } else {
       return 'US';
@@ -2019,6 +2267,32 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
     // Sort user IDs to ensure consistent conversation ID regardless of order
     final sortedIds = [userId1, userId2]..sort();
     return '${sortedIds[0]}_${sortedIds[1]}';
+  }
+
+  // Helper method to get existing offer for a package
+  Future<DealOffer?> _getExistingOfferForPackage(String packageId) async {
+    // Check cache first
+    if (_packageOffers.containsKey(packageId)) {
+      return _packageOffers[packageId];
+    }
+
+    // Get from service
+    final currentUser = _authService.currentUser;
+    if (currentUser == null) return null;
+
+    try {
+      final offer = await _dealService.getUserOfferForPackage(
+        packageId: packageId,
+        userId: currentUser.uid,
+      );
+
+      // Cache the result
+      _packageOffers[packageId] = offer;
+      return offer;
+    } catch (e) {
+      print('Error getting existing offer: $e');
+      return null;
+    }
   }
 
   // New method: Shows user's own packages (for Sender + My Items)
@@ -2320,6 +2594,11 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
           'text': 'Disputed',
           'color': Color(0xFFDC2626), // Dark Red
         };
+      case PackageStatus.expired:
+        return {
+          'text': 'Expired',
+          'color': Color(0xFF9CA3AF), // Grey
+        };
       case PackageStatus.pending:
         // For pending packages, determine smart availability status
         break;
@@ -2388,6 +2667,461 @@ class _UpdatedHomeScreenState extends State<UpdatedHomeScreen>
         };
       }
     }
+  }
+
+  // Get current location for distance-based sorting
+  Future<void> _getCurrentLocation() async {
+    if (_isLoadingLocation) return;
+
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (mounted && position != null) {
+        setState(() {
+          _currentUserPosition = position;
+          _isLoadingLocation = false;
+        });
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('home.location_error'.tr()),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  // Calculate distance from user's current location to package pickup
+  double? _getDistanceToPackage(PackageRequest package) {
+    if (_currentUserPosition == null) return null;
+
+    return LocationUtils.calculateDistance(
+      lat1: _currentUserPosition!.latitude,
+      lon1: _currentUserPosition!.longitude,
+      lat2: package.pickupLocation.latitude,
+      lon2: package.pickupLocation.longitude,
+    );
+  }
+
+  // Update active filters flag (sortByDistance is default, so don't count it)
+  void _updateActiveFiltersFlag() {
+    _hasActiveFilters = _filterFromCity != null ||
+        _filterToCity != null ||
+        _filterByRadius || // Show badge when radius filtering is on
+        _resultLimit != 50 ||
+        !_sortByDistance; // Only show as active if user disabled sorting
+  }
+
+  // Clear all advanced filters (reset to defaults)
+  void _clearAdvancedFilters() {
+    setState(() {
+      _filterFromCity = null;
+      _filterToCity = null;
+      _searchRadiusKm = 10.0; // Default 10km
+      _resultLimit = 50;
+      _sortByDistance = true; // Default is true
+      _filterByRadius = false; // Default is false
+      _hasActiveFilters = false;
+    });
+  }
+
+  // Show advanced filter bottom sheet
+  void _showAdvancedFilterBottomSheet() {
+    // Temporary state for the bottom sheet
+    String? tempFromCity = _filterFromCity;
+    String? tempToCity = _filterToCity;
+    double tempRadius = _searchRadiusKm;
+    int tempLimit = _resultLimit;
+    bool tempSortByDistance = _sortByDistance;
+    bool tempFilterByRadius = _filterByRadius;
+
+    final fromController = TextEditingController(text: tempFromCity ?? '');
+    final toController = TextEditingController(text: tempToCity ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom +
+                MediaQuery.of(context).padding.bottom +
+                30,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D6A5F).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.tune,
+                        color: Color(0xFF2D6A5F),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Advanced Filters',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          tempFromCity = null;
+                          tempToCity = null;
+                          tempRadius = 10.0; // Default 10km
+                          tempLimit = 50;
+                          tempSortByDistance = true; // Default is true
+                          tempFilterByRadius = false; // Default is false
+                          fromController.clear();
+                          toController.clear();
+                        });
+                      },
+                      child: Text(
+                        'Reset',
+                        style: const TextStyle(
+                          color: Color(0xFF2D6A5F),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Sort by distance toggle
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.near_me,
+                        color: tempSortByDistance
+                            ? const Color(0xFF2D6A5F)
+                            : Colors.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sort by Distance',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Show nearest packages first',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: tempSortByDistance,
+                        onChanged: (value) {
+                          setModalState(() {
+                            tempSortByDistance = value;
+                          });
+                          if (value && _currentUserPosition == null) {
+                            _getCurrentLocation();
+                          }
+                        },
+                        activeColor: const Color(0xFF2D6A5F),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // From location
+                Text(
+                  'From (Pickup City)',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: fromController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter city name...',
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: const Icon(Icons.flight_takeoff,
+                        color: Color(0xFF2D6A5F)),
+                    filled: true,
+                    fillColor: const Color(0xFFF5F5F5),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                  ),
+                  onChanged: (value) {
+                    tempFromCity = value.isEmpty ? null : value;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // To location
+                Text(
+                  'To (Destination City)',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: toController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter city name...',
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon:
+                        const Icon(Icons.flight_land, color: Color(0xFF2D6A5F)),
+                    filled: true,
+                    fillColor: const Color(0xFFF5F5F5),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                  ),
+                  onChanged: (value) {
+                    tempToCity = value.isEmpty ? null : value;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Filter by radius toggle
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.radar,
+                        color: tempFilterByRadius
+                            ? const Color(0xFF2D6A5F)
+                            : Colors.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Limit by Radius',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'Only show packages within radius',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: tempFilterByRadius,
+                        onChanged: (value) {
+                          setModalState(() {
+                            tempFilterByRadius = value;
+                          });
+                          if (value && _currentUserPosition == null) {
+                            _getCurrentLocation();
+                          }
+                        },
+                        activeColor: const Color(0xFF2D6A5F),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Show radius slider only when filter is enabled
+                if (tempFilterByRadius) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: tempRadius.clamp(0.5, 25.0),
+                          min: 0.5,
+                          max: 25.0,
+                          divisions: 49,
+                          activeColor: const Color(0xFF2D6A5F),
+                          inactiveColor:
+                              const Color(0xFF2D6A5F).withOpacity(0.2),
+                          onChanged: (value) {
+                            setModalState(() {
+                              tempRadius = value;
+                            });
+                          },
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D6A5F).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tempRadius < 1
+                              ? '${(tempRadius * 1000).toStringAsFixed(0)}m'
+                              : '${tempRadius.toStringAsFixed(0)}km',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2D6A5F),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 16),
+
+                // Result limit dropdown
+                Text(
+                  'Result Limit',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: tempLimit,
+                      isExpanded: true,
+                      icon: const Icon(Icons.keyboard_arrow_down,
+                          color: Color(0xFF2D6A5F)),
+                      items: [10, 20, 30, 50, 100].map((limit) {
+                        return DropdownMenuItem<int>(
+                          value: limit,
+                          child: Text('$limit results'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setModalState(() {
+                            tempLimit = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Apply button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Apply filters
+                      setState(() {
+                        _filterFromCity = fromController.text.isEmpty
+                            ? null
+                            : fromController.text;
+                        _filterToCity = toController.text.isEmpty
+                            ? null
+                            : toController.text;
+                        _searchRadiusKm = tempRadius;
+                        _resultLimit = tempLimit;
+                        _sortByDistance = tempSortByDistance;
+                        _filterByRadius = tempFilterByRadius;
+                        _updateActiveFiltersFlag();
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D6A5F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Apply Filters',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showHelpSupportDialog() {

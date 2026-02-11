@@ -16,11 +16,13 @@ import '../../widgets/star_rating_widget.dart';
 class MakeOfferScreen extends StatefulWidget {
   final TravelTrip? trip;
   final PackageRequest? package;
+  final DealOffer? existingOffer; // For editing existing offers
 
   const MakeOfferScreen({
     Key? key,
     this.trip,
     this.package,
+    this.existingOffer,
   })  : assert(trip != null || package != null,
             'Either trip or package must be provided'),
         super(key: key);
@@ -42,8 +44,12 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill with suggested price
-    if (widget.trip != null) {
+    // Pre-fill with existing offer if editing, otherwise use suggested price
+    if (widget.existingOffer != null) {
+      _priceController.text =
+          widget.existingOffer!.offeredPrice.toStringAsFixed(2);
+      _notesController.text = widget.existingOffer!.message ?? '';
+    } else if (widget.trip != null) {
       _priceController.text = widget.trip!.suggestedReward.toStringAsFixed(2);
     } else if (widget.package != null) {
       _priceController.text =
@@ -66,7 +72,9 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
         backgroundColor: const Color(0xFF215C5C),
         elevation: 0,
         title: Text(
-          'detail.make_offer'.tr(),
+          widget.existingOffer != null
+              ? 'Edit Your Offer'
+              : 'detail.make_offer'.tr(),
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -201,7 +209,7 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _notesController,
-                          maxLines: 3,
+                          maxLines: 1,
                           decoration: InputDecoration(
                             hintText:
                                 'common.add_any_special_requirements_or_notes'
@@ -245,7 +253,9 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
                               ),
                             )
                           : Text(
-                              'common.submit_offer'.tr(),
+                              widget.existingOffer != null
+                                  ? 'Update Offer'
+                                  : 'common.submit_offer'.tr(),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -500,6 +510,28 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
       final price = double.parse(_priceController.text);
       final notes = _notesController.text.trim();
 
+      // Check if we're editing an existing offer
+      if (widget.existingOffer != null) {
+        // Update existing offer
+        await _dealService.updateOffer(
+          offerId: widget.existingOffer!.id,
+          newPrice: price,
+          newMessage: notes.isNotEmpty ? notes : null,
+        );
+
+        if (kDebugMode) {
+          print('Offer updated successfully: ${widget.existingOffer!.id}');
+        }
+
+        // Show success toast
+        ToastUtils.show('Offer updated successfully!');
+
+        // Navigate back
+        Navigator.pop(context, true);
+        return;
+      }
+
+      // Original submit logic for new offers
       if (widget.trip != null) {
         // Submit trip offer using the offer service
         final offerId = await _offerService.submitOffer(
@@ -516,6 +548,12 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
         ToastUtils.show('offer.submitted'.tr());
       } else if (widget.package != null) {
         // Submit package deal offer using the deal negotiation service
+
+        // Validate package sender information
+        if (widget.package!.senderName.isEmpty) {
+          throw Exception(
+              'Invalid package sender information. Please refresh and try again.');
+        }
 
         // First create or get conversation
         late ChatController chatController;
@@ -569,7 +607,8 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
       Navigator.pop(context, true);
     } catch (e) {
       String errorMessage = _getErrorMessage(e.toString());
-      ToastUtils.show('error.generic'.tr(args: [errorMessage]));
+      // Show error directly (it's already user-friendly)
+      ToastUtils.show(errorMessage);
     } finally {
       if (mounted) {
         setState(() {
@@ -581,14 +620,16 @@ class _MakeOfferScreenState extends State<MakeOfferScreen> {
 
   // Helper method to convert technical errors to user-friendly messages
   String _getErrorMessage(String error) {
-    if (error.contains('Trip not found')) {
+    if (error.contains('already made an offer')) {
+      return 'You have already made an offer for this package. Please refresh the page to edit your existing offer.';
+    } else if (error.contains('Trip not found')) {
       return 'This travel plan is no longer available. Please refresh and try again.';
     } else if (error.contains('User not authenticated')) {
       return 'Please log in again to continue.';
     } else if (error.contains('not available')) {
       return 'This trip is no longer accepting offers.';
-    } else if (error.contains('maximum limit')) {
-      return 'You have already submitted 2 offers for this package. Please wait for a response from the sender.';
+    } else if (error.contains('Invalid package sender')) {
+      return 'Package information is incomplete. Please refresh and try again.';
     } else if (error.contains('network')) {
       return 'Network error. Please check your connection and try again.';
     } else if (error.contains('Invalid trip')) {
