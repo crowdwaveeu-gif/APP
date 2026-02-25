@@ -52,13 +52,9 @@ workflows:
     name: Android Play Store Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      google_play: CrowdWave Play Store
     environment:
       android_signing:
         - crowdwave_keystore
-      groups:
-        - google_play_credentials
       vars:
         PACKAGE_NAME: "com.crowdwave.courier"
       flutter: stable
@@ -96,15 +92,12 @@ workflows:
     instance_type: mac_mini_m2
     integrations:
       app_store_connect: CrowdWave App Store
-      google_play: CrowdWave Play Store
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.crowdwave.courier
       android_signing:
         - crowdwave_keystore
-      groups:
-        - google_play_credentials
       vars:
         BUNDLE_ID: "com.crowdwave.courier"
         PACKAGE_NAME: "com.crowdwave.courier"
