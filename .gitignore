@@ -64,6 +64,9 @@ android/*.keystore
 # Firebase service account credentials
 service_account.json
 **/service_account.json
+**/crowdwave-93d4d-*.json
+app_store_files/*.json
+!android/app/google-services.json
 
 # Build folders
 build/

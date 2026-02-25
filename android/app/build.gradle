@@ -30,10 +30,10 @@ android {
 
     signingConfigs {
         release {
-            keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: keystoreProperties['keyAlias']
-            keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: keystoreProperties['keyPassword']
-            storeFile System.getenv("ANDROID_KEYSTORE_PATH") ? file(System.getenv("ANDROID_KEYSTORE_PATH")) : (keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null)
-            storePassword System.getenv("ANDROID_STORE_PASSWORD") ?: keystoreProperties['storePassword']
+            keyAlias System.getenv("CM_KEY_ALIAS") ?: System.getenv("ANDROID_KEY_ALIAS") ?: keystoreProperties['keyAlias']
+            keyPassword System.getenv("CM_KEY_PASSWORD") ?: System.getenv("ANDROID_KEY_PASSWORD") ?: keystoreProperties['keyPassword']
+            storeFile System.getenv("CM_KEYSTORE_PATH") ? file(System.getenv("CM_KEYSTORE_PATH")) : (System.getenv("ANDROID_KEYSTORE_PATH") ? file(System.getenv("ANDROID_KEYSTORE_PATH")) : (keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null))
+            storePassword System.getenv("CM_KEYSTORE_PASSWORD") ?: System.getenv("ANDROID_STORE_PASSWORD") ?: keystoreProperties['storePassword']
         }
     }
 
@@ -55,8 +55,8 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Use release signing if keystore is configured, otherwise fall back to debug
-            signingConfig = keystoreProperties['storeFile'] ? signingConfigs.release : signingConfigs.debug
+            // Use release signing if keystore is configured (via env vars or key.properties), otherwise fall back to debug
+            signingConfig = (System.getenv("CM_KEYSTORE_PATH") || System.getenv("ANDROID_KEYSTORE_PATH") || keystoreProperties['storeFile']) ? signingConfigs.release : signingConfigs.debug
             
             // ⚡ Performance optimizations
             zipAlignEnabled true
