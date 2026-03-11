@@ -1,0 +1,404 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSuperAdmin() {
+      return request.auth != null && request.auth.token.email == 'crowdwave.eu@gmail.com';
+    }
+    
+    function hasAdminRole(userId) {
+      return isSuperAdmin() || 
+             (exists(/databases/$(database)/documents/users/$(userId)) &&
+              get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin');
+    }
+
+    match /{document=**} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /otp_codes/{email} {
+      allow create: if true;
+      allow read: if true;
+      allow update: if true;
+      allow delete: if request.auth != null;
+    }
+
+    match /usernames/{username} {
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && isValidUsernameData(request.resource.data);
+      
+      allow read: if true;
+      
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+    }
+
+    match /kyc_applications/{userId} {
+      allow create, update: if request.auth != null 
+        && request.auth.uid == userId
+        && isValidKycData(request.resource.data);
+      
+      allow read: if request.auth != null && (request.auth.uid == userId || true);
+      
+      allow update: if request.auth != null && hasAdminRole(request.auth.uid)
+        && onlyStatusChanged(resource.data, request.resource.data);
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    match /conversations/{conversationId}/messages/{messageId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    match /presence/{userId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    match /systemLogs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    match /package_requests/{requestId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /packageRequests/{requestId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /deliveryTracking/{trackingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /deals/{dealId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /travelTrips/{tripId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /trips/{tripId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /escrow_transactions/{transactionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /disputes/{disputeId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /suspensions/{suspensionId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /matches/{matchId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    match /review_summaries/{targetId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    match /reports/{reportId} {
+      allow create: if request.auth != null
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.reportedUserId is string
+        && request.resource.data.contentId is string
+        && request.resource.data.contentType is string
+        && request.resource.data.reason is string
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.status == 'open';
+      
+      allow read: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow update: if request.auth != null && hasAdminRole(request.auth.uid)
+        && request.resource.data.reporterId == resource.data.reporterId;
+      
+      allow delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+    
+    match /users/{userId}/blocked/{blockedUserId} {
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow update: if false;
+    }
+
+    match /wallets/{userId} {
+      allow read: if request.auth != null && 
+                     (request.auth.uid == userId || hasAdminRole(request.auth.uid));
+      
+      allow create: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       request.resource.data.userId == userId &&
+                       (request.resource.data.balance == 0 || !request.resource.data.keys().hasAny(['balance']));
+      
+      allow update: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       (
+                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['balance']) ||
+                         hasAdminRole(request.auth.uid)
+                       );
+      
+      allow delete: if false;
+    }
+    
+    match /transactions/{transactionId} {
+      allow read: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || hasAdminRole(request.auth.uid));
+      
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update, delete: if false;
+      
+      allow list: if request.auth != null && 
+                     request.query.limit <= 100;
+    }
+
+    function hasExistingReview(userId, targetId) {
+      return exists(/databases/$(database)/documents/reviews/$(userId + '_' + targetId));
+    }
+    
+    function isReviewingOwnContent(userId, targetId, type) {
+      return (type == 'trip' && 
+              exists(/databases/$(database)/documents/trips/$(targetId)) &&
+              get(/databases/$(database)/documents/trips/$(targetId)).data.travelerId == userId) ||
+             (type == 'package' && 
+              exists(/databases/$(database)/documents/packageRequests/$(targetId)) &&
+              get(/databases/$(database)/documents/packageRequests/$(targetId)).data.senderId == userId);
+    }
+
+    function isValidReport(reportData) {
+      return reportData.keys().hasAll(['reviewId', 'reporterId', 'reason', 'reportedAt', 'status'])
+        && reportData.reviewId is string
+        && reportData.reporterId is string
+        && reportData.reason is string
+        && reportData.reportedAt is timestamp
+        && reportData.status in ['pending', 'resolved', 'dismissed']
+        && (reportData.commentId == null || reportData.commentId is string);
+    }
+
+    function isValidUsernameData(data) {
+      return data.keys().hasAll(['userId', 'originalUsername'])
+        && data.userId is string
+        && data.originalUsername is string;
+    }
+
+    function isValidKycData(data) {
+      return data.keys().hasAll(['userId', 'status', 'personalInfo', 'document', 'audit'])
+        && data.userId is string
+        && data.status is string
+        && data.status in ['submitted', 'under_review', 'approved', 'rejected']
+        && isValidPersonalInfo(data.personalInfo)
+        && isValidDocumentInfo(data.document)
+        && isValidAuditInfo(data.audit);
+    }
+
+    function isValidPersonalInfo(personalInfo) {
+      return personalInfo.keys().hasAll(['fullName', 'dateOfBirth', 'address'])
+        && personalInfo.fullName is string
+        && personalInfo.dateOfBirth is string
+        && personalInfo.address.keys().hasAll(['line1', 'city', 'postalCode', 'country'])
+        && personalInfo.address.line1 is string
+        && personalInfo.address.city is string
+        && personalInfo.address.postalCode is string
+        && personalInfo.address.country is string;
+    }
+
+    function isValidDocumentInfo(document) {
+      return document.keys().hasAll(['type', 'images'])
+        && document.type is string
+        && document.images is map
+        && document.images.keys().hasAll(['front', 'selfie'])
+        && document.images.front is string
+        && document.images.selfie is string;
+    }
+
+    function isValidAuditInfo(audit) {
+      return audit.keys().hasAll(['submittedAt', 'updatedAt'])
+        && audit.submittedAt is string
+        && audit.updatedAt is string;
+    }
+
+    function onlyStatusChanged(oldData, newData) {
+      return newData.diff(oldData).affectedKeys().hasOnly(['status', 'audit']);
+    }
+
+    match /forum_posts/{postId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 2000;
+      
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.userId == resource.data.userId;
+      
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+    }
+
+    match /forum_comments/{commentId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.userId
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 500;
+      
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.userId == resource.data.userId;
+      
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+    }
+
+    match /forum_reports/{reportId} {
+      allow read: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.reportedBy;
+      
+      allow update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    match /call_notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /active_calls/{callId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /call_history/{historyId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /call_logs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /travelTrips/{tripId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.travelerId;
+      
+      allow update: if request.auth != null 
+        && (request.auth.uid == resource.data.travelerId || hasAdminRole(request.auth.uid));
+      
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.travelerId || hasAdminRole(request.auth.uid));
+    }
+
+    match /packageRequests/{packageId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.senderId;
+      
+      allow update: if request.auth != null 
+        && (request.auth.uid == resource.data.senderId || hasAdminRole(request.auth.uid));
+      
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.senderId || hasAdminRole(request.auth.uid));
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    match /deliveryTracking/{trackingId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    match /staticContent/{contentId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    match /platformSettings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && hasAdminRole(request.auth.uid);
+    }
+
+    match /deletionRequests/{userId} {
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['requestedAt'])
+        && request.resource.data.requestedAt is timestamp;
+
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || hasAdminRole(request.auth.uid));
+
+      allow update: if false;
+      allow delete: if request.auth != null
+        && (request.auth.uid == userId || hasAdminRole(request.auth.uid));
+    }
+
+    // Withdrawal requests - users can create, admins can manage
+    match /withdrawalRequests/{requestId} {
+      allow read: if request.auth != null 
+        && (resource.data.userId == request.auth.uid || hasAdminRole(request.auth.uid));
+      
+      allow create: if request.auth != null 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount > 0;
+      
+      allow update: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow delete: if request.auth != null && hasAdminRole(request.auth.uid);
+      
+      allow list: if request.auth != null;
+    }
+  }
+}

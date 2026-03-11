@@ -1,0 +1,840 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' hide Trans;
+import '../../core/models/models.dart';
+import '../../services/auth_state_service.dart';
+import '../../services/offer_service.dart';
+import '../../services/deal_negotiation_service.dart';
+import '../../controllers/chat_controller.dart';
+import '../../utils/toast_utils.dart';
+import '../chat/individual_chat_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
+import '../../models/review_model.dart';
+import '../../services/review_service.dart';
+import '../../widgets/star_rating_widget.dart';
+
+class MakeOfferScreen extends StatefulWidget {
+  final TravelTrip? trip;
+  final PackageRequest? package;
+  final DealOffer? existingOffer; // For editing existing offers
+
+  const MakeOfferScreen({
+    Key? key,
+    this.trip,
+    this.package,
+    this.existingOffer,
+  })  : assert(trip != null || package != null,
+            'Either trip or package must be provided'),
+        super(key: key);
+
+  @override
+  State<MakeOfferScreen> createState() => _MakeOfferScreenState();
+}
+
+class _MakeOfferScreenState extends State<MakeOfferScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _priceController = TextEditingController();
+  final _notesController = TextEditingController();
+  final AuthStateService _authService = AuthStateService();
+  final OfferService _offerService = OfferService();
+  final DealNegotiationService _dealService = DealNegotiationService();
+
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill with existing offer if editing, otherwise use suggested price
+    if (widget.existingOffer != null) {
+      _priceController.text =
+          widget.existingOffer!.offeredPrice.toStringAsFixed(2);
+      _notesController.text = widget.existingOffer!.message ?? '';
+    } else if (widget.trip != null) {
+      _priceController.text = widget.trip!.suggestedReward.toStringAsFixed(2);
+    } else if (widget.package != null) {
+      _priceController.text =
+          widget.package!.compensationOffer.toStringAsFixed(2);
+    }
+  }
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE9E9E9),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF215C5C),
+        elevation: 0,
+        title: Text(
+          widget.existingOffer != null
+              ? 'Edit Your Offer'
+              : 'detail.make_offer'.tr(),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Info Card (Trip or Package)
+            _buildInfoCard(),
+
+            const SizedBox(height: 24),
+
+            // Traveler/Sender Reputation Card
+            _buildReputationCard(),
+
+            const SizedBox(height: 24),
+
+            // Offer Form
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'booking.your_offer'.tr(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Price Input
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'common.offer_price'.tr(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _priceController,
+                          keyboardType:
+                              TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            prefixText: '€',
+                            hintText: 'booking.enter_offer_price_hint'.tr(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF215C5C)),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter an offer price';
+                            }
+                            final price = double.tryParse(value);
+                            if (price == null || price <= 0) {
+                              return 'Please enter a valid price';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _getSuggestedText(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Notes Input
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Additional Notes (Optional)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _notesController,
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            hintText:
+                                'common.add_any_special_requirements_or_notes'
+                                    .tr(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF215C5C)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitOffer,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D7A6E),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              widget.existingOffer != null
+                                  ? 'Update Offer'
+                                  : 'common.submit_offer'.tr(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                  // Add bottom padding to avoid system navigation bar
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    if (widget.trip != null) {
+      return _buildTripInfoCard();
+    } else if (widget.package != null) {
+      return _buildPackageInfoCard();
+    } else {
+      return Container(); // Should not happen
+    }
+  }
+
+  Widget _buildTripInfoCard() {
+    final trip = widget.trip!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFF215C5C).withOpacity(0.1),
+                child: trip.travelerPhotoUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.network(
+                          trip.travelerPhotoUrl,
+                          fit: BoxFit.cover,
+                          width: 40,
+                          height: 40,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        color: Color(0xFF215C5C),
+                        size: 20,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      trip.travelerName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${trip.fromLocation} → ${trip.toLocation}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 8),
+              Text(
+                _formatDate(trip.departureDate),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Icon(Icons.luggage, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 8),
+              Text(
+                '${trip.capacity.maxWeightKg}kg',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPackageInfoCard() {
+    final package = widget.package!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFF215C5C).withOpacity(0.1),
+                child: package.senderPhotoUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.network(
+                          package.senderPhotoUrl,
+                          fit: BoxFit.cover,
+                          width: 40,
+                          height: 40,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        color: Color(0xFF215C5C),
+                        size: 20,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      package.senderName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${package.pickupLocation.city ?? package.pickupLocation.address} → ${package.destinationLocation.city ?? package.destinationLocation.address}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 8),
+              Text(
+                _formatDate(package.preferredDeliveryDate),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Icon(Icons.category, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 8),
+              Text(
+                package.packageDetails.type.name,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getSuggestedText() {
+    if (widget.trip != null) {
+      return 'Suggested: \$${widget.trip!.suggestedReward.toStringAsFixed(2)} total';
+    } else if (widget.package != null) {
+      return 'Requested: \$${widget.package!.compensationOffer.toStringAsFixed(2)} total';
+    }
+    return '';
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = date.difference(now).inDays;
+
+    if (difference == 0) {
+      return 'Today';
+    } else if (difference == 1) {
+      return 'Tomorrow';
+    } else if (difference < 7) {
+      return '${difference} days';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  Future<void> _submitOffer() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final currentUser = _authService.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final price = double.parse(_priceController.text);
+      final notes = _notesController.text.trim();
+
+      // Check if we're editing an existing offer
+      if (widget.existingOffer != null) {
+        // Update existing offer
+        await _dealService.updateOffer(
+          offerId: widget.existingOffer!.id,
+          newPrice: price,
+          newMessage: notes.isNotEmpty ? notes : null,
+        );
+
+        if (kDebugMode) {
+          print('Offer updated successfully: ${widget.existingOffer!.id}');
+        }
+
+        // Show success toast
+        ToastUtils.show('Offer updated successfully!');
+
+        // Navigate back
+        Navigator.pop(context, true);
+        return;
+      }
+
+      // Original submit logic for new offers
+      if (widget.trip != null) {
+        // Submit trip offer using the offer service
+        final offerId = await _offerService.submitOffer(
+          tripId: widget.trip!.id,
+          offerAmount: price,
+          notes: notes,
+        );
+
+        if (kDebugMode) {
+          print('Trip offer submitted successfully with ID: $offerId');
+        }
+
+        // Show mobile-appropriate success toast
+        ToastUtils.show('offer.submitted'.tr());
+      } else if (widget.package != null) {
+        // Submit package deal offer using the deal negotiation service
+
+        // Validate package sender information
+        if (widget.package!.senderName.isEmpty) {
+          throw Exception(
+              'Invalid package sender information. Please refresh and try again.');
+        }
+
+        // First create or get conversation
+        late ChatController chatController;
+        if (Get.isRegistered<ChatController>()) {
+          chatController = Get.find<ChatController>();
+        } else {
+          chatController = Get.put(ChatController());
+        }
+
+        final conversationId = await chatController.createOrGetConversation(
+          otherUserId: widget.package!.senderId,
+          otherUserName: widget.package!.senderName,
+          otherUserAvatar: widget.package!.senderPhotoUrl.isNotEmpty
+              ? widget.package!.senderPhotoUrl
+              : null,
+          packageRequestId: widget.package!.id,
+        );
+
+        if (conversationId == null) {
+          throw Exception('Failed to create conversation');
+        }
+
+        // Send the price offer
+        await _dealService.sendPriceOffer(
+          packageId: widget.package!.id,
+          conversationId: conversationId,
+          travelerId: currentUser.uid,
+          offeredPrice: price,
+          message: notes.isNotEmpty ? notes : null,
+        );
+
+        if (kDebugMode) {
+          print('Package offer submitted successfully');
+        }
+
+        // Show mobile-appropriate success toast
+        ToastUtils.show('offer.submitted'.tr());
+
+        // Navigate to chat immediately (removed artificial delay for better UX)
+        Get.to(() => IndividualChatScreen(
+              conversationId: conversationId,
+              otherUserName: widget.package!.senderName,
+              otherUserId: widget.package!.senderId,
+              otherUserAvatar: widget.package!.senderPhotoUrl.isNotEmpty
+                  ? widget.package!.senderPhotoUrl
+                  : null,
+            ));
+      }
+
+      // Navigate back
+      Navigator.pop(context, true);
+    } catch (e) {
+      String errorMessage = _getErrorMessage(e.toString());
+      // Show error directly (it's already user-friendly)
+      ToastUtils.show(errorMessage);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  // Helper method to convert technical errors to user-friendly messages
+  String _getErrorMessage(String error) {
+    if (error.contains('already made an offer')) {
+      return 'You have already made an offer for this package. Please refresh the page to edit your existing offer.';
+    } else if (error.contains('Trip not found')) {
+      return 'This travel plan is no longer available. Please refresh and try again.';
+    } else if (error.contains('User not authenticated')) {
+      return 'Please log in again to continue.';
+    } else if (error.contains('not available')) {
+      return 'This trip is no longer accepting offers.';
+    } else if (error.contains('Invalid package sender')) {
+      return 'Package information is incomplete. Please refresh and try again.';
+    } else if (error.contains('network')) {
+      return 'Network error. Please check your connection and try again.';
+    } else if (error.contains('Invalid trip')) {
+      return 'There seems to be an issue with this trip. Please contact support.';
+    } else {
+      return 'Something went wrong. Please try again or contact support if the problem persists.';
+    }
+  }
+
+  /// Build reputation card showing traveler or sender ratings
+  Widget _buildReputationCard() {
+    final String targetUserId =
+        widget.trip?.travelerId ?? widget.package!.senderId;
+    final String userRole = widget.trip != null ? 'Traveler' : 'Sender';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF215C5C).withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user,
+                  color: const Color(0xFF215C5C), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '$userRole Reputation',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<ReviewSummary>(
+            future: ReviewService().getReviewSummary(targetUserId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Text(
+                  'Unable to load reputation',
+                  style: TextStyle(color: Colors.grey[600]),
+                );
+              }
+
+              final summary = snapshot.data!;
+
+              if (summary.totalReviews == 0) {
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.grey[600]),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'No reviews yet',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              'This user is new to the platform',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  summary.averageRating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF215C5C),
+                                  ),
+                                ),
+                                Text(
+                                  ' / 5.0',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            StarRatingWidget(
+                              rating: summary.averageRating,
+                              size: 18,
+                              isReadOnly: true,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Based on ${summary.totalReviews} reviews',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (summary.verifiedReviewsCount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified,
+                                  size: 16, color: Colors.green[700]),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${summary.verifiedReviewsCount} verified',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Navigate to reviews screen
+                        // You'll need to import and navigate to ReviewListScreen
+                        // Navigator.push(...);
+                      },
+                      icon: const Icon(Icons.rate_review, size: 18),
+                      label: const Text('View All Reviews'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF215C5C),
+                        side: const BorderSide(
+                            color: Color(0xFF215C5C), width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}

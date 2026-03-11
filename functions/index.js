@@ -1,0 +1,2187 @@
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+
+// Initialize Stripe with better error handling
+let stripeKey;
+try {
+  stripeKey = process.env.STRIPE_SECRET_KEY || functions.config().stripe?.secret_key;
+  if (!stripeKey) {
+    console.error('❌ STRIPE_SECRET_KEY not found in environment or config');
+    throw new Error('Stripe secret key is required');
+  }
+  console.log('✅ Stripe key loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading Stripe configuration:', error);
+  stripeKey = 'sk_test_placeholder'; // Fallback to prevent crash
+}
+
+const stripe = require('stripe')(stripeKey);
+
+// Initialize Firebase Admin
+admin.initializeApp();
+
+// Import email functions
+const emailFunctions = require('./email_functions');
+// exports.sendEmailVerification = emailFunctions.sendEmailVerification; // DISABLED - using OTP system
+exports.sendPasswordResetEmail = emailFunctions.sendPasswordResetEmail;
+exports.sendPasswordResetOTP = emailFunctions.sendPasswordResetOTP;
+exports.verifyPasswordResetOTP = emailFunctions.verifyPasswordResetOTP;
+exports.verifyEmailWithOTP = emailFunctions.verifyEmailWithOTP;
+exports.sendDeliveryUpdateEmail = emailFunctions.sendDeliveryUpdateEmail;
+exports.sendDeliveryOTPEmail = emailFunctions.sendDeliveryOTPEmail;
+exports.testEmailConfig = emailFunctions.testEmailConfig;
+exports.sendOTPEmail = emailFunctions.sendOTPEmail;
+exports.sendCrmLoginOTP = emailFunctions.sendCrmLoginOTP;
+exports.sendWelcomeEmail = emailFunctions.sendWelcomeEmail;
+exports.sendPromotionalEmail = emailFunctions.sendPromotionalEmail;
+exports.resetPasswordWithOTP = emailFunctions.resetPasswordWithOTP;
+
+// Import Agora token functions
+const agoraFunctions = require('./agora_functions');
+exports.generateAgoraToken = agoraFunctions.generateAgoraToken;
+exports.renewAgoraToken = agoraFunctions.renewAgoraToken;
+
+/**
+ * ✅ NEW: Firebase Auth Trigger - Send Welcome Email on User Creation
+ * Automatically sends welcome email when a new user signs up
+ */
+exports.onUserCreated = functions.auth.user().onCreate(async (user) => {
+  try {
+    const email = user.email;
+    const displayName = user.displayName || user.email?.split('@')[0] || 'there';
+    const userId = user.uid;
+
+    if (!email) {
+      functions.logger.info('No email for user, skipping welcome email:', userId);
+      return null;
+    }
+
+    functions.logger.info('New user created, sending welcome email:', {
+      userId: userId,
+      email: email,
+      displayName: displayName
+    });
+
+    // Get email transporter from email_functions
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.eu',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER || functions.config().smtp?.user || 'nauman@crowdwave.eu',
+        pass: process.env.SMTP_PASSWORD || functions.config().smtp?.password,
+      },
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to CrowdWave</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+          }
+          .email-tagline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin-top: 8px;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 20px 0;
+          }
+          .feature-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+          }
+          .feature-icon {
+            font-size: 24px;
+            margin-right: 12px;
+          }
+          .email-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <h1 class="email-logo">CrowdWave</h1>
+            <p class="email-tagline">Crowd-Powered Package Delivery</p>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">Welcome to CrowdWave! 🎉</h2>
+            
+            <p class="email-text">
+              Hi ${displayName}!
+            </p>
+            
+            <p class="email-text">
+              We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+            </p>
+            
+            <div class="feature-box">
+              <h3 style="margin-top: 0; color: #333;">What you can do with CrowdWave:</h3>
+              
+              <div class="feature-item">
+                <span class="feature-icon">📦</span>
+                <span><strong>Send Packages</strong> - Ship items affordably with travelers going your way</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">✈️</span>
+                <span><strong>Earn While Traveling</strong> - Make money by delivering packages on your trips</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">🔒</span>
+                <span><strong>Secure Payments</strong> - Protected transactions with escrow system</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">📍</span>
+                <span><strong>Real-Time Tracking</strong> - Track your packages every step of the way</span>
+              </div>
+              
+              <div class="feature-item">
+                <span class="feature-icon">💬</span>
+                <span><strong>Chat & Negotiate</strong> - Communicate directly with travelers or senders</span>
+              </div>
+            </div>
+            
+            <p class="email-text">
+              <strong>Getting Started:</strong>
+            </p>
+            
+            <ol class="email-text">
+              <li>Complete your profile with a photo and bio</li>
+              <li>Verify your email address (check your inbox)</li>
+              <li>Add your first trip or package request</li>
+              <li>Start connecting with our community!</li>
+            </ol>
+            
+            <div style="text-align: center;">
+              <a href="https://crowdwave.eu" class="email-button">
+                🚀 Get Started Now
+              </a>
+            </div>
+            
+            <p class="email-text" style="margin-top: 30px;">
+              Need help? Our support team is here for you at 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+            <p class="footer-text">
+              CrowdWave - Connecting couriers with packages worldwide
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+Welcome to CrowdWave! 🎉
+
+Hi ${displayName}!
+
+We're thrilled to have you join our community of travelers and senders making deliveries happen around the world!
+
+What you can do with CrowdWave:
+📦 Send Packages - Ship items affordably with travelers going your way
+✈️ Earn While Traveling - Make money by delivering packages on your trips
+🔒 Secure Payments - Protected transactions with escrow system
+📍 Real-Time Tracking - Track your packages every step of the way
+💬 Chat & Negotiate - Communicate directly with travelers or senders
+
+Getting Started:
+1. Complete your profile with a photo and bio
+2. Verify your email address
+3. Add your first trip or package request
+4. Start connecting with our community!
+
+Visit: https://crowdwave.eu
+
+Need help? Contact us at support@crowdwave.eu
+
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+    `.trim();
+
+    const mailOptions = {
+      from: '"CrowdWave" <nauman@crowdwave.eu>',
+      to: email,
+      subject: 'Welcome to CrowdWave - Start Your Journey! 🎉',
+      html: html,
+      text: text
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    functions.logger.info('✅ Welcome email sent successfully:', {
+      userId: userId,
+      email: email
+    });
+
+    return null;
+  } catch (error) {
+    functions.logger.error('❌ Error sending welcome email:', error);
+    // Don't throw - we don't want to fail user creation if email fails
+    return null;
+  }
+});
+
+/**
+ * Test Authentication
+ * Simple test function to verify auth is working
+ */
+exports.testAuth = functions.https.onCall(async (data, context) => {
+  functions.logger.info('testAuth called', {
+    hasAuth: !!context.auth,
+    authUid: context.auth?.uid,
+    authEmail: context.auth?.token?.email,
+    authProvider: context.auth?.token?.firebase?.sign_in_provider,
+    tokenExp: context.auth?.token?.exp,
+    tokenIat: context.auth?.token?.iat,
+    serverTime: Math.floor(Date.now() / 1000),
+  });
+  
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Not authenticated'
+    );
+  }
+  
+  // Check token timing
+  const now = Math.floor(Date.now() / 1000);
+  const exp = context.auth.token?.exp;
+  const iat = context.auth.token?.iat;
+  
+  return {
+    message: 'Authentication successful!',
+    uid: context.auth.uid,
+    email: context.auth.token?.email,
+    provider: context.auth.token?.firebase?.sign_in_provider,
+    tokenInfo: {
+      issued: iat,
+      expires: exp,
+      serverTime: now,
+      timeToExpiry: exp ? exp - now : null,
+      tokenAge: iat ? now - iat : null,
+    }
+  };
+});
+
+/**
+ * Debug Payment Authentication
+ * Detailed authentication diagnostics for payment issues
+ */
+exports.debugPaymentAuth = functions.https.onCall(async (data, context) => {
+  const debugInfo = {
+    timestamp: new Date().toISOString(),
+    serverTime: Math.floor(Date.now() / 1000),
+    hasAuth: !!context.auth,
+    authContext: null,
+    headers: null,
+    request: null,
+  };
+
+  // Log headers for debugging
+  if (context.rawRequest) {
+    debugInfo.headers = {
+      authorization: context.rawRequest.headers?.authorization ? 'present' : 'missing',
+      userAgent: context.rawRequest.headers?.['user-agent'],
+      origin: context.rawRequest.headers?.origin,
+    };
+  }
+
+  if (context.auth) {
+    debugInfo.authContext = {
+      uid: context.auth.uid,
+      email: context.auth.token?.email,
+      provider: context.auth.token?.firebase?.sign_in_provider,
+      emailVerified: context.auth.token?.email_verified,
+      tokenExp: context.auth.token?.exp,
+      tokenIat: context.auth.token?.iat,
+      timeToExpiry: context.auth.token?.exp ? context.auth.token.exp - debugInfo.serverTime : null,
+      tokenAge: context.auth.token?.iat ? debugInfo.serverTime - context.auth.token.iat : null,
+    };
+    
+    functions.logger.info('Debug payment auth - success', debugInfo);
+    return debugInfo;
+  } else {
+    functions.logger.error('Debug payment auth - no auth context', debugInfo);
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'No authentication context found'
+    );
+  }
+});
+
+/**
+ * Create Payment Intent Handler
+ * Core logic shared by multiple exported callable names for backward compatibility
+ */
+const createPaymentIntentHandler = async (data, context) => {
+  try {
+    // Enhanced authentication verification
+    functions.logger.info('Authentication check:', {
+      hasAuth: !!context.auth,
+      authUid: context.auth?.uid,
+      authEmail: context.auth?.token?.email,
+      rawAuth: context.rawRequest?.headers?.authorization,
+      data: data
+    });
+
+    // Verify user is authenticated
+    if (!context.auth) {
+      functions.logger.error('Authentication failed - no context.auth');
+      functions.logger.error('Headers:', context.rawRequest?.headers);
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated to create payment intent.'
+      );
+    }
+
+    const { amount, currency, bookingId, metadata } = data || {};
+
+    // Validate input
+    if (!amount || !currency || !bookingId) {
+      functions.logger.error('Missing required fields:', { amount, currency, bookingId });
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Missing required fields: amount, currency, bookingId'
+      );
+    }
+
+    // Create payment intent with Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(Number(amount) * 100), // Convert to smallest unit
+      currency: String(currency).toLowerCase(),
+      metadata: {
+        bookingId,
+        userId: context.auth.uid,
+        ...(metadata || {})
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    functions.logger.info('Payment intent created', {
+      paymentIntentId: paymentIntent.id,
+      bookingId,
+      userId: context.auth.uid
+    });
+
+    return {
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
+    };
+  } catch (error) {
+    functions.logger.error('Error creating payment intent:', error);
+
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to create payment intent'
+    );
+  }
+};
+
+/**
+ * Export callable functions for multiple names for compatibility
+ */
+exports.createPaymentIntent = functions.https.onCall(createPaymentIntentHandler);
+exports.createPaymentIntentFresh = functions.https.onCall(createPaymentIntentHandler);
+exports.createMySpecialPaymentIntent = functions.https.onCall(createPaymentIntentHandler);
+
+/**
+ * Confirm Payment
+ * Called after successful payment to update booking status
+ */
+exports.confirmPayment = functions.https.onCall(async (data, context) => {
+  try {
+    functions.logger.info('confirmPayment called', { 
+      hasAuth: !!context.auth, 
+      authUid: context.auth?.uid,
+      authEmail: context.auth?.token?.email,
+      rawAuth: context.rawRequest?.headers?.authorization,
+      userAgent: context.rawRequest?.headers?.['user-agent'],
+      data: data 
+    });
+
+    // Enhanced authentication verification
+    if (!context.auth) {
+      functions.logger.error('Authentication failed - no context.auth');
+      functions.logger.error('Request headers:', context.rawRequest?.headers);
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'Authentication expired. Please sign in again and retry payment.'
+      );
+    }
+
+    // Additional auth validation - check token expiry
+    // RELAXED: Allow tokens that expired within the last 5 minutes for payment confirmation
+    // since the payment already succeeded in Stripe and we just need to record it
+    if (context.auth.token) {
+      const now = Math.floor(Date.now() / 1000); // Current time in seconds
+      const exp = context.auth.token.exp; // Token expiry
+      const iat = context.auth.token.iat; // Token issued at
+      const graceperiodSeconds = 300; // 5 minutes grace period
+      
+      functions.logger.info('Token timing check:', {
+        serverTime: now,
+        tokenExp: exp,
+        tokenIat: iat,
+        timeToExpiry: exp - now,
+        tokenAge: now - iat,
+        gracePeriod: graceperiodSeconds
+      });
+      
+      // Only reject if token expired more than 5 minutes ago
+      if (exp && (now - exp) > gracePeriodSeconds) {
+        functions.logger.error('Token expired beyond grace period', {
+          expiryTime: exp,
+          currentTime: now,
+          expiredBy: now - exp,
+          gracePeriod: gracePeriodSeconds
+        });
+        throw new functions.https.HttpsError(
+          'unauthenticated',
+          'Authentication token has expired. Please sign in again and retry payment.'
+        );
+      } else if (exp && exp <= now) {
+        functions.logger.warn('Token expired but within grace period - allowing payment confirmation', {
+          expiryTime: exp,
+          currentTime: now,
+          expiredBy: now - exp
+        });
+      }
+      
+      // Just log old tokens, don't fail
+      if (iat && (now - iat) > 3600) {
+        functions.logger.warn('Old token detected', {
+          issuedAt: iat,
+          currentTime: now,
+          ageSeconds: now - iat
+        });
+      }
+    }
+
+    const { paymentIntentId, bookingId } = data;
+
+    // Validate required parameters
+    if (!paymentIntentId) {
+      functions.logger.error('Missing paymentIntentId');
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Missing required field: paymentIntentId'
+      );
+    }
+
+    functions.logger.info('Starting payment confirmation', { paymentIntentId, bookingId, userId: context.auth.uid });
+
+    // Retrieve payment intent from Stripe to verify it's successful
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (paymentIntent.status === 'succeeded') {
+      // Update Firestore with payment confirmation
+      const db = admin.firestore();
+      
+      // If bookingId is provided, update that specific booking
+      if (bookingId) {
+        // Update booking status
+        await db.collection('bookings').doc(bookingId).update({
+          paymentStatus: 'paid',
+          paymentIntentId: paymentIntentId,
+          paidAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Update package status to confirmed and create tracking
+        const booking = await db.collection('bookings').doc(bookingId).get();
+        if (booking.exists) {
+          const packageId = booking.data().packageId; // FIXED: Use packageId instead of packageRequestId
+          
+          try {
+            // Check if package document exists before updating
+            const packageRef = db.collection('packageRequests').doc(packageId);
+            const packageDoc = await packageRef.get();
+            
+            if (packageDoc.exists) {
+              await packageRef.update({
+                status: 'confirmed',
+                updatedAt: admin.firestore.FieldValue.serverTimestamp()
+              });
+              functions.logger.info('Package status updated to confirmed', { packageId });
+            } else {
+              functions.logger.warn('Package document not found, skipping status update', { packageId });
+            }
+          } catch (packageUpdateError) {
+            functions.logger.error('Failed to update package status', { 
+              packageId, 
+              error: packageUpdateError.message 
+            });
+            // Continue with tracking creation even if package update fails
+          }
+
+          // 🔥 AUTOMATIC TRACKING CREATION - Create delivery tracking after payment confirmation
+          const bookingData = booking.data();
+          const trackingId = db.collection('deliveryTracking').doc().id;
+          
+          await db.collection('deliveryTracking').doc(trackingId).set({
+            id: trackingId,
+            packageRequestId: packageId,
+            travelerId: bookingData.travelerId,
+            senderId: bookingData.senderId || context.auth.uid,
+            bookingId: bookingId,
+            status: 'pending',
+            trackingPoints: [],
+            currentLocation: null,
+            estimatedDelivery: null,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            notes: 'Booking confirmed - ready for pickup',
+            // Additional fields for comprehensive tracking
+            packageInfo: {
+              name: bookingData.packageName || 'Package',
+              description: bookingData.packageDescription || '',
+              weight: bookingData.packageWeight || 0,
+              dimensions: bookingData.packageDimensions || {}
+            },
+            route: {
+              from: bookingData.pickupLocation || {},
+              to: bookingData.deliveryLocation || {},
+              distance: bookingData.distance || 0,
+              estimatedDuration: bookingData.estimatedDuration || 0
+            },
+            pricing: {
+              amount: bookingData.agreedPrice || 0,
+              currency: bookingData.currency || 'EUR',
+              paymentStatus: 'paid'
+            }
+          });
+
+          functions.logger.info('Automatic tracking created', {
+            trackingId,
+            packageId,
+            bookingId,
+            travelerId: bookingData.travelerId,
+            userId: context.auth.uid
+          });
+
+          // 💰 HOLD PAYMENT IN TRAVELER'S PENDING BALANCE (ESCROW)
+          // When payment is made via Stripe, hold the traveler's payout in their pending balance
+          try {
+            const travelerId = bookingData.travelerId;
+            const travelerPayout = bookingData.travelerPayout || bookingData.agreedPrice || 0;
+
+            if (travelerId && travelerPayout > 0) {
+              const walletRef = db.collection('wallets').doc(travelerId);
+              const walletDoc = await walletRef.get();
+
+              if (walletDoc.exists) {
+                // Update traveler's pending balance
+                await walletRef.update({
+                  pendingBalance: admin.firestore.FieldValue.increment(travelerPayout),
+                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+
+                // Create hold transaction record
+                await db.collection('transactions').add({
+                  userId: travelerId,
+                  type: 'hold',
+                  amount: travelerPayout,
+                  status: 'pending',
+                  bookingId: bookingId,
+                  description: `Payment held for booking #${bookingId}`,
+                  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                  metadata: {
+                    payment_method: 'stripe',
+                    payment_intent_id: paymentIntentId,
+                  },
+                });
+
+                functions.logger.info('Payment held in traveler pending balance', {
+                  travelerId,
+                  amount: travelerPayout,
+                  bookingId,
+                  paymentMethod: 'stripe'
+                });
+              } else {
+                functions.logger.warn('Traveler wallet not found, creating wallet', { travelerId });
+                
+                // Create wallet for traveler if it doesn't exist
+                await walletRef.set({
+                  userId: travelerId,
+                  balance: 0,
+                  pendingBalance: travelerPayout,
+                  totalEarnings: 0,
+                  totalSpent: 0,
+                  totalWithdrawals: 0,
+                  currency: bookingData.currency || 'EUR',
+                  createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+
+                // Create hold transaction record
+                await db.collection('transactions').add({
+                  userId: travelerId,
+                  type: 'hold',
+                  amount: travelerPayout,
+                  status: 'pending',
+                  bookingId: bookingId,
+                  description: `Payment held for booking #${bookingId}`,
+                  timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                  metadata: {
+                    payment_method: 'stripe',
+                    payment_intent_id: paymentIntentId,
+                  },
+                });
+
+                functions.logger.info('Wallet created and payment held', {
+                  travelerId,
+                  amount: travelerPayout,
+                  bookingId
+                });
+              }
+            }
+          } catch (walletError) {
+            functions.logger.error('Failed to hold payment in traveler wallet', {
+              error: walletError.message,
+              bookingId,
+              travelerId: bookingData.travelerId
+            });
+            // Don't throw - payment confirmation succeeded, wallet update is secondary
+          }
+        }
+      } else {
+        // Fallback: Try to find booking by paymentIntentId in metadata
+        const bookingsQuery = await db.collection('bookings')
+          .where('paymentIntentId', '==', paymentIntentId)
+          .limit(1)
+          .get();
+
+        if (!bookingsQuery.empty) {
+          const foundBooking = bookingsQuery.docs[0];
+          const foundBookingId = foundBooking.id;
+          
+          // Update the found booking
+          await db.collection('bookings').doc(foundBookingId).update({
+            paymentStatus: 'paid',
+            paidAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+
+          functions.logger.info('Payment confirmed via paymentIntentId lookup', {
+            paymentIntentId,
+            foundBookingId,
+            userId: context.auth.uid
+          });
+        }
+      }
+
+      functions.logger.info('Payment confirmed', {
+        paymentIntentId,
+        bookingId: bookingId || 'not provided',
+        userId: context.auth.uid
+      });
+
+      return { 
+        success: true, 
+        status: 'payment_confirmed',
+        bookingId: bookingId || 'auto-detected'
+      };
+    } else {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        `Payment not successful. Status: ${paymentIntent.status}`
+      );
+    }
+
+  } catch (error) {
+    functions.logger.error('Error confirming payment:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to confirm payment'
+    );
+  }
+});
+
+/**
+ * Release Payment to Traveler
+ * Release payment from escrow to traveler after delivery confirmation
+ */
+exports.releasePaymentToTraveler = functions.https.onCall(async (data, context) => {
+  try {
+    functions.logger.info('releasePaymentToTraveler called', { 
+      hasAuth: !!context.auth, 
+      authUid: context.auth?.uid,
+      data 
+    });
+
+    // Verify user is authenticated
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated.'
+      );
+    }
+
+    const { bookingId, travelerId, amount, reason } = data;
+
+    // Validate input
+    if (!bookingId || !travelerId || !amount) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Missing required fields: bookingId, travelerId, amount'
+      );
+    }
+
+    const db = admin.firestore();
+
+    // Get traveler's wallet
+    const walletRef = db.collection('wallets').doc(travelerId);
+    const walletDoc = await walletRef.get();
+
+    if (!walletDoc.exists) {
+      functions.logger.error('Wallet not found for traveler', { travelerId });
+      throw new functions.https.HttpsError(
+        'not-found',
+        'Traveler wallet not found'
+      );
+    }
+
+    // Update wallet with transaction
+    await db.runTransaction(async (transaction) => {
+      const wallet = await transaction.get(walletRef);
+      const walletData = wallet.data();
+
+      const currentBalance = (walletData.balance || 0);
+      const currentPendingBalance = (walletData.pendingBalance || 0);
+      const currentTotalEarnings = (walletData.totalEarnings || 0);
+
+      // Move amount from pending to available balance
+      transaction.update(walletRef, {
+        balance: currentBalance + amount,
+        pendingBalance: Math.max(0, currentPendingBalance - amount),
+        totalEarnings: currentTotalEarnings + amount,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    // Create transaction record
+    const transactionData = {
+      userId: travelerId,
+      type: 'earning',
+      amount: amount,
+      status: 'completed',
+      bookingId: bookingId,
+      description: `Payment received for delivery #${bookingId}`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      metadata: {
+        payment_method: 'escrow_release',
+        reason: reason || 'delivery_confirmed',
+        released_by: context.auth.uid,
+      },
+    };
+
+    await db.collection('transactions').add(transactionData);
+
+    functions.logger.info('Payment released to traveler successfully', {
+      travelerId,
+      bookingId,
+      amount,
+      releasedBy: context.auth.uid
+    });
+
+    return {
+      success: true,
+      message: 'Payment released successfully',
+      travelerId,
+      amount,
+    };
+
+  } catch (error) {
+    functions.logger.error('Error releasing payment to traveler:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to release payment to traveler'
+    );
+  }
+});
+
+/**
+ * Refund Payment to Sender
+ * Refund payment from escrow back to sender
+ */
+exports.refundPaymentToSender = functions.https.onCall(async (data, context) => {
+  try {
+    functions.logger.info('refundPaymentToSender called', { 
+      hasAuth: !!context.auth, 
+      authUid: context.auth?.uid,
+      data 
+    });
+
+    // Verify user is authenticated
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated.'
+      );
+    }
+
+    const { bookingId, senderId, amount, reason } = data;
+
+    // Validate input
+    if (!bookingId || !senderId || !amount) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Missing required fields: bookingId, senderId, amount'
+      );
+    }
+
+    const db = admin.firestore();
+
+    // Get sender's wallet
+    const walletRef = db.collection('wallets').doc(senderId);
+    const walletDoc = await walletRef.get();
+
+    if (!walletDoc.exists) {
+      functions.logger.error('Wallet not found for sender', { senderId });
+      throw new functions.https.HttpsError(
+        'not-found',
+        'Sender wallet not found'
+      );
+    }
+
+    // Update wallet with transaction
+    await db.runTransaction(async (transaction) => {
+      const wallet = await transaction.get(walletRef);
+      const walletData = wallet.data();
+
+      const currentBalance = (walletData.balance || 0);
+      const currentTotalSpent = (walletData.totalSpent || 0);
+
+      // Refund amount back to balance
+      transaction.update(walletRef, {
+        balance: currentBalance + amount,
+        totalSpent: Math.max(0, currentTotalSpent - amount),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    // Create transaction record
+    const transactionData = {
+      userId: senderId,
+      type: 'refund',
+      amount: amount,
+      status: 'completed',
+      bookingId: bookingId,
+      description: `Refund for booking #${bookingId}: ${reason}`,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      metadata: {
+        payment_method: 'escrow_refund',
+        reason: reason,
+        refunded_by: context.auth.uid,
+      },
+    };
+
+    await db.collection('transactions').add(transactionData);
+
+    functions.logger.info('Payment refunded to sender successfully', {
+      senderId,
+      bookingId,
+      amount,
+      refundedBy: context.auth.uid
+    });
+
+    return {
+      success: true,
+      message: 'Payment refunded successfully',
+      senderId,
+      amount,
+    };
+
+  } catch (error) {
+    functions.logger.error('Error refunding payment to sender:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to refund payment to sender'
+    );
+  }
+});
+
+/**
+ * Process Refund
+ * Handle refund requests for cancelled bookings
+ */
+exports.processRefund = functions.https.onCall(async (data, context) => {
+  try {
+    // Verify user is authenticated
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated.'
+      );
+    }
+
+    const { paymentIntentId, amount, reason, bookingId } = data;
+
+    // Create refund in Stripe
+    const refund = await stripe.refunds.create({
+      payment_intent: paymentIntentId,
+      amount: amount ? Math.round(amount * 100) : undefined, // Partial or full refund
+      reason: reason || 'requested_by_customer',
+      metadata: {
+        bookingId,
+        userId: context.auth.uid
+      }
+    });
+
+    // Update Firestore
+    const db = admin.firestore();
+    await db.collection('bookings').doc(bookingId).update({
+      paymentStatus: 'refunded',
+      refundId: refund.id,
+      refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    functions.logger.info('Refund processed', {
+      refundId: refund.id,
+      paymentIntentId,
+      bookingId,
+      userId: context.auth.uid
+    });
+
+    return {
+      success: true,
+      refundId: refund.id,
+      status: refund.status
+    };
+
+  } catch (error) {
+    functions.logger.error('Error processing refund:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to process refund'
+    );
+  }
+});
+
+/**
+ * Stripe Webhook Handler
+ * Handle Stripe webhook events for payment updates
+ */
+exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = functions.config().stripe?.webhook_secret || 'whsec_YOUR_WEBHOOK_SECRET';
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    functions.logger.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  const db = admin.firestore();
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      functions.logger.info('Payment succeeded via webhook:', paymentIntent.id);
+      
+      // Update booking status if not already updated
+      if (paymentIntent.metadata.bookingId) {
+        const bookingDoc = await db.collection('bookings').doc(paymentIntent.metadata.bookingId).get();
+        
+        await db.collection('bookings').doc(paymentIntent.metadata.bookingId).update({
+          paymentStatus: 'paid',
+          webhookConfirmedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 🔥 WEBHOOK AUTOMATIC TRACKING CREATION - Fallback if direct call failed
+        if (bookingDoc.exists) {
+          const bookingData = bookingDoc.data();
+          const packageId = bookingData.packageId; // FIXED: Use packageId instead of packageRequestId
+          
+          // Check if tracking already exists to avoid duplicates
+          const existingTracking = await db.collection('deliveryTracking')
+            .where('bookingId', '==', paymentIntent.metadata.bookingId)
+            .limit(1)
+            .get();
+
+          if (existingTracking.empty) {
+            const trackingId = db.collection('deliveryTracking').doc().id;
+            
+            await db.collection('deliveryTracking').doc(trackingId).set({
+              id: trackingId,
+              packageRequestId: packageId,
+              travelerId: bookingData.travelerId,
+              senderId: bookingData.senderId,
+              bookingId: paymentIntent.metadata.bookingId,
+              status: 'pending',
+              trackingPoints: [],
+              currentLocation: null,
+              estimatedDelivery: null,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              notes: 'Booking confirmed via webhook - ready for pickup',
+              packageInfo: {
+                name: bookingData.packageName || 'Package',
+                description: bookingData.packageDescription || '',
+                weight: bookingData.packageWeight || 0,
+                dimensions: bookingData.packageDimensions || {}
+              },
+              route: {
+                from: bookingData.pickupLocation || {},
+                to: bookingData.deliveryLocation || {},
+                distance: bookingData.distance || 0,
+                estimatedDuration: bookingData.estimatedDuration || 0
+              },
+              pricing: {
+                amount: bookingData.agreedPrice || 0,
+                currency: bookingData.currency || 'EUR',
+                paymentStatus: 'paid'
+              }
+            });
+
+            functions.logger.info('Automatic tracking created via webhook', {
+              trackingId,
+              packageId,
+              bookingId: paymentIntent.metadata.bookingId,
+              travelerId: bookingData.travelerId
+            });
+          } else {
+            functions.logger.info('Tracking already exists, skipping creation', {
+              bookingId: paymentIntent.metadata.bookingId
+            });
+          }
+        }
+      }
+      break;
+    
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      functions.logger.info('Payment failed via webhook:', failedPayment.id);
+      
+      // Update booking status
+      if (failedPayment.metadata.bookingId) {
+        await db.collection('bookings').doc(failedPayment.metadata.bookingId).update({
+          paymentStatus: 'failed',
+          paymentFailedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      break;
+
+    default:
+      functions.logger.info(`Unhandled event type ${event.type}`);
+  }
+
+  res.json({received: true});
+});
+
+/**
+ * Helper function to determine if notification should use normal priority
+ * Offer-related notifications should use normal priority to prevent heads-up overlays
+ */
+function _shouldUseNormalPriority(notificationData) {
+  if (!notificationData || !notificationData.type) {
+    return false; // Default to high priority if no type specified
+  }
+  
+  const normalPriorityTypes = [
+    'offer_received',
+    'offer_accepted', 
+    'offer_rejected',
+    'trip_update',
+    'package_update',
+    'general'
+  ];
+  
+  return normalPriorityTypes.includes(notificationData.type);
+}
+
+/**
+ * Helper function to get appropriate notification channel ID based on type
+ */
+function _getNotificationChannelId(notificationData) {
+  if (!notificationData || !notificationData.type) {
+    return 'high_importance_channel';
+  }
+  
+  switch (notificationData.type) {
+    case 'offer_received':
+    case 'offer_accepted':
+    case 'offer_rejected':
+      return 'offers';
+    case 'trip_update':
+    case 'package_update':
+      return 'trip_updates';
+    case 'message':
+      return 'chat_messages';
+    case 'voice_call':
+      return 'high_importance_channel'; // Voice calls need high priority
+    default:
+      return 'general';
+  }
+}
+
+/**
+ * Send FCM Notification
+ * Reliable server-side FCM notification sending
+ */
+exports.sendFCMNotification = functions.https.onCall(async (data, context) => {
+  try {
+    // Verify user is authenticated
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'User must be authenticated to send notifications.'
+      );
+    }
+
+    const { fcmToken, title, body, data: notificationData } = data;
+
+    // Validate input
+    if (!fcmToken || !title || !body) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Missing required fields: fcmToken, title, body'
+      );
+    }
+
+    // ✅ PREVENT DUPLICATE NOTIFICATIONS: Check if this notification was already sent
+    const notificationId = notificationData?.notificationId || 
+      `${notificationData?.type || 'general'}_${notificationData?.relatedEntityId || 'none'}_${context.auth.uid}`;
+    
+    const duplicateCheck = await admin.firestore()
+      .collection('sentNotifications')
+      .doc(notificationId)
+      .get();
+    
+    if (duplicateCheck.exists) {
+      functions.logger.info('Duplicate notification prevented', { notificationId });
+      return { success: true, messageId: 'duplicate_prevented' };
+    }
+
+    // ✅ DEBUG: Log notification type and priority decision
+    const notificationType = notificationData?.type || 'unknown';
+    const useNormalPriority = _shouldUseNormalPriority(notificationData);
+    const channelId = _getNotificationChannelId(notificationData);
+    
+    functions.logger.info('FCM notification details', {
+      notificationType,
+      useNormalPriority,
+      channelId,
+      title,
+      priority: useNormalPriority ? 'normal' : 'high'
+    });
+
+    // Create FCM message with string-only data values
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      // Convert all data values to strings (Firebase requirement)
+      data: Object.fromEntries(
+        Object.entries(notificationData || {}).map(([key, value]) => [
+          key,
+          String(value)
+        ])
+      ),
+      token: fcmToken,
+      android: {
+        // ✅ DYNAMIC PRIORITY: Use normal priority for offer notifications to prevent heads-up overlays
+        priority: _shouldUseNormalPriority(notificationData) ? 'normal' : 'high',
+        notification: {
+          sound: 'default',
+          // ✅ DYNAMIC PRIORITY: Same for notification priority
+          priority: _shouldUseNormalPriority(notificationData) ? 'default' : 'high',
+          channelId: _getNotificationChannelId(notificationData),
+          clickAction: 'FLUTTER_NOTIFICATION_CLICK', // Enable deep linking
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+          },
+        },
+      },
+    };
+
+    // Send FCM notification using Admin SDK
+    const response = await admin.messaging().send(message);
+
+    // ✅ MARK AS SENT to prevent duplicates (expires after 24 hours)
+    await admin.firestore()
+      .collection('sentNotifications')
+      .doc(notificationId)
+      .set({
+        messageId: response,
+        sentAt: admin.firestore.FieldValue.serverTimestamp(),
+        title,
+        type: notificationType,
+        userId: context.auth.uid,
+        // Document will auto-delete after 24 hours
+        expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000))
+      });
+
+    functions.logger.info('FCM notification sent successfully', {
+      messageId: response,
+      title,
+      userId: context.auth.uid
+    });
+
+    return {
+      success: true,
+      messageId: response
+    };
+
+  } catch (error) {
+    functions.logger.error('Error sending FCM notification:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      'internal',
+      'Failed to send FCM notification'
+    );
+  }
+});
+
+/**
+ * ✅ FIRESTORE TRIGGER: Notify when deal offer is accepted
+ */
+exports.notifyDealAccepted = functions.firestore
+  .document('dealOffers/{dealId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    
+    // Only trigger if status changed to accepted
+    if (beforeData.status !== 'accepted' && afterData.status === 'accepted') {
+      try {
+        const dealId = context.params.dealId;
+        
+        // Get sender's FCM token to notify them
+        const senderDoc = await admin.firestore()
+          .collection('users')
+          .doc(afterData.senderId)
+          .get();
+        
+        const senderFcmToken = senderDoc.data()?.fcmToken;
+        if (!senderFcmToken) {
+          functions.logger.info('No FCM token for sender', { senderId: afterData.senderId });
+          return null;
+        }
+        
+        // Get package details for context
+        const packageDoc = await admin.firestore()
+          .collection('packageRequests')
+          .doc(afterData.packageId)
+          .get();
+        
+        const packageData = packageDoc.data();
+        const packageTitle = packageData ? 
+          `Package from ${packageData.fromLocation?.city || 'Unknown'} to ${packageData.toLocation?.city || 'Unknown'}` :
+          'Your package delivery';
+        
+        // Send notification to offer sender
+        const message = {
+          notification: {
+            title: '🎉 Deal Accepted!',
+            body: `Your offer of $${afterData.offeredPrice} for ${packageTitle} has been accepted!`,
+          },
+          data: {
+            type: 'deal_accepted',
+            dealId: dealId,
+            conversationId: afterData.conversationId,
+            packageId: afterData.packageId,
+            clickAction: 'OPEN_CHAT',
+            notificationId: `deal_accepted_${dealId}`,
+          },
+          token: senderFcmToken,
+          android: {
+            priority: 'high',
+            notification: {
+              sound: 'default',
+              priority: 'high',
+              channelId: 'offers',
+              clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+            },
+          },
+        };
+        
+        const response = await admin.messaging().send(message);
+        functions.logger.info('Deal accepted notification sent', { dealId, messageId: response });
+        
+        return null;
+      } catch (error) {
+        functions.logger.error('Error sending deal accepted notification:', error);
+        return null;
+      }
+    }
+    
+    return null;
+  });
+
+/**
+ * ✅ FIRESTORE TRIGGER: Notify when new message is sent in chat
+ */
+exports.notifyNewMessage = functions.firestore
+  .document('conversations/{conversationId}/messages/{messageId}')
+  .onCreate(async (snap, context) => {
+    const messageData = snap.data();
+    const conversationId = context.params.conversationId;
+    const messageId = context.params.messageId;
+    
+    try {
+      // Don't send notification for system messages or deal offers (they have their own notifications)
+      if (messageData.type === 'system' || messageData.type === 'deal_offer' || messageData.type === 'deal_counter') {
+        return null;
+      }
+      
+      // Get conversation details to find recipient
+      const conversationDoc = await admin.firestore()
+        .collection('conversations')
+        .doc(conversationId)
+        .get();
+      
+      if (!conversationDoc.exists) {
+        return null;
+      }
+      
+      const conversationData = conversationDoc.data();
+      const participants = conversationData.participants || [];
+      
+      // Find recipient (the user who didn't send the message)
+      const recipientId = participants.find(id => id !== messageData.senderId);
+      if (!recipientId) {
+        return null;
+      }
+      
+      // Get recipient's FCM token
+      const recipientDoc = await admin.firestore()
+        .collection('users')
+        .doc(recipientId)
+        .get();
+      
+      const recipientFcmToken = recipientDoc.data()?.fcmToken;
+      if (!recipientFcmToken) {
+        functions.logger.info('No FCM token for recipient', { recipientId });
+        return null;
+      }
+      
+      // Get sender's name
+      const senderName = conversationData.participantNames?.[messageData.senderId] || 'Someone';
+      
+      // Send notification
+      const message = {
+        notification: {
+          title: senderName,
+          body: messageData.content,
+        },
+        data: {
+          type: 'chat_message',
+          conversationId: conversationId,
+          senderId: messageData.senderId,
+          senderName: senderName,
+          messageId: messageId,
+          clickAction: 'OPEN_CHAT',
+          notificationId: `message_${messageId}`,
+        },
+        token: recipientFcmToken,
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            priority: 'high',
+            channelId: 'chat_messages',
+            clickAction: 'FLUTTER_NOTIFICATION_CLICK',
+          },
+        },
+      };
+      
+      const response = await admin.messaging().send(message);
+      functions.logger.info('New message notification sent', { conversationId, messageId, response });
+      
+      return null;
+    } catch (error) {
+      functions.logger.error('Error sending new message notification:', error);
+      return null;
+    }
+  });
+
+/**
+ * ✅ FIRESTORE TRIGGER: Send email when delivery tracking status changes
+ * Automatically notifies sender via email when package status updates
+ */
+exports.notifyTrackingStatusChange = functions.firestore
+  .document('deliveryTracking/{trackingId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    const trackingId = context.params.trackingId;
+    
+    // Only trigger if status actually changed
+    if (beforeData.status === afterData.status) {
+      return null;
+    }
+    
+    try {
+      const newStatus = afterData.status;
+      const senderId = afterData.senderId;
+      
+      if (!senderId) {
+        functions.logger.info('No sender ID found in tracking', { trackingId });
+        return null;
+      }
+      
+      // Get sender's email
+      const senderDoc = await admin.firestore()
+        .collection('users')
+        .doc(senderId)
+        .get();
+      
+      if (!senderDoc.exists) {
+        functions.logger.info('Sender user not found', { senderId });
+        return null;
+      }
+      
+      const senderEmail = senderDoc.data()?.email;
+      if (!senderEmail) {
+        functions.logger.info('Sender email not found', { senderId });
+        return null;
+      }
+      
+      // Get package details
+      const packageId = afterData.packageRequestId;
+      const packageDoc = await admin.firestore()
+        .collection('packageRequests')
+        .doc(packageId)
+        .get();
+      
+      if (!packageDoc.exists) {
+        functions.logger.info('Package not found', { packageId });
+        return null;
+      }
+      
+      const packageData = packageDoc.data();
+      
+      // Prepare package details for email
+      // Package model uses pickupLocation and destinationLocation (not fromLocation/toLocation)
+      const packageDetails = {
+        packageId: packageId,
+        trackingNumber: trackingId,
+        from: packageData.pickupLocation?.city || packageData.pickupLocation?.address || packageData.fromLocation?.city || 'Unknown',
+        to: packageData.destinationLocation?.city || packageData.destinationLocation?.address || packageData.toLocation?.city || 'Unknown',
+        description: packageData.description || 'Package',
+        weight: packageData.weight?.toString() || 'N/A',
+      };
+      
+      // Create tracking URL
+      const trackingUrl = `https://crowdwave.eu/track/${trackingId}`;
+      
+      // Only send emails for significant status changes
+      const emailStatuses = ['picked_up', 'in_transit', 'delivered', 'cancelled'];
+      if (!emailStatuses.includes(newStatus)) {
+        functions.logger.info('Status not significant for email', { status: newStatus });
+        return null;
+      }
+      
+      // Import nodemailer for direct email sending
+      const nodemailer = require('nodemailer');
+      
+      // Get email transporter
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.zoho.eu',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.SMTP_USER || functions.config().smtp?.user || 'nauman@crowdwave.eu',
+          pass: process.env.SMTP_PASSWORD || functions.config().smtp?.password,
+        },
+      });
+      
+      // Prepare email content based on status
+      let subject, title, message;
+      switch (newStatus) {
+        case 'picked_up':
+          subject = '📦 Package Picked Up - CrowdWave';
+          title = 'Package Picked Up!';
+          message = 'Your package has been picked up and is on its way!';
+          break;
+        case 'in_transit':
+          subject = '🚚 Package In Transit - CrowdWave';
+          title = 'Package In Transit';
+          message = 'Your package is currently in transit to its destination.';
+          break;
+        case 'delivered':
+          subject = '✅ Package Delivered - CrowdWave';
+          title = 'Package Delivered!';
+          message = 'Your package has been successfully delivered! Please confirm receipt in the app.';
+          break;
+        case 'cancelled':
+          subject = '❌ Delivery Cancelled - CrowdWave';
+          title = 'Delivery Cancelled';
+          message = 'The delivery has been cancelled.';
+          break;
+        default:
+          return null;
+      }
+      
+      // Send email
+      const mailOptions = {
+        from: '"CrowdWave Deliveries" <nauman@crowdwave.eu>',
+        to: senderEmail,
+        subject: subject,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; }
+              .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; color: white; }
+              .header h1 { margin: 0; font-size: 32px; }
+              .content { padding: 40px 30px; }
+              .status-badge { display: inline-block; padding: 12px 24px; background: #667eea; color: white; border-radius: 20px; font-weight: bold; margin: 20px 0; }
+              .details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+              .detail-label { font-weight: 600; color: #666; }
+              .detail-value { color: #333; }
+              .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+              .footer { background: #f9f9f9; padding: 30px; text-align: center; border-top: 1px solid #eee; color: #999; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🌊 CrowdWave</h1>
+              </div>
+              <div class="content">
+                <h2>${title}</h2>
+                <p>${message}</p>
+                <div class="status-badge">${newStatus.replace('_', ' ').toUpperCase()}</div>
+                <div class="details">
+                  <div class="detail-row">
+                    <span class="detail-label">Tracking Number:</span>
+                    <span class="detail-value">${trackingId}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">From:</span>
+                    <span class="detail-value">${packageDetails.from}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">To:</span>
+                    <span class="detail-value">${packageDetails.to}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <span class="detail-value">${packageDetails.description}</span>
+                  </div>
+                </div>
+                <div style="text-align: center;">
+                  <a href="${trackingUrl}" class="button">Track Your Package</a>
+                </div>
+              </div>
+              <div class="footer">
+                <p>Questions? Contact us at <a href="mailto:support@crowdwave.eu">support@crowdwave.eu</a></p>
+                <p>© ${new Date().getFullYear()} CrowdWave. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: `
+${title}
+
+${message}
+
+Tracking Number: ${trackingId}
+From: ${packageDetails.from}
+To: ${packageDetails.to}
+Description: ${packageDetails.description}
+
+Track your package: ${trackingUrl}
+
+Questions? Email us at support@crowdwave.eu
+© ${new Date().getFullYear()} CrowdWave. All rights reserved.
+        `.trim(),
+      };
+      
+      await transporter.sendMail(mailOptions);
+      
+      functions.logger.info('Tracking status email sent', {
+        trackingId,
+        status: newStatus,
+        email: senderEmail,
+      });
+      
+      return null;
+    } catch (error) {
+      functions.logger.error('Error sending tracking status email:', error);
+      return null;
+    }
+  });
+
+/**
+ * ✅ Scheduled function to expire old posts (packages and trips)
+ * Runs every day at midnight UTC to mark posts older than 5 days as expired
+ */
+exports.expireOldPosts = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
+  const EXPIRATION_DAYS = 5;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - EXPIRATION_DAYS);
+  const cutoffDateISO = cutoffDate.toISOString();
+
+  functions.logger.info('Running post expiration job', {
+    cutoffDate: cutoffDateISO,
+    expirationDays: EXPIRATION_DAYS
+  });
+
+  let expiredPackages = 0;
+  let expiredTrips = 0;
+
+  try {
+    // Expire old package requests
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    const packageBatch = admin.firestore().batch();
+    packagesSnapshot.docs.forEach(doc => {
+      packageBatch.update(doc.ref, {
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredPackages++;
+    });
+
+    if (expiredPackages > 0) {
+      await packageBatch.commit();
+      functions.logger.info(`Expired ${expiredPackages} package requests`);
+    }
+
+    // Expire old travel trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('status', '==', 'active')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    const tripBatch = admin.firestore().batch();
+    tripsSnapshot.docs.forEach(doc => {
+      tripBatch.update(doc.ref, {
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredTrips++;
+    });
+
+    if (expiredTrips > 0) {
+      await tripBatch.commit();
+      functions.logger.info(`Expired ${expiredTrips} travel trips`);
+    }
+
+    functions.logger.info('Post expiration job completed', {
+      expiredPackages,
+      expiredTrips,
+      totalExpired: expiredPackages + expiredTrips
+    });
+
+    return null;
+  } catch (error) {
+    functions.logger.error('Error in post expiration job:', error);
+    throw error;
+  }
+});
+
+/**
+ * ✅ HTTP callable function to manually expire old posts (for admin use)
+ */
+exports.manualExpireOldPosts = functions.https.onCall(async (data, context) => {
+  // Verify the user is authenticated (optional: add admin check)
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const EXPIRATION_DAYS = data.expirationDays || 5;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - EXPIRATION_DAYS);
+  const cutoffDateISO = cutoffDate.toISOString();
+
+  let expiredPackages = 0;
+  let expiredTrips = 0;
+
+  try {
+    // Expire old package requests
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('status', '==', 'pending')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    for (const doc of packagesSnapshot.docs) {
+      await doc.ref.update({
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredPackages++;
+    }
+
+    // Expire old travel trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('status', '==', 'active')
+      .where('createdAt', '<', cutoffDateISO)
+      .get();
+
+    for (const doc of tripsSnapshot.docs) {
+      await doc.ref.update({
+        status: 'expired',
+        updatedAt: new Date().toISOString()
+      });
+      expiredTrips++;
+    }
+
+    return {
+      success: true,
+      expiredPackages,
+      expiredTrips,
+      totalExpired: expiredPackages + expiredTrips,
+      cutoffDate: cutoffDateISO
+    };
+  } catch (error) {
+    functions.logger.error('Error in manual post expiration:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to expire posts: ' + error.message);
+  }
+});
+
+// ==================== ACCOUNT DELETION WITH OTP ====================
+
+/**
+ * Send Account Deletion OTP
+ * Sends a 6-digit OTP to the user's email for account deletion verification
+ */
+exports.sendAccountDeletionOTP = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const userId = context.auth.uid;
+
+  try {
+    // Get user email from Firebase Auth
+    const userRecord = await admin.auth().getUser(userId);
+    const email = userRecord.email;
+
+    if (!email) {
+      throw new functions.https.HttpsError('failed-precondition', 'No email associated with this account');
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Store OTP in Firestore (with expiration)
+    await admin.firestore().collection('accountDeletionOTPs').doc(userId).set({
+      otp: otp,
+      email: email,
+      expiresAt: expiresAt,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Send email with OTP
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.eu',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER || functions.config().smtp?.user || 'nauman@crowdwave.eu',
+        pass: process.env.SMTP_PASSWORD || functions.config().smtp?.password,
+      },
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Deletion Verification</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+          }
+          .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          }
+          .email-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .email-logo {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+          }
+          .email-body {
+            padding: 40px 30px;
+          }
+          .email-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333333;
+            margin: 0 0 20px 0;
+          }
+          .email-text {
+            font-size: 16px;
+            line-height: 24px;
+            color: #666666;
+            margin: 0 0 30px 0;
+          }
+          .otp-container {
+            background-color: #fff3cd;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .otp-code {
+            font-size: 48px;
+            font-weight: bold;
+            color: #dc3545;
+            letter-spacing: 8px;
+            margin: 0;
+          }
+          .otp-label {
+            font-size: 14px;
+            color: #856404;
+            margin-top: 10px;
+          }
+          .warning-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+          }
+          .warning-text {
+            font-size: 14px;
+            color: #721c24;
+            margin: 0;
+            line-height: 1.6;
+          }
+          .email-footer {
+            background-color: #f9f9f9;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+          }
+          .footer-text {
+            font-size: 14px;
+            color: #999999;
+            margin: 5px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="email-container">
+          <div class="email-header">
+            <h1 class="email-logo">⚠️ Account Deletion</h1>
+          </div>
+          
+          <div class="email-body">
+            <h2 class="email-title">Verify Account Deletion</h2>
+            <p class="email-text">
+              You have requested to permanently delete your CrowdWave account. 
+              Enter the code below in the app to confirm this action.
+            </p>
+            
+            <div class="otp-container">
+              <p class="otp-code">${otp}</p>
+              <p class="otp-label">This code expires in 10 minutes</p>
+            </div>
+            
+            <div class="warning-box">
+              <p class="warning-text">
+                ⚠️ <strong>This action is irreversible!</strong><br><br>
+                Once your account is deleted:<br>
+                • All your profile data will be permanently removed<br>
+                • Your wallet balance will be forfeited<br>
+                • All your packages and trips will be deleted<br>
+                • You will not be able to recover your account<br><br>
+                If you did not request this, please ignore this email and secure your account.
+              </p>
+            </div>
+          </div>
+          
+          <div class="email-footer">
+            <p class="footer-text">
+              If you didn't request this, please contact 
+              <a href="mailto:support@crowdwave.eu" style="color: #667eea;">support@crowdwave.eu</a>
+            </p>
+            <p class="footer-text">
+              © ${new Date().getFullYear()} CrowdWave. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: '"CrowdWave Security" <nauman@crowdwave.eu>',
+      to: email,
+      replyTo: 'support@crowdwave.eu',
+      subject: '⚠️ Account Deletion Verification Code',
+      html: html,
+      text: `Account Deletion Verification\n\nYour verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nWARNING: This action is irreversible! All your data will be permanently deleted.\n\nIf you did not request this, please ignore this email and secure your account.`,
+    });
+
+    functions.logger.info('Account deletion OTP sent', { userId, email });
+
+    return { 
+      success: true, 
+      message: 'Verification code sent to your email',
+      email: email.replace(/(.{2})(.*)(@.*)/, '$1***$3') // Mask email
+    };
+  } catch (error) {
+    functions.logger.error('Error sending account deletion OTP:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send verification code');
+  }
+});
+
+/**
+ * Verify OTP and Delete Account
+ * Verifies the OTP and permanently deletes the user account using Admin SDK
+ */
+exports.verifyAndDeleteAccount = functions.https.onCall(async (data, context) => {
+  // Require authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+
+  const { otp } = data;
+  const userId = context.auth.uid;
+
+  if (!otp) {
+    throw new functions.https.HttpsError('invalid-argument', 'OTP is required');
+  }
+
+  try {
+    // Get stored OTP
+    const otpDoc = await admin.firestore().collection('accountDeletionOTPs').doc(userId).get();
+
+    if (!otpDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'No verification code found. Please request a new one.');
+    }
+
+    const otpData = otpDoc.data();
+
+    // Check if OTP is expired
+    if (Date.now() > otpData.expiresAt) {
+      await admin.firestore().collection('accountDeletionOTPs').doc(userId).delete();
+      throw new functions.https.HttpsError('deadline-exceeded', 'Verification code has expired. Please request a new one.');
+    }
+
+    // Verify OTP
+    if (otpData.otp !== otp) {
+      throw new functions.https.HttpsError('permission-denied', 'Invalid verification code');
+    }
+
+    // OTP is valid - proceed with account deletion
+    functions.logger.info('OTP verified, proceeding with account deletion', { userId });
+
+    // Delete user data from Firestore collections
+    const batch = admin.firestore().batch();
+
+    // Delete user profile
+    const userProfileRef = admin.firestore().collection('users').doc(userId);
+    batch.delete(userProfileRef);
+
+    // Delete user wallet
+    const walletRef = admin.firestore().collection('wallets').doc(userId);
+    batch.delete(walletRef);
+
+    // Delete user presence
+    const presenceRef = admin.firestore().collection('presence').doc(userId);
+    batch.delete(presenceRef);
+
+    // Delete the OTP document
+    const otpRef = admin.firestore().collection('accountDeletionOTPs').doc(userId);
+    batch.delete(otpRef);
+
+    // Commit the batch delete
+    await batch.commit();
+
+    // Delete user's packages (query and delete)
+    const packagesSnapshot = await admin.firestore()
+      .collection('packageRequests')
+      .where('userId', '==', userId)
+      .get();
+    
+    const packageDeleteBatch = admin.firestore().batch();
+    packagesSnapshot.docs.forEach(doc => {
+      packageDeleteBatch.delete(doc.ref);
+    });
+    if (!packagesSnapshot.empty) {
+      await packageDeleteBatch.commit();
+    }
+
+    // Delete user's trips
+    const tripsSnapshot = await admin.firestore()
+      .collection('travelTrips')
+      .where('userId', '==', userId)
+      .get();
+    
+    const tripDeleteBatch = admin.firestore().batch();
+    tripsSnapshot.docs.forEach(doc => {
+      tripDeleteBatch.delete(doc.ref);
+    });
+    if (!tripsSnapshot.empty) {
+      await tripDeleteBatch.commit();
+    }
+
+    // Finally, delete the Firebase Auth user (using Admin SDK - no recent auth needed)
+    await admin.auth().deleteUser(userId);
+
+    functions.logger.info('Account deleted successfully', { userId });
+
+    return { 
+      success: true, 
+      message: 'Your account has been permanently deleted' 
+    };
+  } catch (error) {
+    functions.logger.error('Error deleting account:', error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError('internal', 'Failed to delete account: ' + error.message);
+  }
+});
